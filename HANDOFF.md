@@ -1,7 +1,7 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-12 20:23（Asia/Taipei, UTC+8）
+2026-10-12 20:25（Asia/Taipei, UTC+8）
 
 ## Updated By
 Codex
@@ -109,8 +109,9 @@ Codex
 
 ## Git Status
 - Branch：`feat/ai-backend`（已 rebase 至最新 `main`）
-- Commits：… → pixel-art homepage → timezone fix → `feat: reminders, security headers and accessibility audit` → `feat: English translation for the whole app` → `chore(db): apply Supabase best practices to init migration` → `feat(auth): redesigned login with guest mode`
-- 最新 Codex commit：AI 校園助理後端（rebase 後 hash 於 `git log -1` 確認）
+- Main commits：… → pixel-art homepage → timezone fix → `feat: reminders, security headers and accessibility audit` → `feat: English translation for the whole app` → `chore(db): apply Supabase best practices to init migration` → `feat(auth): redesigned login with guest mode`
+- Codex commits：`feat: implement campus AI chat backend` → `fix: harden AI knowledge ingestion and locale support`
+- 工作目錄乾淨；feature branch 已包含最新 `main`
 - Worktree：`../tkuApp-codex`（`feat/ai-backend`，Codex）
 - 尚未設定 remote
 
