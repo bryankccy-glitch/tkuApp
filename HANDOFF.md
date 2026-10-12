@@ -82,13 +82,14 @@ Claude Code
 - `npm run build` ✅
 - `npm run test:e2e` ✅ 118 passed（本輪新增：axe 無障礙 36、CSP 10、英文介面 20、提醒 2；先前：新增：即時天氣顯示、API 失敗備援不顯示虛構溫度、Canvas 真實像素與限制色盤且會動、reduced motion 靜態、英文切換、快捷操作）；原 38（desktop 1360×900、mobile Pixel 7）：主要流程、衝突、待辦、CSV 匯入、探索、AI 來源、深色模式、8 頁無水平捲動、App 版面（底部導覽＋480px 框）、週課表不超出手機寬度、PWA manifest＋service worker、skip link
 - 登入頁（雲端建置）axe WCAG 2.2 AA：登入/註冊、淺/深色 0 violations
-- 未執行：RLS 測試；真實註冊/登入/重設密碼流程（雲端工作區無法連 supabase.co；Email 驗證信限制見 Known Issues）
+- 真實 Supabase 驗證 ✅（2026-10-12，以 REST 對線上專案）：註冊即登入、trigger 自動建立 profile（暱稱寫入）、本人可新增/讀取學期與作業、他人讀不到（RLS）、未登入讀不到、自行改 role=admin 被擋、`delete_my_account` 刪除帳號並連帶刪光資料（測試帳號已清除，資料表歸零）
+- 未執行：自動化 RLS 測試（Codex `supabase/tests/`）；重設密碼流程（雲端工作區無法連 supabase.co；Email 驗證信限制見 Known Issues）
 
 ## Known Issues
 - 淡江大橋塔身輪廓與單/雙索面待查核（目前為詮釋）
 - Artifact 預覽環境無法連線 Open-Meteo，會顯示「暫時無法取得天氣」（實際部署正常）
-- 雲端模式（登入、重設密碼、RLS）尚未在真實 Supabase 專案端到端驗證
-- Supabase Auth 目前「Confirm email」開啟，且使用內建寄信服務：只會寄給組織成員信箱、且有每小時上限 → 一般學生收不到驗證信。需開發者決定：關閉 Email 驗證，或設定自訂 SMTP（如 Resend）
+- 重設密碼信件流程尚未實測（需 Site URL 與寄信服務）
+- Supabase Auth 已關閉「Confirm email」（開發者 2026-10-12 決定）：註冊後可立即登入，但 Email 未驗證；正式上線前建議接自訂 SMTP 再開回驗證
 - Supabase Auth 的 Site URL / Redirect URLs 尚未設定（驗證與重設密碼連結會導回預設 localhost:3000）；部署網址確定後要加入
 - 建築代碼來源為學生整理、座標未查核；T 棟名稱待核對
 - 淡江官方品牌規範未找到公開來源；紅色主題與標誌為開發者指定
