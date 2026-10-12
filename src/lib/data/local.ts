@@ -2,6 +2,7 @@ import { uid } from '../id';
 import i18n from '@/i18n';
 import type { Course, Profile, Semester, Task } from '../types';
 import type { CourseInput, DataRepository, ExportBundle, SemesterInput, TaskInput } from './repository';
+import type { SocialApi } from '../social/types';
 import { inferSemester } from './semesters';
 
 /**
@@ -23,6 +24,8 @@ function emptyStore(): Store {
 
 export class LocalRepository implements DataRepository {
   readonly mode = 'local' as const;
+  /** No accounts on-device; tests may inject a fake. */
+  readonly social: SocialApi | null = null;
   private memory: Store | null = null;
 
   constructor(private storage: Storage | null = typeof localStorage !== 'undefined' ? localStorage : null) {}

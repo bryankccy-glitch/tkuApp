@@ -1,3 +1,4 @@
+import type { CSSProperties, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import type { Course, Weekday } from '@/lib/types';
 import { occurrencesOn } from '@/lib/schedule';
@@ -10,8 +11,13 @@ import { t } from '@/i18n/t';
 
 const PX_PER_MIN = 0.95;
 
+function Block({ to, children, ...rest }: { to?: string; children: ReactNode; className?: string; style?: CSSProperties; 'aria-label'?: string }) {
+  if (to) return <Link to={to} {...rest}>{children}</Link>;
+  return <div role="group" {...rest}>{children}</div>;
+}
+
 /** Phone week timetable aligned to TKU periods. Mon–Fri, plus weekend days that have classes; fits without sideways scrolling. */
-export function WeekGrid({ courses, today, conflictSlotIds }: { courses: Course[]; today: Weekday; conflictSlotIds: Set<string> }) {
+export function WeekGrid({ courses, today, conflictSlotIds, readOnly }: { courses: Course[]; today: Weekday; conflictSlotIds: Set<string>; /** A friend's timetable: blocks are not links. */ readOnly?: boolean }) {
   const days: Weekday[] = [1, 2, 3, 4, 5];
   ([6, 7] as Weekday[]).forEach((d) => {
     if (occurrencesOn(courses, d).length) days.push(d);
@@ -52,9 +58,9 @@ export function WeekGrid({ courses, today, conflictSlotIds }: { courses: Course[
               const st = COURSE_COLOR_STYLES[course.color];
               const conflict = conflictSlotIds.has(slot.id);
               return (
-                <Link
+                <Block
                   key={slot.id}
-                  to={`/schedule/course/${course.id}`}
+                  to={readOnly ? undefined : `/schedule/course/${course.id}`}
                   className={cn('absolute inset-x-0.5 overflow-hidden rounded-[5px] py-1 pl-1.5 pr-0.5 transition-[filter] active:brightness-95', st.tint, conflict && 'ring-2 ring-inset ring-danger')}
                   style={{ top: top + 1, height: h - 2 }}
                   aria-label={`${WEEKDAY_LABELS[d]} ${slot.startTime}–${slot.endTime} ${course.name} ${slot.room}${conflict ? t('week.conflict') : ''}`}
@@ -62,7 +68,7 @@ export function WeekGrid({ courses, today, conflictSlotIds }: { courses: Course[
                   <span className={cn('absolute inset-y-0 left-0 w-[3px]', st.bar)} aria-hidden />
                   <span className={cn('line-clamp-3 break-all text-[11px] font-semibold leading-[1.25]', st.text)}>{course.name}</span>
                   <span className="tabular mt-0.5 block truncate text-[10px] text-muted">{slot.room}</span>
-                </Link>
+                </Block>
               );
             })}
           </div>

@@ -16,6 +16,8 @@ const ExplorePage = lazy(() => import('@/features/explore/ExplorePage'));
 const EventsPage = lazy(() => import('@/features/events/EventsPage'));
 const ProfilePage = lazy(() => import('@/features/profile/ProfilePage'));
 const AboutPage = lazy(() => import('@/features/profile/AboutPage'));
+const MarketPage = lazy(() => import('@/features/market/MarketPage'));
+const MarketPostPage = lazy(() => import('@/features/market/MarketPostPage'));
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
 const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'));
 
@@ -57,6 +59,8 @@ export const router = createRouter([
           { path: 'assistant', element: <AssistantPage /> },
           { path: 'explore', element: <ExplorePage /> },
           { path: 'events', element: <EventsPage /> },
+          { path: 'market', element: <MarketPage /> },
+          { path: 'market/:id', element: <MarketPostPage /> },
           { path: 'me', element: <ProfilePage /> },
           { path: 'about', element: <AboutPage /> },
           { path: '*', element: <NotFound /> },

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import type { Occurrence } from '@/lib/schedule';
 import { statusAt } from '@/lib/schedule';
@@ -6,10 +7,15 @@ import { formatPeriods, timesToPeriods } from '@/lib/periods';
 import { cn } from '@/lib/cn';
 import { t } from '@/i18n/t';
 
+function Row({ to, children, className }: { to?: string; children: ReactNode; className?: string }) {
+  if (to) return <Link to={to} className={className}>{children}</Link>;
+  return <div className={className}>{children}</div>;
+}
+
 const STATUS_LABEL = { done: 'class.done', ongoing: 'class.ongoing', upcoming: 'class.upcoming' } as const;
 
 /** Vertical timeline for one day. `now` is only used when the list is for today. */
-export function DayTimeline({ items, now }: { items: Occurrence[]; now?: Date }) {
+export function DayTimeline({ items, now, readOnly }: { items: Occurrence[]; now?: Date; /** A friend's timetable: rows are not links. */ readOnly?: boolean }) {
   return (
     <ol className="relative">
       {items.map(({ course, slot }, i) => {
@@ -32,8 +38,8 @@ export function DayTimeline({ items, now }: { items: Occurrence[]; now?: Date })
               />
               {!last && <span className="w-px flex-1 bg-line" aria-hidden />}
             </div>
-            <Link
-              to={`/schedule/course/${course.id}`}
+            <Row
+              to={readOnly ? undefined : `/schedule/course/${course.id}`}
               className={cn('mb-3 flex min-w-0 flex-1 items-stretch overflow-hidden rounded-sm transition-colors hover:brightness-[0.98]', style.tint, st === 'done' && 'opacity-60')}
             >
               <span className={cn('w-1 shrink-0', style.bar)} aria-hidden />
@@ -46,7 +52,7 @@ export function DayTimeline({ items, now }: { items: Occurrence[]; now?: Date })
                   {[slot.room || t('common.roomNotSet'), course.instructor, formatPeriods(timesToPeriods(slot.startTime, slot.endTime))].filter(Boolean).join('　')}
                 </span>
               </span>
-            </Link>
+            </Row>
           </li>
         );
       })}

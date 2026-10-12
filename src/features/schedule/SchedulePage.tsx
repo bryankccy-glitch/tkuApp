@@ -19,11 +19,14 @@ import { CourseForm } from './CourseForm';
 import type { CourseFormValues } from './courseSchema';
 import { CsvImport } from './CsvImport';
 import { SemesterSwitcher } from './SemesterSwitcher';
+import { FriendsPanel } from '@/features/friends/FriendsPanel';
+import { useFriends } from '@/lib/social/hooks';
 import { LoadingMark } from '@/components/brand/Logo';
 import { cn } from '@/lib/cn';
 import { t } from '@/i18n/t';
 
 type View = 'day' | 'week';
+type Tab = 'mine' | 'friends';
 
 export default function SchedulePage() {
   const now = useNow();
@@ -37,6 +40,12 @@ export default function SchedulePage() {
   const [day, setDay] = useState<Weekday>(today);
   const [importOpen, setImportOpen] = useState(false);
   const formOpen = params.get('add') === '1';
+  const tab: Tab = params.get('tab') === 'friends' ? 'friends' : 'mine';
+  const setTab = (next: Tab) => {
+    if (next === 'friends') params.set('tab', 'friends'); else { params.delete('tab'); params.delete('code'); }
+    setParams(params, { replace: true });
+  };
+  const incoming = (useFriends().data ?? []).filter((f) => f.direction === 'incoming').length;
   const closeForm = () => { params.delete('add'); setParams(params, { replace: true }); };
 
   const conflicts = useMemo(() => findConflicts(courses), [courses]);
@@ -65,7 +74,7 @@ export default function SchedulePage() {
       <PageHeader
         title={t('schedule.title')}
         subtitle={<SemesterSwitcher />}
-        actions={
+        actions={tab === 'friends' ? undefined :
           <>
             <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4" />{t('common.importCsv')}</Button>
             <Button variant="secondary" size="sm" onClick={exportCsv} disabled={!courses.length}><Download className="h-4 w-4" />{t('common.exportCsv')}</Button>
@@ -74,6 +83,18 @@ export default function SchedulePage() {
         }
       />
 
+      <Segmented<Tab>
+        label={t('friends.tabsLabel')}
+        className="mb-4 [&>button]:flex-1 [&>button]:justify-center"
+        value={tab}
+        onChange={setTab}
+        options={[{ value: 'mine', label: t('friends.tabMine') }, { value: 'friends', label: t('friends.tabFriends'), count: incoming }]}
+      />
+
+      {tab === 'friends' ? (
+        <FriendsPanel myCourses={courses} semesterCode={semester?.code} initialCode={params.get('code')} />
+      ) : (
+      <>
       {conflicts.length > 0 && (
         <div role="alert" className="mb-4 flex gap-2 rounded-sm border border-danger/30 bg-danger/5 p-3 text-caption">
           <AlertTriangle className="h-4 w-4 shrink-0 text-danger" />
@@ -141,6 +162,8 @@ export default function SchedulePage() {
             </div>
           )}
         </>
+      )}
+      </>
       )}
 
       <CourseForm open={formOpen} onClose={closeForm} courses={courses} onSubmit={onCreate} saving={save.isPending} />

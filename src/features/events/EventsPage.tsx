@@ -13,6 +13,7 @@ import { downloadIcs } from '@/lib/ics';
 import { useBookmarks } from './useBookmarks';
 import { LoadingMark } from '@/components/brand/Logo';
 import { cn } from '@/lib/cn';
+import { CampusTabs } from '@/features/explore/CampusTabs';
 import { t } from '@/i18n/t';
 
 type Range = 'all' | 'week' | 'month' | 'saved';
@@ -54,6 +55,7 @@ export default function EventsPage() {
   return (
     <Page wide>
       <PageHeader title={t('events.title')} subtitle={t('events.subtitle')} />
+      <CampusTabs />
 
       {data === null ? (
         <EmptyState title={t('events.notConnectedTitle')} body={t('events.notConnectedBody')} />

@@ -1,4 +1,5 @@
 import type { Course, Profile, Semester, Task } from '../types';
+import type { SocialApi } from '../social/types';
 
 export type CourseInput = Omit<Course, 'id' | 'createdAt' | 'updatedAt' | 'slots'> & {
   id?: string;
@@ -20,6 +21,8 @@ export interface ExportBundle {
 /** Storage-agnostic data access. Implemented by LocalRepository and SupabaseRepository. */
 export interface DataRepository {
   readonly mode: 'local' | 'cloud';
+  /** Friends + 二手市集. Only available with an account (null in 本機/訪客模式). */
+  readonly social: SocialApi | null;
   getProfile(): Promise<Profile | null>;
   updateProfile(p: Partial<Omit<Profile, 'id'>>): Promise<Profile>;
 

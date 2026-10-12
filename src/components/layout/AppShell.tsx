@@ -1,46 +1,44 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Suspense, useEffect, useRef } from 'react';
 import { cn } from '@/lib/cn';
 import { LoadingMark } from '@/components/brand/Logo';
-import { PRIMARY_NAV } from './nav';
+import { PRIMARY_NAV, isNavActive } from './nav';
 import { useTranslation } from 'react-i18next';
 import { useReminderScheduler } from '@/hooks/useReminderScheduler';
 
 function BottomNav() {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
   return (
     <nav aria-label={t('nav.main')} className="safe-bottom fixed bottom-0 left-1/2 z-40 w-full max-w-app -translate-x-1/2 border-t border-line bg-surface/95 backdrop-blur">
       <ul className="grid h-16 grid-cols-5">
         {PRIMARY_NAV.map((item) => {
           const Icon = item.icon;
+          const active = isNavActive(item, pathname);
           return (
             <li key={item.to} className="flex">
-              <NavLink
+              <Link
                 to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  cn('flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors', isActive ? 'text-primary' : 'text-muted')
-                }
+                aria-current={active ? 'page' : undefined}
+                className={cn('flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors', active ? 'text-primary' : 'text-muted')}
               >
-                {({ isActive }) =>
-                  item.primary ? (
-                    <>
-                      <span className={cn('-mt-5 flex h-12 w-12 items-center justify-center rounded-full border-4 border-canvas shadow-lift transition-colors', isActive ? 'bg-primary text-white ring-4 ring-primary/25 dark:text-[#1A0506]' : 'bg-primary/85 text-white dark:text-[#1A0506]')}>
-                        <Icon className="h-5 w-5" strokeWidth={2.2} />
-                      </span>
-                      <span>{t(item.label)}</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="relative">
-                        <Icon className="h-[22px] w-[22px]" strokeWidth={isActive ? 2.4 : 1.9} />
-                      </span>
-                      <span>{t(item.label)}</span>
-                      <span className={cn('h-1 w-1 rounded-full', isActive ? 'bg-heritage' : 'bg-transparent')} aria-hidden />
-                    </>
-                  )
-                }
-              </NavLink>
+                {item.primary ? (
+                  <>
+                    <span className={cn('-mt-5 flex h-12 w-12 items-center justify-center rounded-full border-4 border-canvas shadow-lift transition-colors', active ? 'bg-primary text-white ring-4 ring-primary/25 dark:text-[#1A0506]' : 'bg-primary/85 text-white dark:text-[#1A0506]')}>
+                      <Icon className="h-5 w-5" strokeWidth={2.2} />
+                    </span>
+                    <span>{t(item.label)}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="relative">
+                      <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.4 : 1.9} />
+                    </span>
+                    <span>{t(item.label)}</span>
+                    <span className={cn('h-1 w-1 rounded-full', active ? 'bg-heritage' : 'bg-transparent')} aria-hidden />
+                  </>
+                )}
+              </Link>
             </li>
           );
         })}

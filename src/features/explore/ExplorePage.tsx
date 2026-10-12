@@ -1,10 +1,11 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { ExternalLink, Navigation, Search, X, Megaphone, ShieldAlert } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { ExternalLink, Navigation, Search, X, ShieldAlert } from 'lucide-react';
 import { Page } from '@/components/layout/AppShell';
 import { EmptyState, PageHeader } from '@/components/ui/misc';
 import { CAMPUS_CENTER, CAMPUS_PLACES, PLACE_CATEGORY_LABELS, mapsSearchUrl, type CampusPlace, type PlaceCategory } from '@/data/places';
 import { cn } from '@/lib/cn';
+import { CampusTabs } from './CampusTabs';
 import { t } from '@/i18n/t';
 
 const CampusMap = lazy(() => import('./CampusMap'));
@@ -38,8 +39,8 @@ export default function ExplorePage() {
       <PageHeader
         title={t('explore.title')}
         subtitle={t('explore.subtitle')}
-        actions={<Link to="/events" className="inline-flex h-8 items-center gap-1.5 rounded-xs border border-line px-3 text-caption font-semibold text-ink hover:bg-sunken"><Megaphone className="h-4 w-4" />{t('explore.events')}</Link>}
       />
+      <CampusTabs />
 
       <div className="grid gap-5">
         <div className="order-2">

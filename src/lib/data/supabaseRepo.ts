@@ -3,6 +3,7 @@ import i18n from '@/i18n';
 import type { Course, CourseColor, Profile, Semester, Task, TaskKind, TaskPriority, Weekday } from '../types';
 import type { CourseInput, DataRepository, ExportBundle, SemesterInput, TaskInput } from './repository';
 import { inferSemester } from './semesters';
+import { SupabaseSocial } from '../social/supabaseSocial';
 
 interface CourseRow {
   id: string; semester_id: string; name: string; code: string | null; instructor: string | null;
@@ -52,7 +53,10 @@ function ok(res: { error: { message: string } | null }): void {
 /** Cloud mode. Every query runs with the user's JWT, so RLS enforces ownership server-side. */
 export class SupabaseRepository implements DataRepository {
   readonly mode = 'cloud' as const;
-  constructor(private db: SupabaseClient, private userId: string) {}
+  readonly social: SupabaseSocial;
+  constructor(private db: SupabaseClient, private userId: string) {
+    this.social = new SupabaseSocial(db, userId);
+  }
 
   async getProfile(): Promise<Profile | null> {
     const row = checkMaybe<ProfileRow>(await this.db.from('profiles').select('id, display_name, department, grade').eq('id', this.userId).maybeSingle());
