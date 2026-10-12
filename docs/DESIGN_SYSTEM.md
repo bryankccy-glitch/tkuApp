@@ -12,8 +12,8 @@
 淡江紅取自 TKU Campus OS 標誌（取樣約 #AE1D25），統一為 **#B3262D**；非學校官方標準色。
 | Token | Light | Dark | 用途 |
 |---|---|---|---|
-| `primary` | #B3262D 淡江紅 | #E8545A | 主要按鈕、導覽選取、品牌、Logo、Splash |
-| `heritage` | #B3262D | #E8545A | 強調：考試、今天、上課中（同主色） |
+| `primary` | #B3262D 淡江紅 | #F0686E | 主要按鈕、導覽選取、品牌、Logo、Splash |
+| `heritage` | #B3262D | #F0686E | 強調：考試、今天、上課中（同主色） |
 | `link` | #961C24 深淡江紅 | #F48084 | 文字連結、focus ring |
 | `ink` | #171717 Black | #F0EFED | 主要文字 |
 | `canvas` | #FAF9F7 Off White | #111111 | 頁面背景 |

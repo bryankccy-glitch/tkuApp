@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useAuth, useRepo } from '@/app/AuthProvider';
 import { useTheme, type ThemePref } from '@/app/ThemeProvider';
 import { useTranslation } from 'react-i18next';
+import { ReminderSettings } from './ReminderSettings';
 import { useProfile, useUpdateProfile } from '@/lib/hooks';
 import { downloadText } from '@/lib/ics';
 import { useQueryClient } from '@tanstack/react-query';
@@ -58,7 +59,7 @@ export default function ProfilePage() {
     setDeleting(true);
     try {
       await repo.deleteAllData();
-      try { localStorage.removeItem('tku.chat.v1'); localStorage.removeItem('tku.bookmarks'); localStorage.removeItem('tku.semester'); } catch { /* ignore */ }
+      try { ['tku.chat.v1', 'tku.bookmarks', 'tku.semester', 'tku.reminders.v1', 'tku.reminders.fired.v1', 'tku.weather.v1'].forEach((k) => localStorage.removeItem(k)); } catch { /* ignore */ }
       qc.clear();
       toast({ tone: 'success', message: mode === 'cloud' ? '帳號與所有資料已刪除' : '此裝置上的資料已全部刪除' });
       setConfirmDelete(false);
@@ -129,6 +130,8 @@ export default function ProfilePage() {
         </div>
         <p className="mt-1.5 text-[11px] text-muted">首頁問候、天氣與快捷操作已支援英文，其他頁面陸續翻譯中。</p>
       </section>
+
+      <ReminderSettings />
 
       <section aria-labelledby="p-data" className="mt-5 rounded-lg border border-line bg-surface">
         <h2 id="p-data" className="px-5 pt-5 text-h3 text-ink">資料與隱私</h2>

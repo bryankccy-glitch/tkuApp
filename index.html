@@ -26,13 +26,7 @@
       @keyframes splash-in { from { transform: scale(.92); opacity: 0; } to { transform: none; opacity: 1; } }
       @media (prefers-reduced-motion: reduce) { .splash-logo { animation: none; } }
     </style>
-    <script>
-      try {
-        var t = localStorage.getItem('tku.theme');
-        var dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
-        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-      } catch (e) {}
-    </script>
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <!-- Splash: shown until React mounts and replaces #root's content. -->

@@ -33,16 +33,16 @@ export default function AboutPage() {
         <h2 className="text-h3 text-ink">資料來源與查核狀態</h2>
         <p className="mt-1 text-caption text-muted">最後查核：2026 年 10 月 12 日</p>
         <ul className="mt-3 divide-y divide-line rounded-sm border border-line bg-surface">
-          <li className="px-4 py-3 text-body"><span className="font-semibold text-ink">上課節次時間</span>：<a className="text-link hover:underline" href={PERIOD_SOURCE.url} target="_blank" rel="noreferrer noopener">{PERIOD_SOURCE.name}</a></li>
+          <li className="px-4 py-3 text-body"><span className="font-semibold text-ink">上課節次時間</span>：<a className="text-link underline underline-offset-2" href={PERIOD_SOURCE.url} target="_blank" rel="noreferrer noopener">{PERIOD_SOURCE.name}</a></li>
           <li className="px-4 py-3 text-body"><span className="font-semibold text-ink">建築代碼</span>：學生社群整理資料，尚待與校方公開資料核對</li>
-          <li className="px-4 py-3 text-body"><span className="font-semibold text-ink">校園位置</span>：<a className="text-link hover:underline" href={CAMPUS_CENTER.source.url} target="_blank" rel="noreferrer noopener">{CAMPUS_CENTER.source.name}</a>；個別建築座標尚未查核</li>
+          <li className="px-4 py-3 text-body"><span className="font-semibold text-ink">校園位置</span>：<a className="text-link underline underline-offset-2" href={CAMPUS_CENTER.source.url} target="_blank" rel="noreferrer noopener">{CAMPUS_CENTER.source.name}</a>；個別建築座標尚未查核</li>
           <li className="px-4 py-3 text-body"><span className="font-semibold text-ink">地圖圖資</span>：© OpenStreetMap contributors</li>
         </ul>
         <h3 className="mt-5 text-body font-semibold text-ink">官方文件與服務連結</h3>
         <ul className="mt-2 grid gap-1.5">
           {OFFICIAL_SOURCES.map((s) => (
             <li key={s.id}>
-              <a href={s.url} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 text-body text-link hover:underline">{s.title}<ExternalLink className="h-3.5 w-3.5" /></a>
+              <a href={s.url} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 text-body text-link underline underline-offset-2">{s.title}<ExternalLink className="h-3.5 w-3.5" /></a>
               <span className="ml-2 text-caption text-muted">{s.publisher}{s.updated ? `｜${s.updated}` : ''}</span>
             </li>
           ))}

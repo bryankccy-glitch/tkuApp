@@ -3,6 +3,7 @@ import { Suspense, useEffect, useRef } from 'react';
 import { cn } from '@/lib/cn';
 import { LoadingMark } from '@/components/brand/Logo';
 import { PRIMARY_NAV } from './nav';
+import { useReminderScheduler } from '@/hooks/useReminderScheduler';
 
 function BottomNav() {
   return (
@@ -47,6 +48,7 @@ function BottomNav() {
 }
 
 export function AppShell() {
+  useReminderScheduler();
   const { pathname } = useLocation();
   const main = useRef<HTMLElement>(null);
   useEffect(() => {
