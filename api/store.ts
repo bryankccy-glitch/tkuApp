@@ -88,6 +88,10 @@ function normalizeQuery(value: unknown, max = 100): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
 }
 
+function safeFilterText(value: string): string {
+  return value.replace(/[^\p{L}\p{M}\p{N}\s-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 100);
+}
+
 function personalSource(title: string): SourceRef {
   return { title, publisher: '你的 TKU Campus OS 資料', kind: 'personal' };
 }
@@ -197,7 +201,7 @@ export class CampusStore {
 
   private async getCourseDetails(queryText: string, semesterId?: string): Promise<ToolResult> {
     if (!queryText) return { data: [], sources: [personalSource('我的課程資料')] };
-    const safe = queryText.replace(/[,%()]/g, ' ');
+    const safe = safeFilterText(queryText);
     let query = this.userClient
       .from('user_courses')
       .select('id,name,code,instructor,semester_id,notes,schedule_entries(weekday,start_time,end_time,room)')
@@ -247,7 +251,7 @@ export class CampusStore {
       .order('starts_at')
       .limit(10);
     if (queryText) {
-      const safe = queryText.replace(/[,%()]/g, ' ');
+      const safe = safeFilterText(queryText);
       query = query.or(`title.ilike.%${safe}%,summary.ilike.%${safe}%,organizer.ilike.%${safe}%`);
     }
     const { data, error } = await query;

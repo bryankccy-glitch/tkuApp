@@ -1,13 +1,13 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-12 20:05（Asia/Taipei, UTC+8）
+2026-10-12 20:23（Asia/Taipei, UTC+8）
 
 ## Updated By
-Claude Code
+Codex
 
 ## Current Status
-前端 MVP 可用。**Supabase 專案 `tku-campus-os`（ap-northeast-1）已建立，資料庫結構已套用**，登入頁已重新設計並支援訪客模式。真實帳號註冊/登入流程**尚未端到端驗證**（見 Known Issues：Email 驗證信）。AI 後端 `/api/chat` 由 Codex 在 `feat/ai-backend` 進行中。
+前端 MVP 可用。**Supabase 專案 `tku-campus-os`（ap-northeast-1）已建立，資料庫結構已套用**，登入頁已重新設計並支援訪客模式。真實帳號註冊/登入流程**尚未端到端驗證**（見 Known Issues：Email 驗證信）。AI 後端 `/api/chat`、RAG 匯入腳本、AI 後端權限 migration 與 RLS 隔離測試已在 `feat/ai-backend` 完成；RLS SQL 尚未在 Supabase Postgres 執行。
 
 ## Completed
 - 專案骨架：Vite 6 + React 18 + TS strict + Tailwind 3 + React Router 6 + TanStack Query 5 + RHF + Zod + PWA
@@ -44,6 +44,7 @@ Claude Code
 - 新增 React Testing Library 元件測試與 Playwright E2E
 
 ## Files Changed
+- Codex AI backend：新增 `api/chat.ts`、`api/chat-schema.ts`、`api/openai.ts`、`api/store.ts`、`api/sse.ts`、`api/chat.test.ts`、`scripts/ingest.ts`、`supabase/tests/rls_user_isolation.sql`、migration `20261012080231_ai_backend_security.sql`；更新 `api/README.md`、`package.json` 與 lockfile，並加入 API-only i18n alias 型別宣告。
 - 本輪新增：`src/i18n/{t.ts,locales/zh-TW.ts,locales/en.ts,__tests__/locales.test.ts}`、`src/app/LanguageRoot.tsx`、`src/services/reminders.ts`、`src/hooks/useReminderScheduler.ts`、`src/features/profile/ReminderSettings.tsx`、`public/theme-init.js`、`e2e/{a11y,csp,english,reminders}.spec.ts`、`src/services/__tests__/reminders.test.ts`；刪除 `src/i18n/resources.ts`
 - 本輪修改：幾乎所有 `src/features/**` 與 `src/components/**`（文字改 `t()`）、`src/lib/{labels,time,periods,schedule,tasks,csv,hooks}.ts`、`src/data/{places,sources}.ts`（英文關鍵字與說明）、`src/features/ai/localEngine.ts`（重寫，中英文）、`vercel.json`、`index.html`、`src/styles/index.css`
 - 新增：`src/components/campus-scene/{PixelCampusScene.tsx,PixelSky.ts,PixelClouds.ts,PixelRiver.ts,PixelBridge.ts,PixelTerrain.ts,PixelRain.ts,PixelLighting.ts,SceneController.ts,sceneTypes.ts,palettes.ts,pixel.ts,layout.ts}`、`src/services/weatherService.ts`、`src/hooks/{useCampusWeather,useTimeOfDay,useReducedMotion}.ts`、`src/lib/solar.ts`、`src/i18n/{index,resources}.ts`、相關測試、`e2e/campus-scene.spec.ts`
@@ -58,7 +59,10 @@ Claude Code
 
 ## Database & API Changes
 - 線上資料庫已套用 init migration（含 advisor 修正）。⚠ `is_admin()` 已撤銷 authenticated 的 EXECUTE：若之後要在 RLS policy 中使用它，需改放 private schema 或重新授權（Codex 注意）。
-- 前端直接呼叫 Open-Meteo（公開 API、免金鑰，不需伺服器端）。`/api/chat` 合約見 `api/README.md`（Codex 實作中）。
+- 前端直接呼叫 Open-Meteo（公開 API、免金鑰，不需伺服器端）。`POST /api/chat` 已實作 JWT 驗證、速率限制、只讀工具、RAG、SSE 與使用者 JWT 下的對話紀錄。
+- 新增 `20261012080231_ai_backend_security.sql`：明確設定 Data API grants、限制 service-role RAG RPC，並提供原子知識文件/chunk 匯入函式；未套用至線上資料庫。
+- `npm run ingest` 從 `src/data/sources.ts` 讀取公開 PDF/HTML，內容雜湊未變即跳過，文件/chunks 由 service role 原子寫入；Word、下載失敗或擷取內容不足會記錄並略過。
+- `/api/chat` 接受可選 `lang: "zh-TW" | "en"`，未提供時使用繁體中文；前端目前尚未傳入此欄位。
 
 ## Technical Decisions
 - i18n：切換語言時重新掛載整個 UI（LanguageRoot），標籤對照表在讀取時翻譯；新增文字必須同時加到 zh-TW 與 en 字典
@@ -78,6 +82,8 @@ Claude Code
 - `npm run typecheck` ✅
 - `npm run test` ✅ 14 files, 64 tests（本輪新增登入頁 5 項：輸入驗證、錯誤訊息、註冊帶暱稱、顯示密碼、訪客模式）；先前 59 tests（新增提醒、翻譯 key 一致性）；在 UTC、America/Los_Angeles、Asia/Taipei、Europe/London 時區皆通過（新增天氣解析/錯誤分類/快取、場景與日出日落、太陽計算）
 - `npm run build` ✅
+- Codex worktree（Node 24.16.0）：`npm run lint` ✅、`npm run typecheck` ✅、`npm run test` ✅（15 files, 73 tests，含 9 項 API/SSE/錯誤分支與 prompt-injection mock）、`npm run build` ✅。
+- 已新增 `supabase/tests/rls_user_isolation.sql` 覆蓋 A 無法讀 B 的 user_courses、schedule_entries、tasks、ai_messages；尚未執行，因 worktree 無 `supabase/config.toml`／本機資料庫。線上 migration 與真實 `/api/chat` 尚待開發者套用新 migration、設定伺服器環境變數後驗證。
 - `npm run test:e2e` ✅ 118 passed（本輪新增：axe 無障礙 36、CSP 10、英文介面 20、提醒 2；先前：新增：即時天氣顯示、API 失敗備援不顯示虛構溫度、Canvas 真實像素與限制色盤且會動、reduced motion 靜態、英文切換、快捷操作）；原 38（desktop 1360×900、mobile Pixel 7）：主要流程、衝突、待辦、CSV 匯入、探索、AI 來源、深色模式、8 頁無水平捲動、App 版面（底部導覽＋480px 框）、週課表不超出手機寬度、PWA manifest＋service worker、skip link
 - 登入頁（雲端建置）axe WCAG 2.2 AA：登入/註冊、淺/深色 0 violations
 - 未執行：RLS 測試；真實註冊/登入/重設密碼流程（雲端工作區無法連 supabase.co；Email 驗證信限制見 Known Issues）
@@ -95,15 +101,16 @@ Claude Code
 - npm audit 有建置工具鏈警告，尚未處理
 
 ## Next Steps
-- **Codex（feat/ai-backend）**：`api/chat.ts`、`scripts/ingest.ts`、RLS 測試（只改 `api/`、`scripts/`、`supabase/tests/`、新增 migration）。⚠ `main` 已更新，開始前請 `git rebase main` 或在合併時處理
+- **Codex（feat/ai-backend）**：AI 校園助理後端、知識庫匯入、權限 migration 與 RLS 測試已完成；功能分支已 rebase 最新 `main`。RLS 測試及真實 Supabase/Vercel 流程仍待環境設定後執行。
+- **Claude Code（main）**：前端呼叫 `/api/chat` 時可在 body 傳 `lang: i18n.language`（`zh-TW` 或 `en`）；後端已接受此可選欄位。
 - **Claude Code（main）**：活動管理後台 UI（需 Codex 的 admin API）、Capacitor 打包 iOS/Android（待開發者決定）
-- **Codex**：`/api/chat` 回答語言請依 request 的介面語言（建議前端在 body 加 `lang`，需要時通知 Claude Code）；伺服器端 Web Push
 - **開發者**：決定 Email 驗證策略（關閉或自訂 SMTP）；部署後在 Supabase Auth 設定 Site URL 與 Redirect URLs；建立 GitHub repo；Vercel 環境變數填 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`（publishable key）
+- **開發者**：在 Supabase 套用新增的 AI backend migration；在 Vercel 設定 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`OPENAI_API_KEY`（以及可選模型/限流變數），再驗證線上 `/api/chat` 與執行 RLS SQL。
 
 ## Git Status
-- Branch：`main`
+- Branch：`feat/ai-backend`（已 rebase 至最新 `main`）
 - Commits：… → pixel-art homepage → timezone fix → `feat: reminders, security headers and accessibility audit` → `feat: English translation for the whole app` → `chore(db): apply Supabase best practices to init migration` → `feat(auth): redesigned login with guest mode`
-- 未提交修改：無
+- 最新 Codex commit：AI 校園助理後端（rebase 後 hash 於 `git log -1` 確認）
 - Worktree：`../tkuApp-codex`（`feat/ai-backend`，Codex）
 - 尚未設定 remote
 

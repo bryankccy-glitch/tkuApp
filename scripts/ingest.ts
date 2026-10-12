@@ -52,6 +52,20 @@ function splitChunks(text: string): string[] {
   return chunks;
 }
 
+function sourceUpdatedDate(updated: string | undefined): string | null {
+  if (!updated) return null;
+  const isoDate = updated.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0];
+  if (isoDate) return isoDate;
+  const rocDate = updated.match(/民國\s*(\d{2,3})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
+  if (!rocDate) return null;
+  const year = Number(rocDate[1]) + 1911;
+  const month = Number(rocDate[2]);
+  const day = Number(rocDate[3]);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) return null;
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
 async function downloadSource(source: Source): Promise<string> {
   const response = await fetch(source.url, { redirect: 'follow', signal: AbortSignal.timeout(30_000) });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -92,48 +106,32 @@ async function createEmbedding(apiKey: string, model: string, input: string): Pr
   return embedding;
 }
 
-async function upsertSource(source: Source, text: string, hash: string, client: ReturnType<typeof createClient>, apiKey: string, embeddingModel: string): Promise<'unchanged' | 'updated'> {
+async function upsertSource(source: Source, text: string, hash: string, client: ReturnType<typeof createClient>, apiKey: string, embeddingModel: string): Promise<void> {
   const chunks = splitChunks(text);
-  const vectors: Array<{ document_id: string; chunk_index: number; content: string; token_count: number; embedding: number[] }> = [];
+  const vectors: Array<{ chunk_index: number; content: string; embedding: number[] }> = [];
   for (let offset = 0; offset < chunks.length; offset += BATCH_SIZE) {
     const batch = chunks.slice(offset, offset + BATCH_SIZE);
     const embedded = await Promise.all(batch.map((content) => createEmbedding(apiKey, embeddingModel, content)));
     batch.forEach((content, index) => {
       const embedding = embedded[index];
       if (embedding) vectors.push({
-        document_id: '',
         chunk_index: offset + index,
         content,
-        token_count: content.length,
         embedding,
       });
     });
   }
   if (vectors.length === 0) throw new Error('文件未擷取到足夠文字，保留既有 chunks。');
 
-  const { data, error } = await client
-    .from('knowledge_documents')
-    .upsert({
-      title: source.title,
-      publisher: source.publisher,
-      source_url: source.url,
-      source_updated_at: source.updated?.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0] ?? null,
-      fetched_at: new Date().toISOString(),
-      content_hash: hash,
-      status: 'active',
-    }, { onConflict: 'source_url' })
-    .select('id,content_hash')
-    .single();
-  if (error) throw new Error(`文件 upsert 失敗：${error.message}`);
-  const document = data as DocumentRow;
-  vectors.forEach((vector) => { vector.document_id = document.id; });
-  const { error: deleteError } = await client.from('knowledge_chunks').delete().eq('document_id', document.id);
-  if (deleteError) throw new Error(`舊 chunks 清理失敗：${deleteError.message}`);
-  for (let offset = 0; offset < vectors.length; offset += BATCH_SIZE) {
-    const { error: insertError } = await client.from('knowledge_chunks').insert(vectors.slice(offset, offset + BATCH_SIZE));
-    if (insertError) throw new Error(`chunks 寫入失敗：${insertError.message}`);
-  }
-  return document.content_hash === hash ? 'unchanged' : 'updated';
+  const { error } = await client.rpc('ingest_knowledge_document', {
+    p_title: source.title,
+    p_publisher: source.publisher,
+    p_source_url: source.url,
+    p_source_updated_at: sourceUpdatedDate(source.updated),
+    p_content_hash: hash,
+    p_chunks: vectors,
+  });
+  if (error) throw new Error(`文件與 chunks 原子寫入失敗：${error.message}`);
 }
 
 async function ingestOne(source: Source, client: ReturnType<typeof createClient>, apiKey: string, embeddingModel: string): Promise<void> {

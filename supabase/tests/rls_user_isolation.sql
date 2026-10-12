@@ -17,6 +17,12 @@ insert into rls_fixture_ids values
   ('conversation', gen_random_uuid()),
   ('message', gen_random_uuid());
 
+select set_config('test.user_a', (select id::text from rls_fixture_ids where key='user_a'), true);
+select set_config('test.user_course', (select id::text from rls_fixture_ids where key='user_course'), true);
+select set_config('test.schedule', (select id::text from rls_fixture_ids where key='schedule'), true);
+select set_config('test.task', (select id::text from rls_fixture_ids where key='task'), true);
+select set_config('test.message', (select id::text from rls_fixture_ids where key='message'), true);
+
 insert into auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 select id, 'authenticated', 'authenticated', id::text || '@rls-test.invalid', '', '{}'::jsonb, '{}'::jsonb, now(), now()
 from rls_fixture_ids where key in ('user_a', 'user_b');
@@ -35,12 +41,12 @@ insert into public.ai_messages (id, conversation_id, user_id, role, content)
 select (select id from rls_fixture_ids where key='message'), (select id from rls_fixture_ids where key='conversation'), (select id from rls_fixture_ids where key='user_b'), 'assistant', 'RLS private message';
 
 set local role authenticated;
-select set_config('request.jwt.claim.sub', (select id::text from rls_fixture_ids where key='user_a'), true);
+select set_config('request.jwt.claim.sub', current_setting('test.user_a'), true);
 
-select is((select count(*)::integer from public.user_courses where id=(select id from rls_fixture_ids where key='user_course')), 0, 'user A cannot read user B user_courses');
-select is((select count(*)::integer from public.schedule_entries where id=(select id from rls_fixture_ids where key='schedule')), 0, 'user A cannot read user B schedule_entries');
-select is((select count(*)::integer from public.tasks where id=(select id from rls_fixture_ids where key='task')), 0, 'user A cannot read user B tasks');
-select is((select count(*)::integer from public.ai_messages where id=(select id from rls_fixture_ids where key='message')), 0, 'user A cannot read user B ai_messages');
+select is((select count(*)::integer from public.user_courses where id=current_setting('test.user_course')::uuid), 0, 'user A cannot read user B user_courses');
+select is((select count(*)::integer from public.schedule_entries where id=current_setting('test.schedule')::uuid), 0, 'user A cannot read user B schedule_entries');
+select is((select count(*)::integer from public.tasks where id=current_setting('test.task')::uuid), 0, 'user A cannot read user B tasks');
+select is((select count(*)::integer from public.ai_messages where id=current_setting('test.message')::uuid), 0, 'user A cannot read user B ai_messages');
 
 select * from finish();
 rollback;
