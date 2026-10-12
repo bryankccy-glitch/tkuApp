@@ -6,6 +6,7 @@ import { useCampusEvents } from '@/lib/events';
 import { uid } from '@/lib/id';
 import { answerLocally } from './localEngine';
 import { t } from '@/i18n/t';
+import i18n from '@/i18n';
 import type { ChatMessage, SourceRef } from './types';
 
 const KEY = 'tku.chat.v1';
@@ -65,8 +66,11 @@ export function useChat() {
         message: question,
         conversationId: conversationId.current,
         semesterId: semester?.id,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        history: history.slice(-8).map((m) => ({ role: m.role, content: m.content.slice(0, 2000) })),
+        // Answer language follows the UI; campus times are always Taipei time.
+        lang: i18n.language === 'en' ? 'en' : 'zh-TW',
+        timezone: 'Asia/Taipei',
+        // The API rejects empty turns (e.g. a stopped reply), so drop them.
+        history: history.filter((m) => !m.error && m.content.trim()).slice(-8).map((m) => ({ role: m.role, content: m.content.slice(0, 2000) })),
       }),
     });
     // 503 = server AI not configured; 404 / non-SSE = API not deployed yet (e.g. vite dev). Fall back to local engine.

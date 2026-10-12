@@ -1,13 +1,13 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-12 20:25（Asia/Taipei, UTC+8）
+2026-10-12 21:35（Asia/Taipei, UTC+8）
 
 ## Updated By
-Codex
+Claude Code（合併 Codex `feat/ai-backend`）
 
 ## Current Status
-前端 MVP 可用。**Supabase 專案 `tku-campus-os`（ap-northeast-1）已建立，資料庫結構已套用**，登入頁已重新設計並支援訪客模式。真實帳號註冊/登入流程**尚未端到端驗證**（見 Known Issues：Email 驗證信）。AI 後端 `/api/chat`、RAG 匯入腳本、AI 後端權限 migration 與 RLS 隔離測試已在 `feat/ai-backend` 完成；RLS SQL 尚未在 Supabase Postgres 執行。
+前端 MVP 可用，Supabase 專案 `tku-campus-os` 已上線（註冊/登入/RLS 已以真實帳號驗證）。新增**好友課表**與**二手市集**（資料表已套用並以真實帳號驗證）。Codex 的 AI 後端（`feat/ai-backend`）已合併進 `main`；其 migration `20261012080231_ai_backend_security.sql` **尚未套用到線上資料庫**，`/api/chat` 尚未部署（需 Vercel 伺服器端環境變數）。
 
 ## Completed
 - 專案骨架：Vite 6 + React 18 + TS strict + Tailwind 3 + React Router 6 + TanStack Query 5 + RHF + Zod + PWA
@@ -20,6 +20,12 @@ Codex
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **好友課表**（課表頁上方「我的課表｜好友」）：每人 8 碼好友代碼（無易混字元）＋邀請連結 `/schedule?tab=friends&code=XXXX`；送出/接受/拒絕/取消/移除好友；雙方接受後可看對方**相同學期代碼**的週課表（唯讀，不含備註）；「共同空堂」列出週一到週五第 1–12 節兩人都沒課的時段；可重新產生代碼。不提供以 Email/學號搜尋他人
+- **二手市集**（`/market`、`/market/:id`）：出售/徵求、5 種分類、參考價格（空白=可議、0=免費；徵求顯示「預算」）、課號、物品狀況；搜尋與篩選（全部/出售/徵求/我的、分類、顯示已完成）；留言區自行約面交；刊登者可改狀態（刊登中/已保留/已完成）、編輯、刪除、刪除自己貼文下的留言；檢舉（每人每篇一次）；發文前需勾選交易提醒（不經手金錢、校內公開場所面交、禁止盜版/影印課本、禁止違禁品與代寫、勿公開個資）
+- **底部導覽仍 5 格**：「探索」改名「校園」，頁首切換「地點｜活動｜市集」（`src/features/explore/CampusTabs.tsx`）；在 /events、/market 時「校園」保持選取
+- 好友與市集需登入；訪客/本機模式顯示登入提示（`SignInRequired`）
+- `DataRepository` 新增 `social: SocialApi | null`（`src/lib/social/`）；`LocalRepository` 為 null，`SupabaseRepository` 提供 `SupabaseSocial`
+- 合併 Codex `feat/ai-backend`；前端呼叫 `/api/chat` 時帶 `lang`（介面語言）、`timezone: 'Asia/Taipei'`，並濾掉空白歷史訊息（後端 schema 要求非空）
 - **Supabase 上線**：專案 `tku-campus-os`（ref `gqivwpmflnxlnotirqhe`，Tokyo）。`supabase/migrations/20261012000000_init.sql` 已在 SQL Editor 套用（17 表皆開 RLS）；advisor 修正：撤銷 `is_admin()` 的 anon/authenticated 執行權、補 8 個外鍵索引（已同步進 init.sql 並套用到線上）。Security advisor 剩：3 張「RLS 無 policy」（ai_usage、admin_audit_logs、knowledge_chunks，刻意只給 service role）與 `delete_my_account` 可被登入者呼叫（刻意）
 - **「我的」帳號卡**：頁面最上方顯示暱稱與 Email，獨立的「登出」按鈕（與刪除帳號分開）；訪客顯示「訪客模式」與「登入或註冊」
 - **預覽版從登入頁開始**：`build:preview` 會讀 `.env.local` 成為雲端模式，且每次開啟清除訪客旗標；選「先不登入」可看範例資料
@@ -60,11 +66,14 @@ Codex
 - 測試：`src/test/*`、`src/features/**/__tests__/*`、`e2e/*`、`playwright.config.ts`、`tsconfig.node.json`、`package.json`（`test:e2e`）
 
 ## Database & API Changes
-- 線上資料庫已套用 init migration（含 advisor 修正）。⚠ `is_admin()` 已撤銷 authenticated 的 EXECUTE：若之後要在 RLS policy 中使用它，需改放 private schema 或重新授權（Codex 注意）。
+- 線上資料庫已套用：init（含 advisor 修正）、`20261012130000_social.sql`（使用者在 SQL Editor 執行）。
+- Social migration：`profiles.friend_code`（unique）、`friendships`（只能讀自己的；寫入全走 RPC）、RPC `send_friend_request` / `respond_friend_request` / `remove_friendship` / `list_friends` / `get_friend_schedule(friend, semester_code)` / `regenerate_friend_code`（SECURITY DEFINER、明確檢查 auth.uid()、撤銷 anon）；`market_posts` / `market_comments` / `market_reports`（RLS；作者名由 trigger 從 profile 帶入、不可偽造或修改；每日 10 篇、每小時 60 則留言上限；已完成貼文不可留言）。Advisor：7 個「登入者可執行 SECURITY DEFINER」皆為刻意設計
+- ⚠ 新 migration 檔名時間戳：Codex `20261012080231` 早於 social `20261012130000`，但線上套用順序為 init → advisor_fixes → social → (待套用) ai_backend_security；兩者互不相依。
+⚠ `is_admin()` 已撤銷 authenticated 的 EXECUTE：若之後要在 RLS policy 中使用它，需改放 private schema 或重新授權（Codex 注意）。
 - 前端直接呼叫 Open-Meteo（公開 API、免金鑰，不需伺服器端）。`POST /api/chat` 已實作 JWT 驗證、速率限制、只讀工具、RAG、SSE 與使用者 JWT 下的對話紀錄。
 - 新增 `20261012080231_ai_backend_security.sql`：明確設定 Data API grants、限制 service-role RAG RPC，並提供原子知識文件/chunk 匯入函式；未套用至線上資料庫。
 - `npm run ingest` 從 `src/data/sources.ts` 讀取公開 PDF/HTML，內容雜湊未變即跳過，文件/chunks 由 service role 原子寫入；Word、下載失敗或擷取內容不足會記錄並略過。
-- `/api/chat` 接受可選 `lang: "zh-TW" | "en"`，未提供時使用繁體中文；前端目前尚未傳入此欄位。
+- `/api/chat` 接受可選 `lang: "zh-TW" | "en"`；前端已傳入目前介面語言。
 
 ## Technical Decisions
 - i18n：切換語言時重新掛載整個 UI（LanguageRoot），標籤對照表在讀取時翻譯；新增文字必須同時加到 zh-TW 與 en 字典
@@ -89,6 +98,11 @@ Codex
 - `npm run test:e2e` ✅ 118 passed（本輪新增：axe 無障礙 36、CSP 10、英文介面 20、提醒 2；先前：新增：即時天氣顯示、API 失敗備援不顯示虛構溫度、Canvas 真實像素與限制色盤且會動、reduced motion 靜態、英文切換、快捷操作）；原 38（desktop 1360×900、mobile Pixel 7）：主要流程、衝突、待辦、CSV 匯入、探索、AI 來源、深色模式、8 頁無水平捲動、App 版面（底部導覽＋480px 框）、週課表不超出手機寬度、PWA manifest＋service worker、skip link
 - 登入頁（雲端建置）axe WCAG 2.2 AA：登入/註冊、淺/深色 0 violations
 - 真實 Supabase 驗證 ✅（2026-10-12，以 REST 對線上專案）：註冊即登入、trigger 自動建立 profile（暱稱寫入）、本人可新增/讀取學期與作業、他人讀不到（RLS）、未登入讀不到、自行改 role=admin 被擋、`delete_my_account` 刪除帳號並連帶刪光資料（測試帳號已清除，資料表歸零）
+- 好友/市集真實 Supabase 驗證 ✅（3 個暫時帳號，以 REST 對線上專案）：代碼大小寫不拘、重複邀請回 pending、自己代碼回 self、錯誤代碼 not_found；邀請者不能自行接受；接受前看不到課表、接受後看得到且無備註；陌生人看不到課表與好友關係、讀不到他人 profile；偽造 author_name/user_id 無效、他人無法修改貼文；留言作者名正確；未登入讀不到市集；重複檢舉被擋（23505）、刊登者看不到檢舉；已完成貼文不能留言；刊登者可刪他人留言；移除好友後立即看不到課表。測試帳號已刪除，資料表歸零
+- 好友/市集元件測試：`src/features/friends/__tests__`（4）、`src/features/market/__tests__`（6）、`src/lib/social/__tests__`（4）
+- 好友/市集畫面（雲端建置＋模擬 Supabase 回應）axe WCAG 2.2 AA：好友列表、好友週課表、市集列表、貼文、我的貼文、發文表單，淺/深色 0 violations
+- 合併後 `npm run lint` ✅、`typecheck` ✅、`test` ✅ 18 files / 89 tests（含 Codex API 測試 9 項）、`build` ✅
+- ⚠ 合併後尚未重跑 `npm run test:e2e`（上一輪 118 passed；本輪底部導覽「探索」改名「校園」，e2e 未依名稱尋找該連結）
 - 未執行：自動化 RLS 測試（Codex `supabase/tests/`）；重設密碼流程（雲端工作區無法連 supabase.co；Email 驗證信限制見 Known Issues）
 
 ## Known Issues
@@ -104,18 +118,16 @@ Codex
 - npm audit 有建置工具鏈警告，尚未處理
 
 ## Next Steps
-- **Codex（feat/ai-backend）**：AI 校園助理後端、知識庫匯入、權限 migration 與 RLS 測試已完成；功能分支已 rebase 最新 `main`。RLS 測試及真實 Supabase/Vercel 流程仍待環境設定後執行。
-- **Claude Code（main）**：前端呼叫 `/api/chat` 時可在 body 傳 `lang: i18n.language`（`zh-TW` 或 `en`）；後端已接受此可選欄位。
+- **Codex**：`feat/ai-backend` 已合併進 `main`；之後請從最新 `main` 開新分支。可補：好友/市集的 pgTAP RLS 測試（`supabase/tests/`）、市集檢舉的管理端 API
+- **Claude Code（main）**：市集照片上傳（Supabase Storage）、好友邀請通知；重跑 e2e 並新增好友/市集 e2e（需模擬 Supabase）
 - **Claude Code（main）**：活動管理後台 UI（需 Codex 的 admin API）、Capacitor 打包 iOS/Android（待開發者決定）
 - **開發者**：決定 Email 驗證策略（關閉或自訂 SMTP）；部署後在 Supabase Auth 設定 Site URL 與 Redirect URLs；建立 GitHub repo；Vercel 環境變數填 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`（publishable key）
-- **開發者**：在 Supabase 套用新增的 AI backend migration；在 Vercel 設定 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`OPENAI_API_KEY`（以及可選模型/限流變數），再驗證線上 `/api/chat` 與執行 RLS SQL。
+- **開發者**：在 Supabase SQL Editor 套用 `supabase/migrations/20261012080231_ai_backend_security.sql`；在 Vercel 設定 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`OPENAI_API_KEY`（以及可選模型/限流變數），再驗證線上 `/api/chat` 與執行 RLS SQL。
 
 ## Git Status
-- Branch：`feat/ai-backend`（已 rebase 至最新 `main`）
-- Main commits：… → pixel-art homepage → timezone fix → `feat: reminders, security headers and accessibility audit` → `feat: English translation for the whole app` → `chore(db): apply Supabase best practices to init migration` → `feat(auth): redesigned login with guest mode`
-- Codex commits：`feat: implement campus AI chat backend` → `fix: harden AI knowledge ingestion and locale support`
-- 工作目錄乾淨；feature branch 已包含最新 `main`
-- Worktree：`../tkuApp-codex`（`feat/ai-backend`，Codex）
+- Branch：`main`
+- Commits：… → `feat(auth): redesigned login with guest mode` → `feat(profile): account card with sign out…` → `docs: record live Supabase auth and RLS verification` → `feat: friend timetable sharing and second-hand market` → merge `feat/ai-backend`（Codex：AI chat backend、ingest hardening、handoff）→ `feat(ai): send UI language to /api/chat`
+- Worktree：`../tkuApp-codex`（`feat/ai-backend`，已合併；git 顯示 prunable）
 - 尚未設定 remote
 
 ## Important Notes
