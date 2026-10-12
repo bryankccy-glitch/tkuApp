@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'node:path';
+import { devApi } from './vite-dev-api';
 
 // PREVIEW_BUILD=1 → relative asset paths, hash routing, no service worker (for hosted previews).
 const previewBuild = process.env.PREVIEW_BUILD === '1';
@@ -10,6 +11,7 @@ export default defineConfig({
   base: previewBuild ? './' : '/',
   plugins: [
     react(),
+    devApi(),
     VitePWA({
       disable: previewBuild,
       registerType: 'autoUpdate',
