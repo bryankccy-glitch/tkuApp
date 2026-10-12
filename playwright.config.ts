@@ -23,6 +23,8 @@ export default defineConfig({
     command: 'npm run build && npx vite preview --port 4173 --strictPort',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
+    // e2e runs in on-device mode; a developer's .env.local Supabase project must not leak in.
+    env: { VITE_SUPABASE_URL: '', VITE_SUPABASE_ANON_KEY: '' },
     timeout: 120_000,
   },
 });

@@ -547,6 +547,17 @@ const zh = {
     "stopped": "已停止回答。"
   },
   "auth": {
+    "welcome": "歡迎來到淡江",
+    "nickname": "暱稱",
+    "showPassword": "顯示密碼",
+    "hidePassword": "隱藏密碼",
+    "passwordHint": "至少 8 個字元。請設定新的密碼，不要使用校務系統密碼。",
+    "notConfirmed": "這個 Email 還沒完成驗證，請先到信箱點擊驗證連結。",
+    "alreadyRegistered": "這個 Email 已經註冊過了，請直接登入。",
+    "or": "或",
+    "guest": "先不登入，直接使用",
+    "backAsGuest": "繼續以訪客使用",
+    "guestHint": "訪客模式的資料只存在這台裝置，之後登入不會自動合併。",
     "emailInvalid": "請輸入有效的 Email",
     "passwordMin": "密碼至少 8 個字元",
     "passwordMax": "密碼最多 72 個字元",
@@ -576,6 +587,9 @@ const zh = {
     "updatePassword": "更新密碼"
   },
   "me": {
+    "guestSubtitle": "訪客模式：資料只存在這台裝置。登入後可在不同裝置同步。",
+    "signInToSync": "登入或註冊",
+    "signInToSyncHint": "建立帳號，在手機和電腦之間同步課表與作業",
     "title": "我的",
     "localSubtitle": "本機模式：資料只存在這個瀏覽器，不會上傳。",
     "nameInvalid": "暱稱需為 1–40 字",

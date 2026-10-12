@@ -547,6 +547,17 @@ const en = {
     "stopped": "Stopped."
   },
   "auth": {
+    "welcome": "Welcome to Tamkang",
+    "nickname": "Nickname",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "passwordHint": "At least 8 characters. Pick a new password — not your university portal one.",
+    "notConfirmed": "This email isn’t verified yet. Click the link in the verification email first.",
+    "alreadyRegistered": "This email is already registered — sign in instead.",
+    "or": "or",
+    "guest": "Continue without an account",
+    "backAsGuest": "Continue as guest",
+    "guestHint": "Guest data stays on this device and isn’t merged when you sign in later.",
     "emailInvalid": "Enter a valid email",
     "passwordMin": "Password must be at least 8 characters",
     "passwordMax": "Password: max 72 characters",
@@ -576,6 +587,9 @@ const en = {
     "updatePassword": "Update password"
   },
   "me": {
+    "guestSubtitle": "Guest mode: data stays on this device. Sign in to sync across devices.",
+    "signInToSync": "Sign in or sign up",
+    "signInToSyncHint": "Create an account to sync your schedule and tasks between devices",
     "title": "Me",
     "localSubtitle": "On-device mode: your data stays in this browser and is never uploaded.",
     "nameInvalid": "Name must be 1–40 characters",

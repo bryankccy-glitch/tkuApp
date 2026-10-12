@@ -40,5 +40,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}', 'api/**/*.test.ts'],
     exclude: ['e2e/**', 'node_modules/**'],
+    // Hermetic: never pick up a developer's .env.local Supabase project in unit tests.
+    env: { VITE_SUPABASE_URL: '', VITE_SUPABASE_ANON_KEY: '' },
   },
 });

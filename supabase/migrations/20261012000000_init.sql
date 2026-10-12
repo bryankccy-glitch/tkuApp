@@ -314,6 +314,16 @@ create table public.admin_audit_logs (
 );
 create index admin_audit_logs_time_idx on public.admin_audit_logs (created_at desc);
 
+-- Covering indexes for foreign keys (Supabase advisor 0001).
+create index admin_audit_logs_actor_idx on public.admin_audit_logs (actor_id);
+create index ai_messages_user_idx on public.ai_messages (user_id);
+create index campus_events_created_by_idx on public.campus_events (created_by);
+create index feedback_user_idx on public.feedback (user_id);
+create index profiles_current_semester_idx on public.profiles (current_semester_id);
+create index tasks_user_course_idx on public.tasks (user_course_id);
+create index user_courses_course_idx on public.user_courses (course_id);
+create index user_courses_semester_idx on public.user_courses (semester_id);
+
 create trigger on_auth_user_created after insert on auth.users
   for each row execute function public.handle_new_user();
 
@@ -325,6 +335,8 @@ begin
   delete from auth.users where id = (select auth.uid());
 end $$;
 revoke all on function public.delete_my_account() from public, anon;
+-- is_admin() is only for policies / server checks; never exposed via /rpc.
+revoke all on function public.is_admin() from public, anon, authenticated;
 revoke all on function public.handle_new_user() from public, anon, authenticated;
 grant execute on function public.delete_my_account() to authenticated;
 -- RAG search is server-only (service role); clients never call it directly.

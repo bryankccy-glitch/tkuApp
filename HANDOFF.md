@@ -1,13 +1,13 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-12 19:30（Asia/Taipei, UTC+8）
+2026-10-12 20:05（Asia/Taipei, UTC+8）
 
 ## Updated By
 Claude Code
 
 ## Current Status
-前端 MVP 可用（本機模式完整可操作），主題色已改為紅色。雲端模式程式完成但**尚未連接真實 Supabase 驗證**。AI 後端 `/api/chat` 由 Codex 在 `feat/ai-backend` 進行中。
+前端 MVP 可用。**Supabase 專案 `tku-campus-os`（ap-northeast-1）已建立，資料庫結構已套用**，登入頁已重新設計並支援訪客模式。真實帳號註冊/登入流程**尚未端到端驗證**（見 Known Issues：Email 驗證信）。AI 後端 `/api/chat` 由 Codex 在 `feat/ai-backend` 進行中。
 
 ## Completed
 - 專案骨架：Vite 6 + React 18 + TS strict + Tailwind 3 + React Router 6 + TanStack Query 5 + RHF + Zod + PWA
@@ -20,6 +20,11 @@ Claude Code
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **Supabase 上線**：專案 `tku-campus-os`（ref `gqivwpmflnxlnotirqhe`，Tokyo）。`supabase/migrations/20261012000000_init.sql` 已在 SQL Editor 套用（17 表皆開 RLS）；advisor 修正：撤銷 `is_admin()` 的 anon/authenticated 執行權、補 8 個外鍵索引（已同步進 init.sql 並套用到線上）。Security advisor 剩：3 張「RLS 無 policy」（ai_usage、admin_audit_logs、knowledge_chunks，刻意只給 service role）與 `delete_my_account` 可被登入者呼叫（刻意）
+- 本機 `.env.local` 已填 `VITE_SUPABASE_URL` 與 publishable key（git 忽略；只含公開金鑰）
+- **登入頁重新設計**：上方即時淡江大橋像素場景（與首頁同天氣/日出日落資料）、登入/註冊分頁、註冊可填暱稱（寫入 `display_name`）、顯示/隱藏密碼、常見錯誤中英文訊息、忘記密碼
+- **訪客模式**：雲端可用時，登入頁可選「先不登入，直接使用」→ 使用 LocalRepository（`localStorage` 旗標 `tku.guest`）；「我的」顯示「登入或註冊」入口；登入後自動結束訪客模式（訪客資料不會合併到帳號）。`useAuth()` 新增 `cloudAvailable`、`isGuest`、`continueAsGuest`
+- 測試隔離：Vitest 與 Playwright 強制清空 `VITE_SUPABASE_*`，避免開發者的 `.env.local` 讓測試跑到雲端模式
 - **全站中英文**：所有頁面、表單驗證、Toast、錯誤訊息、日期時間格式、本機 AI 助理（中英文問題皆可）；字典 `src/i18n/locales/`，key 一致性有測試把關
 - **上課與截止提醒**：「我的」可開啟系統通知（上課前 5/10/15/30 分鐘、作業依各自設定）、測試通知；App 執行中有效
 - **安全標頭**：vercel.json 加入 CSP、HSTS、COOP 等；移除 index.html 內嵌 script
@@ -52,7 +57,8 @@ Claude Code
 - 測試：`src/test/*`、`src/features/**/__tests__/*`、`e2e/*`、`playwright.config.ts`、`tsconfig.node.json`、`package.json`（`test:e2e`）
 
 ## Database & API Changes
-- 前端直接呼叫 Open-Meteo（公開 API、免金鑰，不需伺服器端）。資料庫無變更。`/api/chat` 合約見 `api/README.md`（Codex 實作中）。
+- 線上資料庫已套用 init migration（含 advisor 修正）。⚠ `is_admin()` 已撤銷 authenticated 的 EXECUTE：若之後要在 RLS policy 中使用它，需改放 private schema 或重新授權（Codex 注意）。
+- 前端直接呼叫 Open-Meteo（公開 API、免金鑰，不需伺服器端）。`/api/chat` 合約見 `api/README.md`（Codex 實作中）。
 
 ## Technical Decisions
 - i18n：切換語言時重新掛載整個 UI（LanguageRoot），標籤對照表在讀取時翻譯；新增文字必須同時加到 zh-TW 與 en 字典
@@ -70,15 +76,18 @@ Claude Code
 執行於 Claude 雲端工作區（Node 22.22）：
 - `npm run lint` ✅
 - `npm run typecheck` ✅
-- `npm run test` ✅ 16 files, 59 tests（新增提醒、翻譯 key 一致性）；在 UTC、America/Los_Angeles、Asia/Taipei、Europe/London 時區皆通過（新增天氣解析/錯誤分類/快取、場景與日出日落、太陽計算）
+- `npm run test` ✅ 14 files, 64 tests（本輪新增登入頁 5 項：輸入驗證、錯誤訊息、註冊帶暱稱、顯示密碼、訪客模式）；先前 59 tests（新增提醒、翻譯 key 一致性）；在 UTC、America/Los_Angeles、Asia/Taipei、Europe/London 時區皆通過（新增天氣解析/錯誤分類/快取、場景與日出日落、太陽計算）
 - `npm run build` ✅
 - `npm run test:e2e` ✅ 118 passed（本輪新增：axe 無障礙 36、CSP 10、英文介面 20、提醒 2；先前：新增：即時天氣顯示、API 失敗備援不顯示虛構溫度、Canvas 真實像素與限制色盤且會動、reduced motion 靜態、英文切換、快捷操作）；原 38（desktop 1360×900、mobile Pixel 7）：主要流程、衝突、待辦、CSV 匯入、探索、AI 來源、深色模式、8 頁無水平捲動、App 版面（底部導覽＋480px 框）、週課表不超出手機寬度、PWA manifest＋service worker、skip link
-- 未執行：RLS 測試、登入/登出與重設密碼的實際流程（需 Supabase 專案）
+- 登入頁（雲端建置）axe WCAG 2.2 AA：登入/註冊、淺/深色 0 violations
+- 未執行：RLS 測試；真實註冊/登入/重設密碼流程（雲端工作區無法連 supabase.co；Email 驗證信限制見 Known Issues）
 
 ## Known Issues
 - 淡江大橋塔身輪廓與單/雙索面待查核（目前為詮釋）
 - Artifact 預覽環境無法連線 Open-Meteo，會顯示「暫時無法取得天氣」（實際部署正常）
-- 雲端模式（登入、重設密碼、RLS）尚未在真實 Supabase 專案驗證
+- 雲端模式（登入、重設密碼、RLS）尚未在真實 Supabase 專案端到端驗證
+- Supabase Auth 目前「Confirm email」開啟，且使用內建寄信服務：只會寄給組織成員信箱、且有每小時上限 → 一般學生收不到驗證信。需開發者決定：關閉 Email 驗證，或設定自訂 SMTP（如 Resend）
+- Supabase Auth 的 Site URL / Redirect URLs 尚未設定（驗證與重設密碼連結會導回預設 localhost:3000）；部署網址確定後要加入
 - 建築代碼來源為學生整理、座標未查核；T 棟名稱待核對
 - 淡江官方品牌規範未找到公開來源；紅色主題與標誌為開發者指定
 - 新標誌細節多，favicon（32px）較難辨識；可考慮另做簡化版小圖示
@@ -89,11 +98,11 @@ Claude Code
 - **Codex（feat/ai-backend）**：`api/chat.ts`、`scripts/ingest.ts`、RLS 測試（只改 `api/`、`scripts/`、`supabase/tests/`、新增 migration）。⚠ `main` 已更新，開始前請 `git rebase main` 或在合併時處理
 - **Claude Code（main）**：活動管理後台 UI（需 Codex 的 admin API）、Capacitor 打包 iOS/Android（待開發者決定）
 - **Codex**：`/api/chat` 回答語言請依 request 的介面語言（建議前端在 body 加 `lang`，需要時通知 Claude Code）；伺服器端 Web Push
-- **開發者**：建立 Supabase 專案並套用 migration；建立 GitHub repo；提供 Vercel 環境變數
+- **開發者**：決定 Email 驗證策略（關閉或自訂 SMTP）；部署後在 Supabase Auth 設定 Site URL 與 Redirect URLs；建立 GitHub repo；Vercel 環境變數填 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`（publishable key）
 
 ## Git Status
 - Branch：`main`
-- Commits：… → pixel-art homepage → timezone fix → `feat: reminders, security headers and accessibility audit` → `feat: English translation for the whole app`
+- Commits：… → pixel-art homepage → timezone fix → `feat: reminders, security headers and accessibility audit` → `feat: English translation for the whole app` → `chore(db): apply Supabase best practices to init migration` → `feat(auth): redesigned login with guest mode`
 - 未提交修改：無
 - Worktree：`../tkuApp-codex`（`feat/ai-backend`，Codex）
 - 尚未設定 remote

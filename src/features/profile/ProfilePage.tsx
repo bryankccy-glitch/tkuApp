@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronRight, Download, ListChecks, LogOut, Megaphone, Monitor, Moon, Sun, Trash2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ChevronRight, Download, ListChecks, LogIn, LogOut, Megaphone, Monitor, Moon, Sun, Trash2 } from 'lucide-react';
 import { Page } from '@/components/layout/AppShell';
 import { PageHeader } from '@/components/ui/misc';
 import { Button } from '@/components/ui/Button';
@@ -17,7 +17,8 @@ import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/cn';
 
 export default function ProfilePage() {
-  const { mode, session, signOut } = useAuth();
+  const { mode, session, signOut, isGuest } = useAuth();
+  const navigate = useNavigate();
   const repo = useRepo();
   const qc = useQueryClient();
   const toast = useToast();
@@ -87,7 +88,7 @@ export default function ProfilePage() {
 
   return (
     <Page>
-      <PageHeader title={t('me.title')} subtitle={mode === 'cloud' ? session?.user.email : t('me.localSubtitle')} />
+      <PageHeader title={t('me.title')} subtitle={mode === 'cloud' ? session?.user.email : isGuest ? t('me.guestSubtitle') : t('me.localSubtitle')} />
 
       <nav aria-label={t('me.shortcuts')} className="mb-5 grid grid-cols-2 gap-2">
         <Link to="/tasks" className="flex items-center gap-2.5 rounded-sm border border-line bg-surface px-3 py-3 text-body font-semibold text-ink hover:bg-sunken">
@@ -145,6 +146,13 @@ export default function ProfilePage() {
               <span className="flex-1"><span className="block text-body font-semibold text-ink">{t('me.about')}</span><span className="text-caption text-muted">{t('me.aboutHint')}</span></span><ChevronRight className="h-5 w-5 text-muted" />
             </Link>
           </li>
+          {isGuest && (
+            <li>
+              <button type="button" onClick={() => { void signOut().then(() => navigate('/login')); }} className="flex w-full items-center gap-3 px-5 py-3.5 text-left hover:bg-sunken">
+                <LogIn className="h-5 w-5 text-primary" /><span className="flex-1"><span className="block text-body font-semibold text-ink">{t('me.signInToSync')}</span><span className="text-caption text-muted">{t('me.signInToSyncHint')}</span></span><ChevronRight className="h-5 w-5 text-muted" />
+              </button>
+            </li>
+          )}
           {mode === 'cloud' && (
             <li>
               <button type="button" onClick={signOut} className="flex w-full items-center gap-3 px-5 py-3.5 text-left hover:bg-sunken">
