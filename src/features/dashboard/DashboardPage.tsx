@@ -41,7 +41,7 @@ export default function DashboardPage() {
     <Page wide>
       <Hero name={profile.data?.displayName ?? '淡江同學'} now={now} summary={summary} />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:gap-8">
+      <div className="mt-6 grid gap-6">
         <div className="grid content-start gap-6">
           <NextClassCard next={next} now={now} />
 

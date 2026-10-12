@@ -43,9 +43,12 @@ Inter（英數）＋ Noto Sans TC（中文），系統字型 fallback。數字�
 圓角依層級：`xs`(6) 小標籤/按鈕內、`sm`(10) 按鈕/輸入/列表、`md`(14)、`lg`(20) 主要卡片、`xl`(28) bottom sheet。
 不是所有區塊都是卡片：今日課表用時間軸、活動用分隔線列表、待辦用帶邊框面板，只有「下一堂課」使用陰影（`shadow-lift`）。
 
-## 導覽
-- 手機：底部 5 格（首頁／課表／AI 助理（中央浮起紅色圓鈕，選取時加外圈）／探索／我的），選取時圖示加粗＋紅色圓點。
-- 桌面（≥1024px）：左側 Sidebar，選取項左側宮燈紅指示條；下方為次要入口「作業與考試」「活動與機會」。
+## 版面與導覽（App 版面，2026-10-12 起）
+- **只有手機版面**：所有螢幕尺寸都使用同一個 App 版面（`.app-frame`，最大寬度 `max-w-app` = 30rem / 480px）。平板與電腦上置中顯示為手機寬度，外圍為 `sunken` 底色。
+- 不使用 Tailwind 斷點（`sm:`/`md:`/`lg:`）；版面只為手機設計。
+- 底部 5 格導覽（首頁／課表／AI 助理（中央浮起紅色圓鈕，選取時加外圈）／探索／我的），選取時圖示加粗＋紅色圓點。
+- 次要入口：「作業與考試」「活動與機會」在「我的」頁上方快速入口，以及首頁的「全部待辦」「查看全部」。
+- Bottom sheet、Toast 皆限制在 App 寬度內。PWA manifest `orientation: portrait`。
 
 ## 元件（`src/components`）
 `Button` / `IconButton`、`Sheet`（手機 bottom sheet、桌面 dialog；focus trap、Esc 關閉）、`ConfirmSheet`、`Toast`（含復原動作）、`Segmented`、`EmptyState`、`PageHeader`、`ErrorNotice`、`LogoMark` / `Wordmark` / `LoadingMark`、`Colonnade`、`ScrollIllustration`。

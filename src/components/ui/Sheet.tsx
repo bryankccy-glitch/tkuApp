@@ -56,7 +56,7 @@ export function Sheet({
 
   if (!open) return null;
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
+    <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div className="anim-fade absolute inset-0 bg-[#0B1626]/50 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
       <div
         ref={panel}
@@ -66,13 +66,13 @@ export function Sheet({
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
         className={cn(
-          'anim-sheet relative flex max-h-[92dvh] w-full flex-col rounded-t-xl bg-surface shadow-sheet sm:rounded-lg',
-          size === 'sm' && 'sm:max-w-sm',
-          size === 'md' && 'sm:max-w-lg',
-          size === 'lg' && 'sm:max-w-2xl',
+          'anim-sheet relative flex max-h-[92dvh] w-full max-w-app flex-col rounded-t-xl bg-surface shadow-sheet',
+          size === 'sm' && '',
+          size === 'md' && '',
+          size === 'lg' && '',
         )}
       >
-        <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-line sm:hidden" aria-hidden />
+        <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-line" aria-hidden />
         <header className="flex items-start gap-3 px-5 pb-3 pt-4">
           <div className="min-w-0 flex-1">
             <h2 id={titleId} className="text-h3 text-ink">{title}</h2>

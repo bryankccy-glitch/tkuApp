@@ -76,7 +76,7 @@ function Message({ m, last, busy, onRetry }: { m: ChatMessage; last: boolean; bu
         {!streaming && !m.error && m.sources && m.sources.length > 0 && (
           <div className="mt-2">
             <p className="text-[11px] font-semibold text-muted">資料來源</p>
-            <div className="mt-1 grid gap-1.5 sm:grid-cols-2">{m.sources.map((s, i) => <SourceCard key={i} s={s} />)}</div>
+            <div className="mt-1 grid gap-1.5">{m.sources.map((s, i) => <SourceCard key={i} s={s} />)}</div>
           </div>
         )}
         {!streaming && !m.error && m.content && (
@@ -138,7 +138,7 @@ export default function AssistantPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-3xl flex-col px-4 pt-5 sm:px-6 lg:min-h-dvh lg:px-10 lg:pt-8">
+    <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-3xl flex-col px-4 pt-5">
       <header className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-h1 text-ink">AI 校園助理</h1>
@@ -172,7 +172,7 @@ export default function AssistantPage() {
         <div ref={endRef} />
       </div>
 
-      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-4 bg-gradient-to-t from-canvas via-canvas to-canvas/0 px-4 pb-3 pt-4 sm:-mx-6 sm:px-6 lg:bottom-0 lg:-mx-10 lg:px-10 lg:pb-6">
+      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-4 bg-gradient-to-t from-canvas via-canvas to-canvas/0 px-4 pb-3 pt-4">
         <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex items-end gap-2 rounded-lg border border-line bg-surface p-2 shadow-lift focus-within:border-blue">
           <label htmlFor="chat-input" className="sr-only">輸入問題</label>
           <textarea

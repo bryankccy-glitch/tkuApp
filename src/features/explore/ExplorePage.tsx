@@ -40,8 +40,8 @@ export default function ExplorePage() {
         actions={<Link to="/events" className="inline-flex h-8 items-center gap-1.5 rounded-xs border border-line px-3 text-caption font-semibold text-ink hover:bg-sunken"><Megaphone className="h-4 w-4" />活動與機會</Link>}
       />
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
-        <div className="order-2 lg:order-1">
+      <div className="grid gap-5">
+        <div className="order-2">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden />
             <label htmlFor="place-q" className="sr-only">搜尋建築或教室</label>
@@ -86,8 +86,8 @@ export default function ExplorePage() {
           )}
         </div>
 
-        <div className="order-1 grid content-start gap-4 lg:order-2">
-          <div className="relative h-64 overflow-hidden rounded-lg border border-line bg-sunken sm:h-80 lg:h-[26rem]">
+        <div className="order-1 grid content-start gap-4">
+          <div className="relative h-64 overflow-hidden rounded-lg border border-line bg-sunken">
             <Suspense fallback={<div className="flex h-full items-center justify-center text-caption text-muted">地圖載入中…</div>}>
               <CampusMap places={CAMPUS_PLACES} selected={selected} />
             </Suspense>

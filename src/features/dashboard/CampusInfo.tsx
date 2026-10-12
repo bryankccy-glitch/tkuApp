@@ -43,7 +43,7 @@ export function CampusInfo() {
 
       <div>
         <h2 className="mb-2 text-h3 text-ink">常用校園服務</h2>
-        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <ul className="grid grid-cols-2 gap-2">
           {QUICK_SERVICES.map((s) => (
             <li key={s.id}>
               <a

@@ -1,4 +1,4 @@
-import { CalendarDays, Compass, Home, MessageCircleQuestion, UserRound, ListChecks, Megaphone, type LucideIcon } from 'lucide-react';
+import { CalendarDays, Compass, Home, MessageCircleQuestion, UserRound, type LucideIcon } from 'lucide-react';
 
 export interface NavItem { to: string; label: string; icon: LucideIcon; end?: boolean; primary?: boolean }
 
@@ -8,10 +8,4 @@ export const PRIMARY_NAV: NavItem[] = [
   { to: '/assistant', label: 'AI 助理', icon: MessageCircleQuestion, primary: true },
   { to: '/explore', label: '探索', icon: Compass },
   { to: '/me', label: '我的', icon: UserRound },
-];
-
-/** Extra destinations shown in the desktop sidebar. */
-export const SECONDARY_NAV: NavItem[] = [
-  { to: '/tasks', label: '作業與考試', icon: ListChecks },
-  { to: '/events', label: '活動與機會', icon: Megaphone },
 ];

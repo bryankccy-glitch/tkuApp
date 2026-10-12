@@ -1,60 +1,13 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Suspense, useEffect, useRef } from 'react';
 import { cn } from '@/lib/cn';
-import { Wordmark } from '@/components/brand/Logo';
 import { LoadingMark } from '@/components/brand/Logo';
-import { PRIMARY_NAV, SECONDARY_NAV, type NavItem } from './nav';
-import { useAuth } from '@/app/AuthProvider';
-
-function SideLink({ item }: { item: NavItem }) {
-  const Icon = item.icon;
-  return (
-    <NavLink
-      to={item.to}
-      end={item.end}
-      className={({ isActive }) =>
-        cn(
-          'group relative flex h-10 items-center gap-3 rounded-sm px-3 text-body font-medium transition-colors',
-          isActive ? 'bg-primary/[0.07] text-primary dark:bg-primary/15' : 'text-muted hover:bg-sunken hover:text-ink',
-        )
-      }
-    >
-      {({ isActive }) => (
-        <>
-          {isActive && <span className="absolute -left-3 top-2 h-6 w-1 rounded-r-full bg-heritage" aria-hidden />}
-          <Icon className="h-[18px] w-[18px]" strokeWidth={isActive ? 2.4 : 2} />
-          {item.label}
-        </>
-      )}
-    </NavLink>
-  );
-}
-
-function Sidebar() {
-  const { mode } = useAuth();
-  return (
-    <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-line bg-surface px-3 py-5 lg:flex">
-      <div className="px-3"><Wordmark /></div>
-      <nav aria-label="主要導覽" className="mt-8 flex flex-col gap-0.5">
-        {PRIMARY_NAV.map((i) => <SideLink key={i.to} item={i} />)}
-      </nav>
-      <div className="mx-3 my-4 h-px bg-line" />
-      <nav aria-label="學習與機會" className="flex flex-col gap-0.5">
-        {SECONDARY_NAV.map((i) => <SideLink key={i.to} item={i} />)}
-      </nav>
-      <div className="mt-auto px-3 text-[11px] leading-relaxed text-muted">
-        {mode === 'local' && <p className="mb-2 rounded-xs bg-sunken px-2 py-1.5 text-ink">本機模式：資料只存在此瀏覽器</p>}
-        <p>學生自主開發，非淡江大學官方 App。</p>
-        <NavLink to="/about" className="underline-offset-2 hover:underline">關於與隱私</NavLink>
-      </div>
-    </aside>
-  );
-}
+import { PRIMARY_NAV } from './nav';
 
 function BottomNav() {
   return (
-    <nav aria-label="主要導覽" className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur lg:hidden">
-      <ul className="mx-auto grid h-16 max-w-lg grid-cols-5">
+    <nav aria-label="主要導覽" className="safe-bottom fixed bottom-0 left-1/2 z-40 w-full max-w-app -translate-x-1/2 border-t border-line bg-surface/95 backdrop-blur">
+      <ul className="grid h-16 grid-cols-5">
         {PRIMARY_NAV.map((item) => {
           const Icon = item.icon;
           return (
@@ -100,10 +53,9 @@ export function AppShell() {
     window.scrollTo(0, 0);
   }, [pathname]);
   return (
-    <div className="flex min-h-dvh">
+    <div className="app-frame relative mx-auto min-h-dvh w-full max-w-app bg-canvas">
       <a href="#main" className="sr-only z-50 rounded-sm bg-primary px-3 py-2 text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3">跳到主要內容</a>
-      <Sidebar />
-      <main id="main" ref={main} tabIndex={-1} className="min-w-0 flex-1 pb-28 outline-none lg:pb-10">
+      <main id="main" ref={main} tabIndex={-1} className="min-w-0 pb-28 outline-none">
         {import.meta.env.VITE_PREVIEW_DEMO === '1' && (
           <p className="bg-primary/[0.07] px-4 py-2 text-center text-caption text-ink">預覽版：已放入範例課程與待辦，資料只存在這個瀏覽器。可以自由新增、編輯、刪除。</p>
         )}
@@ -116,6 +68,7 @@ export function AppShell() {
   );
 }
 
-export function Page({ children, className, wide }: { children: React.ReactNode; className?: string; wide?: boolean }) {
-  return <div className={cn('mx-auto w-full px-4 pt-5 sm:px-6 lg:px-10 lg:pt-8', wide ? 'max-w-content' : 'max-w-3xl', className)}>{children}</div>;
+/** Page content inside the phone frame. `wide` is kept for API compatibility; the frame sets the width. */
+export function Page({ children, className }: { children: React.ReactNode; className?: string; wide?: boolean }) {
+  return <div className={cn('w-full px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]', className)}>{children}</div>;
 }

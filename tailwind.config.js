@@ -37,7 +37,7 @@ export default {
         lift: '0 1px 2px rgb(21 52 90 / 0.06), 0 8px 24px -12px rgb(21 52 90 / 0.18)',
         sheet: '0 -8px 40px -12px rgb(21 52 90 / 0.25)',
       },
-      maxWidth: { content: '72rem' },
+      maxWidth: { content: '72rem', app: '30rem' },
     },
   },
   plugins: [],

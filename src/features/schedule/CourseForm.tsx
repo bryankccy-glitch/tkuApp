@@ -105,7 +105,7 @@ export function CourseForm({
             const e = errors.slots?.[i];
             return (
               <div key={f.id} className="rounded-sm border border-line p-3">
-                <div className="grid grid-cols-[1fr_1fr] gap-2 sm:grid-cols-[7rem_1fr_1fr_1fr]">
+                <div className="grid grid-cols-[1fr_1fr] gap-2">
                   <div>
                     <label className="label" htmlFor={`s-day-${i}`}>星期</label>
                     <select id={`s-day-${i}`} className="field" {...register(`slots.${i}.weekday`)}>

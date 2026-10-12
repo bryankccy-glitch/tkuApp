@@ -58,19 +58,19 @@ export default function EventsPage() {
         <EmptyState title="活動資料尚未連線" body="活動由管理後台維護，存放在雲端資料庫。設定 Supabase 後即可瀏覽；我們不會顯示來源不明的活動。" />
       ) : (
         <>
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
-            <div className="relative">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="relative col-span-2">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden />
               <label htmlFor="ev-q" className="sr-only">搜尋活動</label>
               <input id="ev-q" className="field pl-9" placeholder="搜尋活動名稱或主辦單位" value={q} onChange={(e) => setQ(e.target.value)} />
             </div>
             <label className="sr-only" htmlFor="ev-cat">分類</label>
-            <select id="ev-cat" className="field sm:w-36" value={cat} onChange={(e) => setCat(e.target.value as 'all' | EventCategory)}>
+            <select id="ev-cat" className="field" value={cat} onChange={(e) => setCat(e.target.value as 'all' | EventCategory)}>
               <option value="all">全部分類</option>
               {EVENT_CATEGORIES.map((c) => <option key={c} value={c}>{EVENT_CATEGORY_LABELS[c]}</option>)}
             </select>
             <label className="sr-only" htmlFor="ev-range">日期</label>
-            <select id="ev-range" className="field sm:w-32" value={range} onChange={(e) => setRange(e.target.value as Range)}>
+            <select id="ev-range" className="field" value={range} onChange={(e) => setRange(e.target.value as Range)}>
               <option value="all">所有日期</option>
               <option value="week">7 天內</option>
               <option value="month">30 天內</option>
@@ -81,7 +81,7 @@ export default function EventsPage() {
           {isLoading ? <LoadingMark /> : error ? <div className="mt-4"><ErrorNotice error={error} onRetry={refetch} /></div> : list.length === 0 ? (
             <EmptyState title="沒有符合的活動" body="調整分類或日期範圍再試試。" />
           ) : (
-            <ul className="mt-4 grid gap-3 md:grid-cols-2">
+            <ul className="mt-4 grid gap-3">
               {list.map((e) => (
                 <li key={e.id} className="flex flex-col rounded-sm border border-line bg-surface p-4">
                   <div className="flex items-start justify-between gap-2">

@@ -29,9 +29,9 @@ export function Hero({ name, now, summary }: { name: string; now: Date; summary:
 
   return (
     <section aria-labelledby="hero-greeting" className={cn('relative overflow-hidden rounded-lg bg-gradient-to-br text-white', SKIES[phase])}>
-      <div className="relative z-10 px-5 pb-24 pt-6 sm:px-8 sm:pt-8">
+      <div className="relative z-10 px-5 pb-24 pt-6">
         <p className="text-caption text-white/75">{formatDateLong(now)}</p>
-        <h1 id="hero-greeting" className="mt-1 text-[1.75rem] font-bold leading-tight tracking-tight sm:text-display">
+        <h1 id="hero-greeting" className="mt-1 text-[1.75rem] font-bold leading-tight tracking-tight">
           {greeting(now)}，{name}
         </h1>
         <p className="mt-2 max-w-md text-body-lg text-white/85">{summary}</p>
@@ -60,7 +60,7 @@ export function Hero({ name, now, summary }: { name: string; now: Date; summary:
           </div>
         </form>
       </div>
-      <Colonnade className="absolute inset-x-0 bottom-0 h-16 text-[#2A0E10]/75 sm:h-20" arches={18} />
+      <Colonnade className="absolute inset-x-0 bottom-0 h-16 text-[#2A0E10]/75" arches={18} />
     </section>
   );
 }

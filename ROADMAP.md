@@ -7,7 +7,7 @@ HANDOFF / AGENTS / README / ROADMAP / ARCHITECTURE / .env.example
 
 ## Phase 1 — 品牌與 Design System ✅
 - ✅ 色彩 tokens（主題色：宮燈紅）、字級、深色模式、Logo（light/dark）、App Icon、Favicon、Splash、Loading mark、空狀態插畫
-- ✅ 手機底部導覽、桌面 Sidebar
+- ✅ 手機 App 版面＋底部導覽（桌面 Sidebar 已依開發者決定移除）
 - ⬜ 查核淡江官方品牌規範；若取得授權再調整色彩
 
 ## Phase 2 — 基礎平台 🟡

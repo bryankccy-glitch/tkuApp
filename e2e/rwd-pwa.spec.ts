@@ -11,21 +11,32 @@ for (const path of PAGES) {
   });
 }
 
-test('navigation matches the viewport (bottom bar on phones, sidebar on desktop)', async ({ page, isMobile }) => {
+test('app layout: bottom navigation on every screen size, phone-width frame on large screens', async ({ page }) => {
   await page.goto('/');
-  const bottom = page.locator('nav.fixed[aria-label="主要導覽"]');
-  const sidebar = page.locator('aside nav[aria-label="主要導覽"]');
-  if (isMobile) {
-    await expect(bottom).toBeVisible();
-    await expect(sidebar).toBeHidden();
-  } else {
-    await expect(sidebar).toBeVisible();
-    await expect(bottom).toBeHidden();
-  }
-  const nav = isMobile ? bottom : sidebar;
-  await nav.getByRole('link', { name: '課表' }).click();
+  const bottom = page.locator('nav[aria-label="主要導覽"]');
+  await expect(bottom).toBeVisible();
+  await expect(page.locator('aside')).toHaveCount(0);
+  const frame = await page.locator('.app-frame').boundingBox();
+  const vw = page.viewportSize()!.width;
+  expect(frame!.width).toBeLessThanOrEqual(Math.min(vw, 480));
+  const navBox = await bottom.boundingBox();
+  expect(Math.round(navBox!.x)).toBe(Math.round(frame!.x));
+  await bottom.getByRole('link', { name: '課表' }).click();
   await expect(page).toHaveURL(/\/schedule$/);
-  await expect(nav.getByRole('link', { name: '課表' })).toHaveAttribute('aria-current', 'page');
+  await expect(bottom.getByRole('link', { name: '課表' })).toHaveAttribute('aria-current', 'page');
+});
+
+test('week view fits the phone width without sideways scrolling', async ({ page }) => {
+  await page.goto('/schedule?add=1');
+  const dialog = page.getByRole('dialog', { name: '新增課程' });
+  await dialog.getByLabel('課程名稱').fill('週課表測試');
+  await page.getByRole('button', { name: '加入課表' }).click();
+  await page.getByRole('tab', { name: '週課表' }).click();
+  const grid = page.locator('.app-frame .overflow-hidden.rounded-lg').first();
+  const box = await grid.boundingBox();
+  const frame = await page.locator('.app-frame').boundingBox();
+  expect(box!.x + box!.width).toBeLessThanOrEqual(frame!.x + frame!.width);
+  await expect(page.getByRole('link', { name: /週一 08:10–10:00 週課表測試/ })).toBeVisible();
 });
 
 test('PWA manifest and service worker are installable', async ({ page, request }) => {

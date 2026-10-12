@@ -46,7 +46,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-canvas">
+    <div className="app-frame mx-auto flex min-h-dvh w-full max-w-app flex-col bg-canvas">
       <div className="relative overflow-hidden bg-primary text-white dark:bg-[#132A47]">
         <div className="mx-auto max-w-md px-6 pb-24 pt-10">
           <div className="[&_*]:!text-white"><Wordmark /></div>

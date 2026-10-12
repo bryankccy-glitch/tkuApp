@@ -32,7 +32,7 @@ export default function SchedulePage() {
   const { data: courses = [], isLoading, error, refetch } = useCourses(semester?.id);
   const { save, importMany } = useCourseMutations(semester?.id);
   const today = weekdayOf(now);
-  const [view, setView] = useState<View>(() => (typeof window !== 'undefined' && window.innerWidth >= 768 ? 'week' : 'day'));
+  const [view, setView] = useState<View>('day');
   const [day, setDay] = useState<Weekday>(today);
   const [importOpen, setImportOpen] = useState(false);
   const formOpen = params.get('add') === '1';

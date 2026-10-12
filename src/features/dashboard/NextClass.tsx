@@ -46,7 +46,7 @@ export function NextClassCard({ next, now }: { next: NextClassT | null; now: Dat
   return (
     <section aria-labelledby="next-class" className="relative overflow-hidden rounded-lg bg-surface shadow-lift">
       <span className={cn('absolute inset-y-0 left-0 w-1.5', style.bar)} aria-hidden />
-      <div className="px-5 py-5 pl-6 sm:px-6 sm:pl-7">
+      <div className="px-5 py-5 pl-6">
         <div className="flex items-center justify-between gap-3">
           <h2 id="next-class" className="text-label text-muted">{ongoing ? '正在上課' : '下一堂課'}</h2>
           <span className={cn('tabular rounded-full px-2.5 py-1 text-caption font-semibold', ongoing ? 'bg-success/10 text-success' : 'bg-heritage/10 text-heritage')}>

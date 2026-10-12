@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Download, LogOut, Monitor, Moon, Sun, Trash2 } from 'lucide-react';
+import { ChevronRight, Download, ListChecks, LogOut, Megaphone, Monitor, Moon, Sun, Trash2 } from 'lucide-react';
 import { Page } from '@/components/layout/AppShell';
 import { PageHeader } from '@/components/ui/misc';
 import { Button } from '@/components/ui/Button';
@@ -86,11 +86,20 @@ export default function ProfilePage() {
     <Page>
       <PageHeader title="我的" subtitle={mode === 'cloud' ? session?.user.email : '本機模式：資料只存在這個瀏覽器，不會上傳。'} />
 
+      <nav aria-label="快速入口" className="mb-5 grid grid-cols-2 gap-2">
+        <Link to="/tasks" className="flex items-center gap-2.5 rounded-sm border border-line bg-surface px-3 py-3 text-body font-semibold text-ink hover:bg-sunken">
+          <ListChecks className="h-5 w-5 text-primary" />作業與考試
+        </Link>
+        <Link to="/events" className="flex items-center gap-2.5 rounded-sm border border-line bg-surface px-3 py-3 text-body font-semibold text-ink hover:bg-sunken">
+          <Megaphone className="h-5 w-5 text-primary" />活動與機會
+        </Link>
+      </nav>
+
       <section aria-labelledby="p-info" className="rounded-lg border border-line bg-surface p-5">
         <h2 id="p-info" className="text-h3 text-ink">個人資料</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <div className="sm:col-span-3"><label className="label" htmlFor="p-name">暱稱</label><input id="p-name" className="field" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} /></div>
-          <div className="sm:col-span-2"><label className="label" htmlFor="p-dept">系所</label><input id="p-dept" className="field" placeholder="選填，例如：資訊工程學系" value={dept} onChange={(e) => setDept(e.target.value)} maxLength={60} /></div>
+        <div className="mt-4 grid gap-3 grid-cols-3">
+          <div className="col-span-3"><label className="label" htmlFor="p-name">暱稱</label><input id="p-name" className="field" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} /></div>
+          <div className="col-span-2"><label className="label" htmlFor="p-dept">系所</label><input id="p-dept" className="field" placeholder="選填，例如：資訊工程學系" value={dept} onChange={(e) => setDept(e.target.value)} maxLength={60} /></div>
           <div><label className="label" htmlFor="p-grade">年級</label><input id="p-grade" className="field" placeholder="選填" value={grade} onChange={(e) => setGrade(e.target.value)} maxLength={20} /></div>
         </div>
         <Button className="mt-4" onClick={save} loading={update.isPending}>儲存</Button>
@@ -145,6 +154,8 @@ export default function ProfilePage() {
           <Button className="mt-3" variant="secondary" onClick={sendFeedback} disabled={!feedback.trim()}>送出回饋</Button>
         </section>
       )}
+
+      <p className="mt-6 text-center text-[11px] text-muted">TKU Campus OS 由學生自主開發，非淡江大學官方 App。</p>
 
       <ConfirmSheet
         open={confirmDelete}

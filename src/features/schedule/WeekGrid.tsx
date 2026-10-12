@@ -1,15 +1,15 @@
 import { Link } from 'react-router-dom';
 import type { Course, Weekday } from '@/lib/types';
 import { occurrencesOn } from '@/lib/schedule';
-import { WEEKDAY_LABELS } from '@/lib/labels';
+import { WEEKDAY_LABELS, WEEKDAY_SHORT } from '@/lib/labels';
 import { COURSE_COLOR_STYLES } from '@/lib/labels';
 import { TKU_PERIODS } from '@/lib/periods';
 import { toMinutes } from '@/lib/time';
 import { cn } from '@/lib/cn';
 
-const PX_PER_MIN = 1.1;
+const PX_PER_MIN = 0.95;
 
-/** Week timetable aligned to TKU periods. Columns: Mon–Fri, plus weekend days that have classes. */
+/** Phone week timetable aligned to TKU periods. Mon–Fri, plus weekend days that have classes; fits without sideways scrolling. */
 export function WeekGrid({ courses, today, conflictSlotIds }: { courses: Course[]; today: Weekday; conflictSlotIds: Set<string> }) {
   const days: Weekday[] = [1, 2, 3, 4, 5];
   ([6, 7] as Weekday[]).forEach((d) => {
@@ -22,21 +22,20 @@ export function WeekGrid({ courses, today, conflictSlotIds }: { courses: Course[
   const periods = TKU_PERIODS.filter((p) => toMinutes(p.start) >= startMin && toMinutes(p.end) <= endMin);
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-line bg-surface">
-      <div className="grid min-w-[640px]" style={{ gridTemplateColumns: `3.5rem repeat(${days.length}, minmax(0, 1fr))` }}>
+    <div className="overflow-hidden rounded-lg border border-line bg-surface">
+      <div className="grid" style={{ gridTemplateColumns: `2rem repeat(${days.length}, minmax(0, 1fr))` }}>
         <div className="sticky top-0 border-b border-line" />
         {days.map((d) => (
-          <div key={d} className={cn('border-b border-l border-line py-2.5 text-center text-caption font-semibold', d === today ? 'text-heritage' : 'text-muted')}>
-            {WEEKDAY_LABELS[d]}
-            {d === today && <span className="ml-1 rounded-full bg-heritage/10 px-1.5 text-[10px]">今天</span>}
+          <div key={d} className={cn('border-b border-l border-line py-2 text-center text-caption font-semibold', d === today ? 'bg-primary/[0.06] text-primary' : 'text-muted')}>
+            <span aria-hidden>{WEEKDAY_SHORT[d]}</span>
+            <span className="sr-only">{WEEKDAY_LABELS[d]}{d === today ? '（今天）' : ''}</span>
           </div>
         ))}
 
         <div className="relative" style={{ height }}>
           {periods.map((p) => (
-            <div key={p.no} className="tabular absolute inset-x-0 pr-2 text-right text-[10px] leading-tight text-muted" style={{ top: (toMinutes(p.start) - startMin) * PX_PER_MIN }}>
-              <span className="block font-semibold text-ink/70">{p.no}</span>
-              {p.start}
+            <div key={p.no} className="tabular absolute inset-x-0 pt-0.5 text-center text-[11px] font-semibold leading-tight text-muted" style={{ top: (toMinutes(p.start) - startMin) * PX_PER_MIN }} title={`第 ${p.no} 節 ${p.start}–${p.end}`}>
+              {p.no}
             </div>
           ))}
         </div>
@@ -55,13 +54,13 @@ export function WeekGrid({ courses, today, conflictSlotIds }: { courses: Course[
                 <Link
                   key={slot.id}
                   to={`/schedule/course/${course.id}`}
-                  className={cn('absolute inset-x-1 overflow-hidden rounded-xs px-2 py-1.5 transition-[filter] hover:brightness-95', st.tint, conflict && 'ring-2 ring-danger')}
+                  className={cn('absolute inset-x-0.5 overflow-hidden rounded-[5px] py-1 pl-1.5 pr-0.5 transition-[filter] active:brightness-95', st.tint, conflict && 'ring-2 ring-inset ring-danger')}
                   style={{ top: top + 1, height: h - 2 }}
                   aria-label={`${WEEKDAY_LABELS[d]} ${slot.startTime}–${slot.endTime} ${course.name} ${slot.room}${conflict ? '（時間衝突）' : ''}`}
                 >
                   <span className={cn('absolute inset-y-0 left-0 w-[3px]', st.bar)} aria-hidden />
-                  <span className={cn('block text-[12px] font-semibold leading-tight', st.text)}>{course.name}</span>
-                  <span className="tabular mt-0.5 block text-[11px] text-muted">{slot.room}</span>
+                  <span className={cn('line-clamp-3 break-all text-[11px] font-semibold leading-[1.25]', st.text)}>{course.name}</span>
+                  <span className="tabular mt-0.5 block truncate text-[10px] text-muted">{slot.room}</span>
                 </Link>
               );
             })}

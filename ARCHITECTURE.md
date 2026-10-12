@@ -29,6 +29,7 @@ Supabase
 | 活動 | 不顯示（無可信來源） | `campus_events` 中 `status='published'` |
 
 ## 重要決策
+- **App 版面**：產品定位為手機 App，所有尺寸使用同一個手機版面（最大 480px 置中），不提供桌面 Sidebar（取代原需求中的桌面 Sidebar，開發者 2026-10-12 決定）。
 - **Repository 抽象**：UI 不直接呼叫 Supabase（活動、收藏、回饋除外），方便測試與兩種模式切換。
 - **課表資料模型**：`user_courses`（個人課程）＋ `schedule_entries`（時段）。`courses` 為管理員維護的課程目錄，預留未來對應。
 - **semesters**：`user_id IS NULL` 為共用學期（管理員），否則為個人學期。

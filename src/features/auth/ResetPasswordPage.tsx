@@ -43,7 +43,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-dvh items-start justify-center bg-canvas px-4 pt-16">
+    <div className="app-frame mx-auto flex min-h-dvh w-full max-w-app items-start justify-center bg-canvas px-4 pt-16">
       <div className="w-full max-w-md rounded-lg bg-surface p-6 shadow-lift">
         <Wordmark />
         <h1 className="mt-6 text-h2 text-ink">設定新密碼</h1>
