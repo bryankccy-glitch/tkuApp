@@ -1,12 +1,12 @@
 -- TKU Campus OS — initial schema
 -- UUID PKs, FKs, indexes, created_at/updated_at, RLS on every table.
 
-create extension if not exists pgcrypto;
-create extension if not exists vector;
+create extension if not exists pgcrypto with schema extensions;
+create extension if not exists vector with schema extensions;
 
 -- ───────────────────────── helpers ─────────────────────────
 create or replace function public.set_updated_at() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = '' as $$
 begin
   new.updated_at = now();
   return new;
@@ -26,15 +26,15 @@ create table public.profiles (
 
 -- Admin check used by policies. SECURITY DEFINER so it can read profiles regardless of caller RLS.
 create or replace function public.is_admin() returns boolean
-language sql stable security definer set search_path = public as $$
-  select exists (select 1 from public.profiles where id = auth.uid() and role = 'admin');
+language sql stable security definer set search_path = '' as $$
+  select exists (select 1 from public.profiles where id = (select auth.uid()) and role = 'admin');
 $$;
 
 -- Users may never promote themselves: role changes are blocked unless performed by service role.
 create or replace function public.protect_profile_role() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = '' as $$
 begin
-  if new.role is distinct from old.role and coalesce(auth.role(), '') <> 'service_role' then
+  if new.role is distinct from old.role and coalesce((select auth.role()), '') <> 'service_role' then
     raise exception 'role can only be changed by the server';
   end if;
   return new;
@@ -47,7 +47,7 @@ create trigger profiles_updated_at before update on public.profiles
 
 -- Create a profile row automatically for every new auth user.
 create or replace function public.handle_new_user() returns trigger
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = '' as $$
 begin
   insert into public.profiles (id, display_name)
   values (new.id, coalesce(nullif(new.raw_user_meta_data ->> 'display_name', ''), '淡江同學'));
@@ -126,7 +126,7 @@ create trigger schedule_entries_updated_at before update on public.schedule_entr
 
 -- An entry must belong to a course owned by the same user.
 create or replace function public.check_schedule_owner() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = '' as $$
 begin
   if not exists (select 1 from public.user_courses uc where uc.id = new.user_course_id and uc.user_id = new.user_id) then
     raise exception 'schedule entry must reference your own course';
@@ -226,17 +226,17 @@ create table public.knowledge_chunks (
   chunk_index integer not null,
   content text not null,
   token_count integer,
-  embedding vector(1536),
+  embedding extensions.vector(1536),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (document_id, chunk_index)
 );
-create index knowledge_chunks_embedding_idx on public.knowledge_chunks using hnsw (embedding vector_cosine_ops);
+create index knowledge_chunks_embedding_idx on public.knowledge_chunks using hnsw (embedding extensions.vector_cosine_ops);
 create trigger knowledge_chunks_updated_at before update on public.knowledge_chunks for each row execute function public.set_updated_at();
 
-create or replace function public.match_knowledge_chunks(query_embedding vector(1536), match_count int default 6, min_similarity float default 0.75)
+create or replace function public.match_knowledge_chunks(query_embedding extensions.vector(1536), match_count int default 6, min_similarity float default 0.75)
 returns table (chunk_id uuid, document_id uuid, content text, similarity float, title text, publisher text, source_url text, source_updated_at date)
-language sql stable as $$
+language sql stable set search_path = public, extensions as $$
   select c.id, d.id, c.content, 1 - (c.embedding <=> query_embedding) as similarity,
          d.title, d.publisher, d.source_url, d.source_updated_at
   from public.knowledge_chunks c
@@ -319,13 +319,16 @@ create trigger on_auth_user_created after insert on auth.users
 
 -- Delete the calling user's account (cascades to all personal rows).
 create or replace function public.delete_my_account() returns void
-language plpgsql security definer set search_path = public, auth as $$
+language plpgsql security definer set search_path = '' as $$
 begin
-  if auth.uid() is null then raise exception 'not authenticated'; end if;
-  delete from auth.users where id = auth.uid();
+  if (select auth.uid()) is null then raise exception 'not authenticated'; end if;
+  delete from auth.users where id = (select auth.uid());
 end $$;
 revoke all on function public.delete_my_account() from public, anon;
+revoke all on function public.handle_new_user() from public, anon, authenticated;
 grant execute on function public.delete_my_account() to authenticated;
+-- RAG search is server-only (service role); clients never call it directly.
+revoke all on function public.match_knowledge_chunks(extensions.vector, int, float) from public, anon, authenticated;
 
 -- ───────────────────────── RLS ─────────────────────────
 alter table public.profiles enable row level security;
@@ -347,28 +350,28 @@ alter table public.notification_preferences enable row level security;
 alter table public.admin_audit_logs enable row level security;
 
 -- profiles: own row only
-create policy profiles_select_own on public.profiles for select to authenticated using (id = auth.uid());
-create policy profiles_update_own on public.profiles for update to authenticated using (id = auth.uid()) with check (id = auth.uid());
+create policy profiles_select_own on public.profiles for select to authenticated using (id = (select auth.uid()));
+create policy profiles_update_own on public.profiles for update to authenticated using (id = (select auth.uid())) with check (id = (select auth.uid()));
 
 -- semesters: read shared + own; write own only
-create policy semesters_select on public.semesters for select to authenticated using (user_id is null or user_id = auth.uid());
-create policy semesters_insert_own on public.semesters for insert to authenticated with check (user_id = auth.uid());
-create policy semesters_update_own on public.semesters for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy semesters_delete_own on public.semesters for delete to authenticated using (user_id = auth.uid());
+create policy semesters_select on public.semesters for select to authenticated using (user_id is null or user_id = (select auth.uid()));
+create policy semesters_insert_own on public.semesters for insert to authenticated with check (user_id = (select auth.uid()));
+create policy semesters_update_own on public.semesters for update to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+create policy semesters_delete_own on public.semesters for delete to authenticated using (user_id = (select auth.uid()));
 
 -- course catalog: read for signed-in users; writes via server (service role) only
 create policy courses_select on public.courses for select to authenticated using (true);
 
 -- personal data: owner-only for every operation
-create policy user_courses_owner on public.user_courses for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy schedule_entries_owner on public.schedule_entries for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy tasks_owner on public.tasks for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy event_bookmarks_owner on public.event_bookmarks for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy ai_conversations_owner on public.ai_conversations for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy ai_messages_owner on public.ai_messages for all to authenticated using (user_id = auth.uid()) with check (
-  user_id = auth.uid() and exists (select 1 from public.ai_conversations c where c.id = conversation_id and c.user_id = auth.uid())
+create policy user_courses_owner on public.user_courses for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+create policy schedule_entries_owner on public.schedule_entries for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+create policy tasks_owner on public.tasks for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+create policy event_bookmarks_owner on public.event_bookmarks for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+create policy ai_conversations_owner on public.ai_conversations for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+create policy ai_messages_owner on public.ai_messages for all to authenticated using (user_id = (select auth.uid())) with check (
+  user_id = (select auth.uid()) and exists (select 1 from public.ai_conversations c where c.id = conversation_id and c.user_id = (select auth.uid()))
 );
-create policy notification_preferences_owner on public.notification_preferences for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy notification_preferences_owner on public.notification_preferences for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 -- public reference data
 create policy campus_places_select on public.campus_places for select to anon, authenticated using (true);
@@ -377,8 +380,8 @@ create policy knowledge_documents_select on public.knowledge_documents for selec
 -- knowledge_chunks: no client policy → only the server (service role) reads them.
 
 -- feedback: users may submit, and read their own
-create policy feedback_insert on public.feedback for insert to authenticated with check (user_id = auth.uid());
-create policy feedback_select_own on public.feedback for select to authenticated using (user_id = auth.uid());
+create policy feedback_insert on public.feedback for insert to authenticated with check (user_id = (select auth.uid()));
+create policy feedback_select_own on public.feedback for select to authenticated using (user_id = (select auth.uid()));
 
 -- ai_usage & admin_audit_logs: no client policies (service role only).
 -- Admin reads of audit logs go through the server after is_admin() verification.
