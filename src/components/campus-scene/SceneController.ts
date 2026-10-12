@@ -1,4 +1,5 @@
 import type { CampusWeather } from '@/services/weatherService';
+import { taipeiHours, taipeiMinutes } from '@/lib/taipei';
 import type { DayPhase, GreetingKey, SceneKind, SceneState, SceneWeather } from './sceneTypes';
 
 export type { DayPhase } from './sceneTypes';
@@ -10,7 +11,7 @@ export function phaseAt(now: Date, sunrise: Date, sunset: Date): DayPhase {
   const t = now.getTime();
   if (t < sunrise.getTime() - 40 * MIN) return 'night';
   if (t < sunrise.getTime() + 60 * MIN) return 'dawn';
-  const mins = now.getHours() * 60 + now.getMinutes();
+  const mins = taipeiMinutes(now); // campus time, regardless of the device timezone
   if (t < sunset.getTime() - 70 * MIN) {
     if (mins < 11 * 60) return 'morning';
     if (mins < 13 * 60 + 30) return 'noon';
@@ -32,7 +33,7 @@ export function greetingKey(phase: DayPhase, now: Date, sunset: Date): GreetingK
     case 'dusk':
       return now < sunset ? 'afternoon' : 'evening';
     case 'night':
-      return now.getHours() >= 4 && now.getHours() < 12 ? 'morning' : 'evening';
+      return taipeiHours(now) >= 4 && taipeiHours(now) < 12 ? 'morning' : 'evening';
   }
 }
 

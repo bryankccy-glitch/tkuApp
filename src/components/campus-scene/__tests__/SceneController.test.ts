@@ -30,7 +30,7 @@ describe('time of day', () => {
   });
 
   it('local solar fallback is within minutes of the API for Tamsui', () => {
-    const { sunrise: r, sunset: s } = sunTimes(new Date(2026, 9, 12, 12), 25.175, 121.449);
+    const { sunrise: r, sunset: s } = sunTimes(tpe('12:00'), 25.175, 121.449);
     expect(Math.abs(r.getTime() - sunrise.getTime())).toBeLessThan(6 * 60_000);
     expect(Math.abs(s.getTime() - sunset.getTime())).toBeLessThan(6 * 60_000);
   });
@@ -70,5 +70,13 @@ describe('scene selection', () => {
     expect(half.skyTop[2]).toBeLessThan(PHASE_PALETTES.afternoon.skyTop[2]);
     const rainy = weatherPalette(PHASE_PALETTES.noon, 'rainy', 'noon');
     expect(rainy.skyTop).not.toEqual(PHASE_PALETTES.noon.skyTop);
+  });
+});
+
+import { sameTaipeiDay, taipeiMinutes } from '@/lib/taipei';
+describe('campus time helpers', () => {
+  it('use Asia/Taipei regardless of the device timezone', () => {
+    expect(taipeiMinutes(new Date('2026-10-12T04:15:00Z'))).toBe(12 * 60 + 15);
+    expect(sameTaipeiDay(new Date('2026-10-12T16:30:00Z'), new Date('2026-10-13T01:00:00+08:00'))).toBe(true);
   });
 });

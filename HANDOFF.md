@@ -48,6 +48,7 @@ Claude Code
 - 前端直接呼叫 Open-Meteo（公開 API、免金鑰，不需伺服器端）。資料庫無變更。`/api/chat` 合約見 `api/README.md`（Codex 實作中）。
 
 ## Technical Decisions
+- 所有「校園時間」判斷（時段、問候、日出日落日期）一律用 Asia/Taipei（`src/lib/taipei.ts`），不依賴裝置時區
 - 像素場景用 Canvas 2D 自行繪製（不引入 PixiJS），程序化產生、可依寬度裁切，確保主塔在手機可見
 - 天氣座標使用校園中心（25.175, 121.449）
 - 產品為手機 App：不再使用 Tailwind 斷點；新增 UI 時只設計手機版面（寬 ≤ 480px）
@@ -60,7 +61,7 @@ Claude Code
 執行於 Claude 雲端工作區（Node 22.22）：
 - `npm run lint` ✅
 - `npm run typecheck` ✅
-- `npm run test` ✅ 14 files, 52 tests（新增天氣解析/錯誤分類/快取、場景與日出日落、太陽計算）
+- `npm run test` ✅ 14 files, 53 tests；在 UTC、America/Los_Angeles、Asia/Taipei、Europe/London 時區皆通過（新增天氣解析/錯誤分類/快取、場景與日出日落、太陽計算）
 - `npm run build` ✅
 - `npm run test:e2e` ✅ 50 passed（新增：即時天氣顯示、API 失敗備援不顯示虛構溫度、Canvas 真實像素與限制色盤且會動、reduced motion 靜態、英文切換、快捷操作）；原 38（desktop 1360×900、mobile Pixel 7）：主要流程、衝突、待辦、CSV 匯入、探索、AI 來源、深色模式、8 頁無水平捲動、App 版面（底部導覽＋480px 框）、週課表不超出手機寬度、PWA manifest＋service worker、skip link
 - 未執行：RLS 測試、登入/登出與重設密碼的實際流程（需 Supabase 專案）

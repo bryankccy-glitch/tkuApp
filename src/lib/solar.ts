@@ -1,3 +1,5 @@
+import { taipeiDate } from './taipei';
+
 /**
  * Sunrise / sunset for a given date and location (NOAA simplified algorithm).
  * Used as an offline fallback when the weather API has no sunrise/sunset yet.
@@ -7,10 +9,10 @@ const rad = (d: number) => (d * Math.PI) / 180;
 const deg = (r: number) => (r * 180) / Math.PI;
 
 export function sunTimes(date: Date, lat: number, lng: number): { sunrise: Date; sunset: Date } {
-  // Day of year in UTC for the local calendar date
-  const y = date.getFullYear();
+  // Day of year for the calendar date in Asia/Taipei (the campus), independent of the device timezone
+  const { y, m, d } = taipeiDate(date);
   const start = Date.UTC(y, 0, 0);
-  const today = Date.UTC(y, date.getMonth(), date.getDate());
+  const today = Date.UTC(y, m, d);
   const n = Math.round((today - start) / 86400000);
   const gamma = ((2 * Math.PI) / 365) * (n - 1);
   const eqTime =
