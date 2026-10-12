@@ -305,6 +305,8 @@ const zh = {
     "conflict": "（時間衝突）"
   },
   "map": {
+    "you": "我的位置",
+    "youPopup": "你在這裡（誤差約 {{m}} 公尺）",
     "campus": "淡江大學淡水校園",
     "campusPopup": "淡江大學淡水校園（校園中心概略位置）",
     "label": "淡江大學淡水校園地圖"
@@ -411,6 +413,13 @@ const zh = {
     "desc": "說明"
   },
   "explore": {
+    "locateMe": "顯示我目前的位置",
+    "myLocation": "我的位置",
+    "locating": "定位中…",
+    "youAreHere": "藍點是你目前的位置（誤差約 {{m}} 公尺）。",
+    "awayFromCampus": "你目前距離淡水校園約 {{km}} 公里。",
+    "locPrivacy": "位置只在你的手機上使用，不會上傳。",
+    "locErr": {"denied": "沒有定位權限。請到瀏覽器或手機設定允許這個網站使用位置，再按一次「我的位置」。", "unavailable": "暫時抓不到你的位置，請確認已開啟定位服務，或到室外再試一次。", "timeout": "定位逾時，請再按一次「我的位置」。", "unsupported": "這個瀏覽器不支援定位。", "insecure": "定位只能在 https 網址使用。"},
     "title": "校園探索",
     "subtitle": "淡水校園建築與教室代碼。輸入教室（例如 E304）可直接找到所在大樓。",
     "events": "活動與機會",

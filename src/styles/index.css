@@ -90,3 +90,10 @@
 @keyframes caret { 50% { opacity: 0; } }
 .anim-sheet { animation: sheet-in 220ms cubic-bezier(.2,.8,.2,1); }
 .anim-fade { animation: fade-in 180ms ease-out; }
+
+/* 校園地圖：我的位置 */
+.me-dot { position: relative; display: block; width: 22px; height: 22px; }
+.me-dot::before { content: ''; position: absolute; inset: 0; border-radius: 9999px; background: rgb(47 111 237 / 0.35); animation: me-pulse 2s ease-out infinite; }
+.me-dot > span { position: absolute; inset: 4px; border-radius: 9999px; background: #2F6FED; border: 3px solid #fff; box-shadow: 0 1px 4px rgb(0 0 0 / 0.35); }
+@keyframes me-pulse { from { transform: scale(0.6); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .me-dot::before { animation: none; opacity: 0.6; } }

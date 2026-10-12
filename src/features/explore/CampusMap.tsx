@@ -2,16 +2,26 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { CAMPUS_CENTER, type CampusPlace } from '@/data/places';
+import type { MyLocation } from '@/hooks/useMyLocation';
 import { t } from '@/i18n/t';
 
 /**
  * OpenStreetMap-based campus map. Only shows markers whose coordinates are verified;
  * the campus centre marker comes from Wikipedia. No fabricated building positions.
  */
-export default function CampusMap({ places, selected }: { places: CampusPlace[]; selected?: CampusPlace | null }) {
+export default function CampusMap({ places, selected, me, recenter = 0 }: {
+  places: CampusPlace[];
+  selected?: CampusPlace | null;
+  /** The viewer's own position (stays on the device). */
+  me?: MyLocation | null;
+  /** Increment to fly to `me` again (e.g. the 定位 button was pressed). */
+  recenter?: number;
+}) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const layer = useRef<L.LayerGroup | null>(null);
+  const meLayer = useRef<L.LayerGroup | null>(null);
+  const centeredFor = useRef(-1);
 
   useEffect(() => {
     if (!el.current || map.current) return;
@@ -21,6 +31,7 @@ export default function CampusMap({ places, selected }: { places: CampusPlace[];
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map.current);
     layer.current = L.layerGroup().addTo(map.current);
+    meLayer.current = L.layerGroup().addTo(map.current);
     return () => { map.current?.remove(); map.current = null; };
   }, []);
 
@@ -41,6 +52,30 @@ export default function CampusMap({ places, selected }: { places: CampusPlace[];
     });
     if (selected?.coords) map.current?.setView([selected.coords.lat, selected.coords.lng], 18);
   }, [places, selected]);
+
+  useEffect(() => {
+    const g = meLayer.current;
+    if (!g) return;
+    g.clearLayers();
+    if (!me) return;
+    // Accuracy halo + pulsing blue dot, the convention people know from phone maps.
+    L.circle([me.lat, me.lng], { radius: Math.min(me.accuracy, 500), color: '#2F6FED', weight: 1, opacity: 0.5, fillColor: '#2F6FED', fillOpacity: 0.12, interactive: false }).addTo(g);
+    L.marker([me.lat, me.lng], {
+      icon: L.divIcon({
+        className: '',
+        html: '<span class="me-dot"><span></span></span>',
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+      }),
+      title: t('map.you'),
+      zIndexOffset: 1000,
+      keyboard: false,
+    }).bindPopup(t('map.youPopup', { m: Math.round(me.accuracy) })).addTo(g);
+    if (centeredFor.current !== recenter) {
+      centeredFor.current = recenter;
+      map.current?.setView([me.lat, me.lng], Math.max(map.current.getZoom(), 17));
+    }
+  }, [me, recenter]);
 
   return <div ref={el} className="h-full w-full" role="region" aria-label={t('map.label')} />;
 }

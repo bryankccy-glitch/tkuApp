@@ -305,6 +305,8 @@ const en = {
     "conflict": " (time conflict)"
   },
   "map": {
+    "you": "My location",
+    "youPopup": "You are here (about {{m}} m accuracy)",
     "campus": "Tamkang University, Tamsui Campus",
     "campusPopup": "Tamkang University, Tamsui Campus (approximate centre)",
     "label": "Map of the Tamsui campus"
@@ -411,6 +413,13 @@ const en = {
     "desc": "Description"
   },
   "explore": {
+    "locateMe": "Show my current location",
+    "myLocation": "My location",
+    "locating": "Locating…",
+    "youAreHere": "The blue dot is you (accurate to about {{m}} m).",
+    "awayFromCampus": "You’re about {{km}} km from the Tamsui campus.",
+    "locPrivacy": "Your location stays on your phone and is never uploaded.",
+    "locErr": {"denied": "Location permission is off. Allow this site to use your location in your browser or phone settings, then tap “My location” again.", "unavailable": "Can’t get your location right now. Make sure location services are on, or try outdoors.", "timeout": "Locating timed out — tap “My location” again.", "unsupported": "This browser doesn’t support location.", "insecure": "Location only works on an https address."},
     "title": "Explore campus",
     "subtitle": "Tamsui campus buildings and room codes. Type a room (e.g. E304) to find its building.",
     "events": "Events & opportunities",
