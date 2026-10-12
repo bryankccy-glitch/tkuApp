@@ -21,6 +21,8 @@ Claude Code
 
 ## Latest Changes
 - **Supabase 上線**：專案 `tku-campus-os`（ref `gqivwpmflnxlnotirqhe`，Tokyo）。`supabase/migrations/20261012000000_init.sql` 已在 SQL Editor 套用（17 表皆開 RLS）；advisor 修正：撤銷 `is_admin()` 的 anon/authenticated 執行權、補 8 個外鍵索引（已同步進 init.sql 並套用到線上）。Security advisor 剩：3 張「RLS 無 policy」（ai_usage、admin_audit_logs、knowledge_chunks，刻意只給 service role）與 `delete_my_account` 可被登入者呼叫（刻意）
+- **「我的」帳號卡**：頁面最上方顯示暱稱與 Email，獨立的「登出」按鈕（與刪除帳號分開）；訪客顯示「訪客模式」與「登入或註冊」
+- **預覽版從登入頁開始**：`build:preview` 會讀 `.env.local` 成為雲端模式，且每次開啟清除訪客旗標；選「先不登入」可看範例資料
 - 本機 `.env.local` 已填 `VITE_SUPABASE_URL` 與 publishable key（git 忽略；只含公開金鑰）
 - **登入頁重新設計**：上方即時淡江大橋像素場景（與首頁同天氣/日出日落資料）、登入/註冊分頁、註冊可填暱稱（寫入 `display_name`）、顯示/隱藏密碼、常見錯誤中英文訊息、忘記密碼
 - **訪客模式**：雲端可用時，登入頁可選「先不登入，直接使用」→ 使用 LocalRepository（`localStorage` 旗標 `tku.guest`）；「我的」顯示「登入或註冊」入口；登入後自動結束訪客模式（訪客資料不會合併到帳號）。`useAuth()` 新增 `cloudAvailable`、`isGuest`、`continueAsGuest`
@@ -76,7 +78,7 @@ Claude Code
 執行於 Claude 雲端工作區（Node 22.22）：
 - `npm run lint` ✅
 - `npm run typecheck` ✅
-- `npm run test` ✅ 14 files, 64 tests（本輪新增登入頁 5 項：輸入驗證、錯誤訊息、註冊帶暱稱、顯示密碼、訪客模式）；先前 59 tests（新增提醒、翻譯 key 一致性）；在 UTC、America/Los_Angeles、Asia/Taipei、Europe/London 時區皆通過（新增天氣解析/錯誤分類/快取、場景與日出日落、太陽計算）
+- `npm run test` ✅ 14 files, 64 tests（本輪新增登入頁 5 項＋登出 2 項，共 66 tests：輸入驗證、錯誤訊息、註冊帶暱稱、顯示密碼、訪客模式）；先前 59 tests（新增提醒、翻譯 key 一致性）；在 UTC、America/Los_Angeles、Asia/Taipei、Europe/London 時區皆通過（新增天氣解析/錯誤分類/快取、場景與日出日落、太陽計算）
 - `npm run build` ✅
 - `npm run test:e2e` ✅ 118 passed（本輪新增：axe 無障礙 36、CSP 10、英文介面 20、提醒 2；先前：新增：即時天氣顯示、API 失敗備援不顯示虛構溫度、Canvas 真實像素與限制色盤且會動、reduced motion 靜態、英文切換、快捷操作）；原 38（desktop 1360×900、mobile Pixel 7）：主要流程、衝突、待辦、CSV 匯入、探索、AI 來源、深色模式、8 頁無水平捲動、App 版面（底部導覽＋480px 框）、週課表不超出手機寬度、PWA manifest＋service worker、skip link
 - 登入頁（雲端建置）axe WCAG 2.2 AA：登入/註冊、淺/深色 0 violations

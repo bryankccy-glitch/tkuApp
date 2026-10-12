@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronRight, Download, ListChecks, LogIn, LogOut, Megaphone, Monitor, Moon, Sun, Trash2 } from 'lucide-react';
+import { ChevronRight, Download, ListChecks, LogIn, LogOut, Megaphone, Monitor, Moon, Sun, Trash2, UserRound } from 'lucide-react';
 import { Page } from '@/components/layout/AppShell';
 import { PageHeader } from '@/components/ui/misc';
 import { Button } from '@/components/ui/Button';
@@ -17,7 +17,7 @@ import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/cn';
 
 export default function ProfilePage() {
-  const { mode, session, signOut, isGuest } = useAuth();
+  const { mode, session, signOut, isGuest, cloudAvailable } = useAuth();
   const navigate = useNavigate();
   const repo = useRepo();
   const qc = useQueryClient();
@@ -72,6 +72,14 @@ export default function ProfilePage() {
     }
   };
 
+  const doSignOut = async () => {
+    const wasGuest = isGuest;
+    await signOut();
+    qc.clear();
+    if (!wasGuest) toast({ tone: 'success', message: t('me.signedOut') });
+    navigate('/login', { replace: true });
+  };
+
   const sendFeedback = async () => {
     if (!supabase || !feedback.trim()) return;
     const { error } = await supabase.from('feedback').insert({ message: feedback.trim().slice(0, 2000), page: '/me' });
@@ -88,7 +96,30 @@ export default function ProfilePage() {
 
   return (
     <Page>
-      <PageHeader title={t('me.title')} subtitle={mode === 'cloud' ? session?.user.email : isGuest ? t('me.guestSubtitle') : t('me.localSubtitle')} />
+      <PageHeader title={t('me.title')} subtitle={cloudAvailable ? undefined : t('me.localSubtitle')} />
+
+      {cloudAvailable && (
+        <section aria-labelledby="p-account" className="mb-5 rounded-lg border border-line bg-surface p-4">
+          <div className="flex items-center gap-3">
+            <span aria-hidden className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-body-lg font-bold text-white dark:text-[#1A0506]">
+              {isGuest ? <UserRound className="h-5 w-5" /> : (profile?.displayName ?? session?.user.email ?? '?').slice(0, 1).toUpperCase()}
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 id="p-account" className="truncate text-body font-semibold text-ink">{isGuest ? t('me.guestTitle') : (profile?.displayName ?? t('defaults.studentName'))}</h2>
+              <p className="truncate text-caption text-muted">{isGuest ? t('me.guestSubtitle') : session?.user.email}</p>
+            </div>
+          </div>
+          {isGuest ? (
+            <Button className="mt-4 w-full" onClick={() => void doSignOut()}>
+              <LogIn className="h-4 w-4" />{t('me.signInToSync')}
+            </Button>
+          ) : (
+            <Button variant="secondary" className="mt-4 w-full" onClick={() => void doSignOut()}>
+              <LogOut className="h-4 w-4" />{t('me.signOut')}
+            </Button>
+          )}
+        </section>
+      )}
 
       <nav aria-label={t('me.shortcuts')} className="mb-5 grid grid-cols-2 gap-2">
         <Link to="/tasks" className="flex items-center gap-2.5 rounded-sm border border-line bg-surface px-3 py-3 text-body font-semibold text-ink hover:bg-sunken">
@@ -146,20 +177,6 @@ export default function ProfilePage() {
               <span className="flex-1"><span className="block text-body font-semibold text-ink">{t('me.about')}</span><span className="text-caption text-muted">{t('me.aboutHint')}</span></span><ChevronRight className="h-5 w-5 text-muted" />
             </Link>
           </li>
-          {isGuest && (
-            <li>
-              <button type="button" onClick={() => { void signOut().then(() => navigate('/login')); }} className="flex w-full items-center gap-3 px-5 py-3.5 text-left hover:bg-sunken">
-                <LogIn className="h-5 w-5 text-primary" /><span className="flex-1"><span className="block text-body font-semibold text-ink">{t('me.signInToSync')}</span><span className="text-caption text-muted">{t('me.signInToSyncHint')}</span></span><ChevronRight className="h-5 w-5 text-muted" />
-              </button>
-            </li>
-          )}
-          {mode === 'cloud' && (
-            <li>
-              <button type="button" onClick={signOut} className="flex w-full items-center gap-3 px-5 py-3.5 text-left hover:bg-sunken">
-                <LogOut className="h-5 w-5 text-muted" /><span className="text-body font-semibold text-ink">{t('me.signOut')}</span>
-              </button>
-            </li>
-          )}
           <li>
             <button type="button" onClick={() => setConfirmDelete(true)} className="flex w-full items-center gap-3 px-5 py-3.5 text-left hover:bg-danger/5">
               <Trash2 className="h-5 w-5 text-danger" /><span className="text-body font-semibold text-danger">{mode === 'cloud' ? t('me.deleteAccount') : t('me.deleteLocal')}</span>

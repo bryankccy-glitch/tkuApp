@@ -587,9 +587,10 @@ const zh = {
     "updatePassword": "更新密碼"
   },
   "me": {
+    "signedOut": "已登出",
+    "guestTitle": "訪客模式",
     "guestSubtitle": "訪客模式：資料只存在這台裝置。登入後可在不同裝置同步。",
     "signInToSync": "登入或註冊",
-    "signInToSyncHint": "建立帳號，在手機和電腦之間同步課表與作業",
     "title": "我的",
     "localSubtitle": "本機模式：資料只存在這個瀏覽器，不會上傳。",
     "nameInvalid": "暱稱需為 1–40 字",

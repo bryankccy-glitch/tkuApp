@@ -587,9 +587,10 @@ const en = {
     "updatePassword": "Update password"
   },
   "me": {
+    "signedOut": "Signed out",
+    "guestTitle": "Guest mode",
     "guestSubtitle": "Guest mode: data stays on this device. Sign in to sync across devices.",
     "signInToSync": "Sign in or sign up",
-    "signInToSyncHint": "Create an account to sync your schedule and tasks between devices",
     "title": "Me",
     "localSubtitle": "On-device mode: your data stays in this browser and is never uploaded.",
     "nameInvalid": "Name must be 1–40 characters",

@@ -12,7 +12,11 @@ import './styles/index.css';
 import './i18n';
 import { seedPreviewDemo } from './lib/data/previewDemo';
 
-if (import.meta.env.VITE_PREVIEW_DEMO === '1') seedPreviewDemo();
+if (import.meta.env.VITE_PREVIEW_DEMO === '1') {
+  seedPreviewDemo();
+  // Hosted previews always open on the sign-in screen, even after choosing guest last time.
+  try { localStorage.removeItem('tku.guest'); } catch { /* storage unavailable */ }
+}
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } },
