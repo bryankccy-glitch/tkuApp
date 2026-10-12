@@ -50,6 +50,16 @@
   body {
     @apply bg-canvas text-ink font-sans text-body antialiased;
     font-feature-settings: 'cv11', 'ss01';
+    /* App feel: text can't be highlighted or long-pressed into a copy menu. */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  /* Fields must stay selectable so people can edit, paste and move the caret. */
+  input, textarea, select, [contenteditable='true'] {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
   }
   :focus-visible { outline: 2px solid rgb(var(--focus)); outline-offset: 2px; border-radius: 6px; }
   ::selection { background: rgb(var(--c-blue) / 0.25); }

@@ -547,6 +547,7 @@ const en = {
     "stopped": "Stopped."
   },
   "auth": {
+    "network": "Can’t reach the account server. Check your connection — preview pages block this connection, so use local dev or the deployed site.",
     "welcome": "Welcome to Tamkang",
     "nickname": "Nickname",
     "showPassword": "Show password",

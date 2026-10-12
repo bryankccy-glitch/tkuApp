@@ -78,6 +78,7 @@ export default function LoginPage() {
       if (/email not confirmed/i.test(msg)) return setError(t('auth.notConfirmed'));
       if (/already registered/i.test(msg)) return setError(t('auth.alreadyRegistered'));
       if (/rate/i.test(msg)) return setError(t('auth.rateLimited'));
+      if (/failed to fetch|network|load failed/i.test(msg)) return setError(t('auth.network'));
       return setError(msg);
     }
     if (tab === 'up' && !res.data.session) setInfo(t('auth.verifySent'));
