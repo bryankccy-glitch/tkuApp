@@ -5,6 +5,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        primary: 'rgb(var(--c-primary) / <alpha-value>)',
         navy: 'rgb(var(--c-navy) / <alpha-value>)',
         blue: 'rgb(var(--c-blue) / <alpha-value>)',
         heritage: 'rgb(var(--c-heritage) / <alpha-value>)',

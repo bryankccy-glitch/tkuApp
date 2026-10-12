@@ -25,7 +25,7 @@ export function Colonnade({ className, arches = 14 }: { className?: string; arch
               fill="currentColor"
             />
             <line x1={x + w / 2} y1={20} x2={x + w / 2} y2={27} stroke="currentColor" strokeWidth="1.2" opacity="0.7" />
-            <rect x={x + w / 2 - 3} y={27} width="6" height="8" rx="3" fill="#E0736A" />
+            <rect x={x + w / 2 - 3} y={27} width="6" height="8" rx="3" fill="#F2C46B" />
           </g>
         );
       })}
@@ -38,9 +38,9 @@ export function ScrollIllustration({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 160 96" className={cn('h-20 w-auto', className)} aria-hidden>
       <path d="M18 70c18-26 44-38 62-30s44 4 62-20" fill="none" className="stroke-blue/40" strokeWidth="10" strokeLinecap="round" />
-      <path d="M18 78c18-26 44-38 62-30s44 4 62-20" fill="none" className="stroke-navy/70" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="18" cy="74" r="9" className="fill-surface stroke-navy/70" strokeWidth="3" />
-      <circle cx="142" cy="24" r="9" className="fill-surface stroke-navy/70" strokeWidth="3" />
+      <path d="M18 78c18-26 44-38 62-30s44 4 62-20" fill="none" className="stroke-primary/70" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="18" cy="74" r="9" className="fill-surface stroke-primary/70" strokeWidth="3" />
+      <circle cx="142" cy="24" r="9" className="fill-surface stroke-primary/70" strokeWidth="3" />
       <rect x="76" y="30" width="8" height="11" rx="4" className="fill-heritage" />
     </svg>
   );

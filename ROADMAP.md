@@ -5,17 +5,16 @@
 ## Phase 0 — 專案初始化 ✅
 HANDOFF / AGENTS / README / ROADMAP / ARCHITECTURE / .env.example
 
-## Phase 1 — 品牌與 Design System 🟡
-- ✅ 色彩 tokens、字級、深色模式、Logo、App Icon、Favicon、Loading mark、空狀態插畫
+## Phase 1 — 品牌與 Design System ✅
+- ✅ 色彩 tokens（主題色：宮燈紅）、字級、深色模式、Logo（light/dark）、App Icon、Favicon、Splash、Loading mark、空狀態插畫
 - ✅ 手機底部導覽、桌面 Sidebar
-- ⬜ Splash Screen 圖檔、獨立 Light/Dark Logo 檔
 - ⬜ 查核淡江官方品牌規範；若取得授權再調整色彩
 
 ## Phase 2 — 基礎平台 🟡
 - ✅ React + TS + Vite、Routing、Supabase client、Email 登入/註冊、Profiles
 - ✅ Migration（全部核心資料表）+ RLS + Seed
 - ⬜ 在真實 Supabase 專案套用 migration 並驗證（需專案金鑰）
-- ⬜ 忘記密碼、Email 驗證後導回頁
+- ✅ 忘記密碼與重設密碼頁（待 Supabase 實測）
 
 ## Phase 3 — 學習中心 🟡
 - ✅ Dashboard（真實資料）、課表 CRUD、節次、衝突檢測、CSV 匯入匯出、學期切換、課程詳情
@@ -36,9 +35,12 @@ HANDOFF / AGENTS / README / ROADMAP / ARCHITECTURE / .env.example
 - ⬜ 知識庫匯入腳本（官方文件 → pgvector）
 
 ## Phase 6 — 正式 MVP ⬜
-- 🟡 單元測試（Vitest 26 項）
-- ⬜ React Testing Library 元件測試、Playwright E2E、RLS 測試
+- ✅ Vitest 單元＋元件測試（39 項）、Playwright E2E（36 項，桌面＋手機）
+- ⬜ RLS 測試（Codex）、登入/登出 E2E（需 Supabase）
 - ⬜ Vercel 部署、CSP header、效能檢查、Beta 測試
+
+## i18n ⬜
+- 將介面文字抽出為字典，預留英文介面
 
 ## Phase 7 — Super App ⬜
 校園社群、社團討論、揪團、二手書/二手物品（須先完成防詐、檢舉封鎖、審核、個資保護設計）、職涯中心、個人化推薦、AI 行程規劃、跨校架構。

@@ -19,7 +19,7 @@ export default defineConfig({
         short_name: '淡江校園',
         description: '淡江學生的課表、待辦、校園探索與 AI 校園助理。學生自主開發，非淡江大學官方 App。',
         lang: 'zh-Hant-TW',
-        theme_color: '#15345A',
+        theme_color: '#A84643',
         background_color: '#F8F6F1',
         display: 'standalone',
         start_url: '/',
@@ -38,5 +38,6 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}', 'api/**/*.test.ts'],
+    exclude: ['e2e/**', 'node_modules/**'],
   },
 });

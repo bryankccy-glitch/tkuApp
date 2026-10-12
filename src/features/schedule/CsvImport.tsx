@@ -46,7 +46,7 @@ export function CsvImport({ open, onClose, onImport, importing }: { open: boolea
             下載範本 CSV
           </button>
         </div>
-        <label className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-sm border-2 border-dashed border-line px-4 py-6 text-center hover:border-navy/40">
+        <label className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-sm border-2 border-dashed border-line px-4 py-6 text-center hover:border-primary/40">
           <span className="text-body font-semibold text-ink">{fileName || '選擇 CSV 檔案'}</span>
           <span className="text-caption text-muted">檔案只在你的裝置上解析</span>
           <input type="file" accept=".csv,text/csv" onChange={onFile} className="sr-only" />

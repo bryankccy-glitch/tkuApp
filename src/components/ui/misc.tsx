@@ -31,7 +31,7 @@ export function Segmented<T extends string>({
           )}
         >
           {o.label}
-          {o.count !== undefined && o.count > 0 && <span className="tabular rounded-full bg-navy/10 px-1.5 text-[11px] text-navy">{o.count}</span>}
+          {o.count !== undefined && o.count > 0 && <span className="tabular rounded-full bg-primary/10 px-1.5 text-[11px] text-primary">{o.count}</span>}
         </button>
       ))}
     </div>

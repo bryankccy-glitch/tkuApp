@@ -15,7 +15,7 @@ function SideLink({ item }: { item: NavItem }) {
       className={({ isActive }) =>
         cn(
           'group relative flex h-10 items-center gap-3 rounded-sm px-3 text-body font-medium transition-colors',
-          isActive ? 'bg-navy/[0.07] text-navy dark:bg-navy/15' : 'text-muted hover:bg-sunken hover:text-ink',
+          isActive ? 'bg-primary/[0.07] text-primary dark:bg-primary/15' : 'text-muted hover:bg-sunken hover:text-ink',
         )
       }
     >
@@ -63,13 +63,13 @@ function BottomNav() {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  cn('flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors', isActive ? 'text-navy' : 'text-muted')
+                  cn('flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors', isActive ? 'text-primary' : 'text-muted')
                 }
               >
                 {({ isActive }) =>
                   item.primary ? (
                     <>
-                      <span className={cn('-mt-5 flex h-12 w-12 items-center justify-center rounded-full border-4 border-canvas shadow-lift transition-colors', isActive ? 'bg-heritage text-white' : 'bg-navy text-white dark:text-[#0E1B2C]')}>
+                      <span className={cn('-mt-5 flex h-12 w-12 items-center justify-center rounded-full border-4 border-canvas shadow-lift transition-colors', isActive ? 'bg-primary text-white ring-4 ring-primary/25 dark:text-[#2A0E0C]' : 'bg-primary/85 text-white dark:text-[#2A0E0C]')}>
                         <Icon className="h-5 w-5" strokeWidth={2.2} />
                       </span>
                       <span>{item.label}</span>
@@ -101,11 +101,11 @@ export function AppShell() {
   }, [pathname]);
   return (
     <div className="flex min-h-dvh">
-      <a href="#main" className="sr-only z-50 rounded-sm bg-navy px-3 py-2 text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3">跳到主要內容</a>
+      <a href="#main" className="sr-only z-50 rounded-sm bg-primary px-3 py-2 text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3">跳到主要內容</a>
       <Sidebar />
       <main id="main" ref={main} tabIndex={-1} className="min-w-0 flex-1 pb-28 outline-none lg:pb-10">
         {import.meta.env.VITE_PREVIEW_DEMO === '1' && (
-          <p className="bg-navy/[0.07] px-4 py-2 text-center text-caption text-ink">預覽版：已放入範例課程與待辦，資料只存在這個瀏覽器。可以自由新增、編輯、刪除。</p>
+          <p className="bg-primary/[0.07] px-4 py-2 text-center text-caption text-ink">預覽版：已放入範例課程與待辦，資料只存在這個瀏覽器。可以自由新增、編輯、刪除。</p>
         )}
         <Suspense fallback={<LoadingMark />}>
           <Outlet />

@@ -25,7 +25,7 @@ export function DayTimeline({ items, now }: { items: Occurrence[]; now?: Date })
               <span
                 className={cn(
                   'mt-4 h-3 w-3 rounded-full border-2',
-                  st === 'ongoing' ? 'border-heritage bg-heritage ring-4 ring-heritage/15' : st === 'done' ? 'border-line bg-line' : 'border-navy bg-surface',
+                  st === 'ongoing' ? 'border-heritage bg-heritage ring-4 ring-heritage/15' : st === 'done' ? 'border-line bg-line' : 'border-primary bg-surface',
                 )}
                 aria-hidden
               />

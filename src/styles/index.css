@@ -7,7 +7,8 @@
  * 色彩為產品設計提案，非淡江大學官方標準色（待查核官方識別規範）。
  */
 :root {
-  --c-navy: 21 52 90;        /* TKU Navy #15345A */
+  --c-primary: 168 70 67;    /* 主題色 Heritage Red #A84643 */
+  --c-navy: 21 52 90;        /* TKU Navy #15345A（輔助色） */
   --c-blue: 52 120 200;      /* Campus Blue #3478C8 */
   --c-heritage: 168 70 67;   /* Heritage Red #A84643 */
   --c-canvas: 248 246 241;   /* Warm Ivory #F8F6F1 */
@@ -24,6 +25,7 @@
 }
 
 [data-theme='dark'] {
+  --c-primary: 232 128 118;
   --c-navy: 150 186 230;
   --c-blue: 110 165 230;
   --c-heritage: 222 120 112;

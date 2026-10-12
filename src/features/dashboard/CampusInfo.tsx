@@ -50,7 +50,7 @@ export function CampusInfo() {
                 href={s.url}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="group flex h-full flex-col justify-between gap-2 rounded-sm border border-line bg-surface p-3 transition-colors hover:border-navy/40"
+                className="group flex h-full flex-col justify-between gap-2 rounded-sm border border-line bg-surface p-3 transition-colors hover:border-primary/40"
               >
                 <span className="text-body font-semibold leading-snug text-ink">{s.title}</span>
                 <span className="flex items-center justify-between gap-1 text-[11px] text-muted">

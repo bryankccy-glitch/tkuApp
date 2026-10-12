@@ -28,6 +28,8 @@ npm run dev          # http://localhost:5173 ，未設定 Supabase 時為「本�
 | `npm run typecheck` | TypeScript strict |
 | `npm run test` | Vitest |
 | `npm run build` | 正式建置（含 PWA） |
+| `npm run test:e2e` | Playwright E2E（第一次先執行 `npx playwright install chromium`） |
+| `npm run build:preview` | 預覽版（範例資料，可放到靜態空間展示） |
 
 ## 部署（Vercel + Supabase）
 1. **Supabase**：建立專案 → SQL Editor 依序執行 `supabase/migrations/*.sql`（或 `supabase db push`）。開發環境可再執行 `supabase/seed.sql`。Authentication → URL Configuration 加入你的網域。

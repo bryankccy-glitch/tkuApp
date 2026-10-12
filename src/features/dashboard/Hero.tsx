@@ -6,10 +6,10 @@ import { dayPhase, formatDateLong, greeting, type DayPhase } from '@/lib/time';
 import { cn } from '@/lib/cn';
 
 const SKIES: Record<DayPhase, string> = {
-  dawn: 'from-[#1C3C66] via-[#3E6A9C] to-[#E8B48C]',
-  day: 'from-[#15345A] via-[#23558D] to-[#5D93CF]',
-  dusk: 'from-[#1A2F52] via-[#6A4A6E] to-[#E08A62]',
-  night: 'from-[#0A1626] via-[#12274A] to-[#1E3B66]',
+  dawn: 'from-[#7A2B29] via-[#A24A43] to-[#E3A77F]',
+  day: 'from-[#8C3431] via-[#A84643] to-[#C9675B]',
+  dusk: 'from-[#5A2230] via-[#91404A] to-[#E0875F]',
+  night: 'from-[#22111A] via-[#40192A] to-[#5E2530]',
 };
 
 const SUGGESTIONS = ['明天第一堂課在哪裡？', '這週有哪些作業？', '淡江病假怎麼請？'];
@@ -47,7 +47,7 @@ export function Hero({ name, now, summary }: { name: string; now: Date; summary:
               className="h-10 min-w-0 flex-1 bg-transparent text-body text-[#253244] placeholder:text-[#5C697C] focus:outline-none dark:text-white dark:placeholder:text-white/60"
               maxLength={300}
             />
-            <button type="submit" aria-label="送出問題" disabled={!q.trim()} className="flex h-10 w-10 items-center justify-center rounded-xs bg-heritage text-white disabled:opacity-40">
+            <button type="submit" aria-label="送出問題" disabled={!q.trim()} className="flex h-10 w-10 items-center justify-center rounded-xs bg-primary text-white disabled:opacity-40">
               <ArrowUp className="h-5 w-5" />
             </button>
           </div>
@@ -60,7 +60,7 @@ export function Hero({ name, now, summary }: { name: string; now: Date; summary:
           </div>
         </form>
       </div>
-      <Colonnade className="absolute inset-x-0 bottom-0 h-16 text-[#0B1A2E]/80 sm:h-20" arches={18} />
+      <Colonnade className="absolute inset-x-0 bottom-0 h-16 text-[#2A0E10]/75 sm:h-20" arches={18} />
     </section>
   );
 }

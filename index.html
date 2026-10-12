@@ -3,15 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#15345A" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#A84643" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0E1B2C" media="(prefers-color-scheme: dark)" />
     <meta name="description" content="TKU Campus OS 淡江智慧校園：課表、待辦、校園探索與 AI 校園助理。學生自主開發，非淡江大學官方 App。" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="淡江校園" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
     <title>TKU Campus OS 淡江智慧校園</title>
+    <style>
+      .splash { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+        background: linear-gradient(180deg, #A84643 0%, #8A3533 100%); color: #F8F6F1; font-family: Inter, 'Noto Sans TC', system-ui, sans-serif; }
+      [data-theme='dark'] .splash { background: #24121A; }
+      .splash-name { margin: 14px 0 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+      .splash-tag { margin: 0; font-size: 13px; opacity: 0.7; letter-spacing: 0.04em; }
+      .splash-lantern { transform-origin: 32px 18px; animation: splash-sway 1.6s ease-in-out infinite; }
+      @keyframes splash-sway { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+      @media (prefers-reduced-motion: reduce) { .splash-lantern { animation: none; } }
+    </style>
     <script>
       try {
         var t = localStorage.getItem('tku.theme');
@@ -21,7 +35,21 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Splash: shown until React mounts and replaces #root's content. -->
+    <div id="root">
+      <div class="splash" role="status" aria-label="TKU Campus OS 載入中">
+        <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
+          <path d="M20 49V30a12 12 0 0 1 24 0v19" fill="none" stroke="#F8F6F1" stroke-width="4" stroke-linecap="round" />
+          <g class="splash-lantern">
+            <path d="M32 18v9" stroke="#F8F6F1" stroke-width="2" stroke-linecap="round" />
+            <rect x="28.5" y="27" width="7" height="9" rx="3.5" fill="#F2C46B" />
+          </g>
+          <path d="M11 50c8-5 15-5 21 0s13 5 21 0" fill="none" stroke="#7FB2EA" stroke-width="3.5" stroke-linecap="round" />
+        </svg>
+        <p class="splash-name">TKU Campus OS</p>
+        <p class="splash-tag">One Campus. One OS.</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

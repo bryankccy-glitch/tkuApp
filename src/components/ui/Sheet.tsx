@@ -108,7 +108,7 @@ export function ConfirmSheet({
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            className={cn('h-10 flex-1 rounded-sm font-semibold text-white disabled:opacity-50', danger ? 'bg-danger' : 'bg-navy')}
+            className={cn('h-10 flex-1 rounded-sm font-semibold text-white disabled:opacity-50', danger ? 'bg-danger' : 'bg-primary')}
           >
             {confirmLabel}
           </button>

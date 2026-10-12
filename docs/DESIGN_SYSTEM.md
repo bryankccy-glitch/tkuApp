@@ -3,17 +3,18 @@
 > 色彩為**產品設計提案**，不是淡江大學官方標準色。2026-10-12 搜尋未找到淡江公開的品牌識別規範（CIS），待查核。
 
 ## 視覺概念：宮燈拱廊
-- **主識別**：宮燈教室的拱窗節奏＋懸掛的紅色宮燈。用在 Logo、首頁歡迎區底部的「拱廊帶」（`Colonnade`）、Loading 動畫。
+- **主識別**：宮燈教室的拱窗節奏＋懸掛的宮燈（紅底上為金色燈光 #F2C46B）。用在 Logo、首頁歡迎區底部的「拱廊帶」（`Colonnade`）、Loading 動畫。
 - **書卷曲線**：用在空狀態插畫（`ScrollIllustration`）與 Logo 底部波線。
-- **淡水天空**：首頁歡迎區依時段切換天色（清晨/白天/黃昏/夜晚），不使用天氣資料。
+- **淡水天空**：首頁歡迎區以宮燈紅為底，依時段切換色調（清晨/白天/黃昏/夜晚），不使用天氣資料。
 - 一次只讓一個元素突出：首頁的拱廊帶。其他區塊保持安靜、資訊清楚。
 
 ## 色彩 tokens（`src/styles/index.css`，Tailwind 名稱）
 | Token | Light | 用途 |
 |---|---|---|
-| `navy` | #15345A TKU Navy | 主要動作、導覽選取、品牌 |
+| `primary` | #A84643 Heritage Red（**主題色**，2026-10-12 依開發者指示改為紅色） | 主要按鈕、導覽選取、首頁歡迎區、Logo、App Icon、啟動畫面 |
+| `heritage` | #A84643 | 強調：目前狀態、考試、今天標記（與主題色同色系） |
+| `navy` | #15345A TKU Navy | 輔助色（保留供資訊視覺化、地圖等使用） |
 | `blue` | #3478C8 Campus Blue | 連結、Focus ring |
-| `heritage` | #A84643 Heritage Red | 強調：目前狀態、考試、AI 送出鍵、選取指示條 |
 | `canvas` | #F8F6F1 Warm Ivory | 頁面背景 |
 | `surface` | #FFFFFF Cloud White | 卡片、面板 |
 | `sunken` | #E9EDF2 Soft Gray | 次要底色、segmented control |
@@ -43,7 +44,7 @@ Inter（英數）＋ Noto Sans TC（中文），系統字型 fallback。數字�
 不是所有區塊都是卡片：今日課表用時間軸、活動用分隔線列表、待辦用帶邊框面板，只有「下一堂課」使用陰影（`shadow-lift`）。
 
 ## 導覽
-- 手機：底部 5 格（首頁／課表／AI 助理（中央浮起圓鈕）／探索／我的），選取時圖示加粗＋宮燈紅圓點。
+- 手機：底部 5 格（首頁／課表／AI 助理（中央浮起紅色圓鈕，選取時加外圈）／探索／我的），選取時圖示加粗＋紅色圓點。
 - 桌面（≥1024px）：左側 Sidebar，選取項左側宮燈紅指示條；下方為次要入口「作業與考試」「活動與機會」。
 
 ## 元件（`src/components`）
@@ -54,4 +55,6 @@ WCAG 2.2 AA 目標：可見 focus ring、跳到主要內容連結、表單 label
 
 ## 品牌資產
 `public/favicon.svg`、`public/icons/icon.svg` 與 PNG（192/512/maskable/apple-touch）。原創設計，未使用淡江校徽。
-未完成：Splash Screen 圖、Light/Dark 獨立 Logo 檔（目前 Logo 元件依主題自動調色）。
+- `public/brand/logo-light.svg`、`logo-dark.svg`、`mark.svg`
+- Splash Screen：`index.html` 內的啟動畫面（React 掛載後自動被取代），支援深色與減少動態。
+⚠ 自訂字級已註冊於 tailwind-merge；新增色彩 token 不需註冊。

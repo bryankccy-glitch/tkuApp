@@ -16,6 +16,7 @@ const EventsPage = lazy(() => import('@/features/events/EventsPage'));
 const ProfilePage = lazy(() => import('@/features/profile/ProfilePage'));
 const AboutPage = lazy(() => import('@/features/profile/AboutPage'));
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
+const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'));
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { loading, repo } = useAuth();
@@ -37,6 +38,7 @@ const createRouter = import.meta.env.VITE_HASH_ROUTER === '1' ? createHashRouter
 
 export const router = createRouter([
   { path: '/login', element: <LoginPage /> },
+  { path: '/reset-password', element: <ResetPasswordPage /> },
   {
     element: (
       <RequireAuth>

@@ -102,7 +102,7 @@ export default function ProfilePage() {
         <div role="radiogroup" aria-label="主題" className="mt-3 grid grid-cols-3 gap-2">
           {themes.map(({ v, label, icon: Icon }) => (
             <button key={v} type="button" role="radio" aria-checked={pref === v} onClick={() => setPref(v)}
-              className={cn('flex flex-col items-center gap-1.5 rounded-sm border py-3 text-caption font-semibold', pref === v ? 'border-navy bg-navy/[0.06] text-navy' : 'border-line text-muted hover:text-ink')}>
+              className={cn('flex flex-col items-center gap-1.5 rounded-sm border py-3 text-caption font-semibold', pref === v ? 'border-primary bg-primary/[0.06] text-primary' : 'border-line text-muted hover:text-ink')}>
               <Icon className="h-5 w-5" />{label}
             </button>
           ))}

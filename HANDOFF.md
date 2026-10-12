@@ -1,76 +1,74 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-12 16:20（Asia/Taipei, UTC+8）
+2026-10-12 16:40（Asia/Taipei, UTC+8）
 
 ## Updated By
 Claude Code
 
 ## Current Status
-Phase 0–1 完成；Phase 2–5 前端 MVP 可用（本機模式可完整操作）。雲端模式程式已完成，但**尚未連接真實 Supabase 專案驗證**。AI 後端 `/api/chat` 尚未實作（已交給 Codex）。
+前端 MVP 可用（本機模式完整可操作），主題色已改為紅色。雲端模式程式完成但**尚未連接真實 Supabase 驗證**。AI 後端 `/api/chat` 由 Codex 在 `feat/ai-backend` 進行中。
 
 ## Completed
-- 專案骨架：Vite 6 + React 18 + TypeScript strict + Tailwind 3 + React Router 6 + TanStack Query 5 + RHF + Zod + PWA
-- Design System：tokens、深色模式、字級、Logo/Icon/Favicon、Loading、空狀態插畫、宮燈拱廊帶（見 docs/DESIGN_SYSTEM.md）
-- 導覽：手機底部 5 格（AI 中央浮起）、桌面 Sidebar、skip link、focus 樣式
-- 資料層：`DataRepository` 介面＋ `LocalRepository`（localStorage）＋ `SupabaseRepository`（RLS）
-- 首頁 Dashboard：時段天色歡迎區、AI 快捷提問、下一堂課（倒數/教室/教師/位置/.ics 提醒）、今日時間軸、本週待辦與考試、活動、常用服務
-- 課表：CRUD、多時段、節次選擇（1–12 節，已查核）、衝突檢測（表單即時＋課表紅框）、週課表/單日、學期切換與新增、CSV 匯入（含錯誤列報告）/匯出（防公式注入）、課程詳情
-- 作業與考試：CRUD、6 種類型、優先度、提醒設定、6 種篩選、完成/復原、.ics 提醒
-- 校園探索：29 個建築代碼、搜尋（含教室→建築）、分類、OSM 地圖（只標校園中心）、Google 地圖導航、來源與查核狀態
-- 活動頁：搜尋/分類/日期/收藏/詳情/報名/分享/行事曆（資料來自 Supabase `campus_events`）
-- AI 助理 UI：串流、Markdown、來源卡片、快捷問題、停止、重試、複製、清除；本機規則式助理
-- 我的：個人資料、主題、資料匯出 JSON、刪除帳號/資料、登出、回饋（雲端）
-- 登入/註冊頁（Supabase Email+密碼）、關於與隱私頁、404
-- Supabase migration：16 張核心表＋ `ai_usage`、RLS、觸發器、`is_admin()`、`match_knowledge_chunks()`、`delete_my_account()`；`seed.sql`（開發用）
+- 專案骨架：Vite 6 + React 18 + TS strict + Tailwind 3 + React Router 6 + TanStack Query 5 + RHF + Zod + PWA
+- Design System：tokens（主題色 `primary` = 宮燈紅 #A84643）、深色模式、字級、Logo（含 light/dark SVG）、App Icon、Favicon、Splash Screen、Loading、空狀態插畫、宮燈拱廊帶
+- 導覽：手機底部 5 格、桌面 Sidebar、skip link、focus 樣式
+- 資料層：`DataRepository` ＋ `LocalRepository` ＋ `SupabaseRepository`
+- 首頁、課表（CRUD/節次/衝突/週檢視/學期/CSV/詳情）、作業考試、校園探索、活動、AI 助理 UI（本機引擎）、我的、登入/註冊、**忘記密碼與重設密碼**、關於與隱私
+- Supabase migration（16 核心表＋ai_usage、RLS、觸發器、函式）與開發 seed
+- 預覽版建置 `npm run build:preview`（範例資料、hash routing）
+- 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
-首次建立整個專案（見 Completed）。
+- 主題色由淡江藍改為宮燈紅：新增 `primary` token；首頁歡迎區改紅色系天色；Logo/Icon/Favicon/Splash/manifest theme_color 改紅底＋金色宮燈
+- 新增 Splash Screen、`public/brand/` light/dark logo
+- 新增忘記密碼（登入頁）與 `/reset-password` 頁
+- 修正：學期載入前首頁/課表會閃現空狀態（SemesterProvider 改為載入完成才渲染）
+- 新增 React Testing Library 元件測試與 Playwright E2E
 
 ## Files Changed
-全部為新檔案。主要目錄：`src/app`、`src/components`、`src/features/*`、`src/lib`、`src/data`、`supabase/`、`public/`、`docs/`、`api/README.md`。
+- 樣式/品牌：`src/styles/index.css`、`tailwind.config.js`、`src/components/brand/*`、`src/components/layout/AppShell.tsx`、`src/features/dashboard/Hero.tsx`、`index.html`、`vite.config.ts`、`public/favicon.svg`、`public/icons/*`、`public/brand/*`、`docs/DESIGN_SYSTEM.md`
+- 全部 `src/**/*.tsx` 中 `*-navy` class 改為 `*-primary`
+- 認證：`src/features/auth/LoginPage.tsx`、`src/features/auth/ResetPasswordPage.tsx`、`src/app/router.tsx`
+- 資料：`src/app/SemesterProvider.tsx`、`src/app/AuthProvider.tsx`（新增 `localRepository` prop 供測試注入）
+- 測試：`src/test/*`、`src/features/**/__tests__/*`、`e2e/*`、`playwright.config.ts`、`tsconfig.node.json`、`package.json`（`test:e2e`）
 
 ## Database & API Changes
-- `supabase/migrations/20261012000000_init.sql`：profiles, semesters, courses, user_courses, schedule_entries, tasks, campus_places, campus_events, event_bookmarks, knowledge_documents, knowledge_chunks(vector 1536), ai_conversations, ai_messages, ai_usage, feedback, notification_preferences, admin_audit_logs
-- 角色只能由 service role 變更（trigger `protect_profile_role`）
-- API：`/api/chat` 合約已定義於 `api/README.md`，**尚未實作**
+本次無。`/api/chat` 合約見 `api/README.md`（Codex 實作中）。
 
 ## Technical Decisions
-- 未設定 Supabase → 本機模式（不需登入）；已設定 → 必須登入
-- `/api/chat` 回 503/404 或非 SSE 時，前端自動改用本機助理
-- 地圖不捏造座標：建築 `coords: null`，導航用 Google Maps 名稱搜尋
-- 提醒以 .ics（VALARM）實作；Web Push 列入 Roadmap
-- `tailwind-merge` 已註冊自訂字級（`src/lib/cn.ts`），新增字級需同步
-- ESLint：關閉 `react-refresh/only-export-components`；允許字串中的全形空白
-- 詳見 ARCHITECTURE.md
+- 主題色 token 命名為 `primary`；`navy` 保留為輔助色；課程顏色 key `navy` 不變（資料相容）
+- 紅底上的宮燈改為金色 #F2C46B 以保持辨識度
+- E2E 預設使用 `npx playwright install chromium` 安裝的瀏覽器；可用 `PW_CHROMIUM_PATH` 指定
+- 其餘見 ARCHITECTURE.md
 
 ## Tests
 執行於 Claude 雲端工作區（Node 22.22）：
-- `npm run lint` ✅ 0 problems
+- `npm run lint` ✅
 - `npm run typecheck` ✅
-- `npm run test` ✅ 5 files, 26 tests（schedule/conflicts、csv、tasks、LocalRepository CRUD、本機 AI 助理）
-- `npm run build` ✅（PWA precache 32 entries）
-- 以 Playwright 截圖檢查首頁（手機/桌面）、課表、AI、探索：版面正常。發現並修正「新增課程」按鈕文字消失（tailwind-merge 字級衝突）
-- 未執行：RTL 元件測試、Playwright E2E、RLS 測試（需 Supabase）
+- `npm run test` ✅ 11 files, 39 tests
+- `npm run build` ✅
+- `npm run test:e2e` ✅ 36 passed（desktop 1360×900、mobile Pixel 7）：主要流程、衝突、待辦、CSV 匯入、探索、AI 來源、深色模式、8 頁無水平捲動、導覽 RWD、PWA manifest＋service worker、skip link
+- 未執行：RLS 測試、登入/登出與重設密碼的實際流程（需 Supabase 專案）
 
 ## Known Issues
-- 雲端模式（SupabaseRepository、登入、RLS）尚未在真實 Supabase 專案驗證
-- 建築代碼來源為學生社群整理；建築座標未查核；T 棟名稱「驚聲」待核對
-- 淡江官方品牌色/CIS 未找到公開來源，目前為設計提案色
-- npm audit：建置工具鏈有已知漏洞警告（dev 依賴為主），尚未處理
-- 活動收藏在本機模式存於 localStorage
-- 課表週視圖在手機上需水平捲動（手機預設為單日視圖）
+- 雲端模式（登入、重設密碼、RLS）尚未在真實 Supabase 專案驗證
+- 建築代碼來源為學生整理、座標未查核；T 棟名稱待核對
+- 淡江官方品牌規範未找到公開來源；紅色主題為開發者指定的設計提案
+- 預覽版（Artifact）無法顯示 OSM 地圖底圖、無法下載 CSV/.ics
+- npm audit 有建置工具鏈警告，尚未處理
 
 ## Next Steps
-- **Codex（feat/ai-backend，worktree ../tkuApp-codex）**：實作 `api/chat.ts`（JWT、速率限制、tools、RAG、SSE、對話紀錄）、`scripts/ingest.ts`、RLS 測試。只改 `api/`、`scripts/`、`supabase/tests/`、新增 migration
-- **Claude Code（main）**：RTL 元件測試與 Playwright E2E、忘記密碼流程、Web Push 提醒、活動管理後台、Splash Screen
-- **開發者**：建立 Supabase 專案並套用 migration；提供 Vercel/Supabase 環境變數；建立 GitHub repo 並 push
+- **Codex（feat/ai-backend）**：`api/chat.ts`、`scripts/ingest.ts`、RLS 測試（只改 `api/`、`scripts/`、`supabase/tests/`、新增 migration）。⚠ `main` 已更新，開始前請 `git rebase main` 或在合併時處理
+- **Claude Code（main）**：Web Push 課前提醒、活動管理後台 UI（需 Codex 的 admin API）、i18n 架構（英文介面預留）
+- **開發者**：建立 Supabase 專案並套用 migration；建立 GitHub repo；提供 Vercel 環境變數
 
 ## Git Status
 - Branch：`main`
-- Commit：`feat: initial TKU Campus OS MVP`（首次 commit）
+- Commits：`feat: initial TKU Campus OS MVP` → `feat: add hosted preview build with example data` → `feat: red theme, splash, password reset, component and e2e tests`
 - 未提交修改：無
-- 尚未設定 remote（GitHub repo 待建立）
+- Worktree：`../tkuApp-codex`（`feat/ai-backend`，Codex）
+- 尚未設定 remote
 
 ## Important Notes
 - 不可要求或儲存淡江校務系統帳密；不可爬取受限制校務資料

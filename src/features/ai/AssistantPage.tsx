@@ -14,7 +14,7 @@ function SourceCard({ s }: { s: SourceRef }) {
   const Icon = s.kind === 'personal' ? UserRound : s.kind === 'campus' ? MapPin : FileText;
   const body = (
     <>
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-navy" aria-hidden />
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
       <span className="min-w-0">
         <span className="block truncate text-caption font-semibold text-ink">{s.title}</span>
         <span className="block truncate text-[11px] text-muted">
@@ -25,7 +25,7 @@ function SourceCard({ s }: { s: SourceRef }) {
     </>
   );
   return s.url ? (
-    <a href={s.url} target="_blank" rel="noreferrer noopener" className="flex items-start gap-2 rounded-sm border border-line bg-surface px-3 py-2 hover:border-navy/40">{body}</a>
+    <a href={s.url} target="_blank" rel="noreferrer noopener" className="flex items-start gap-2 rounded-sm border border-line bg-surface px-3 py-2 hover:border-primary/40">{body}</a>
   ) : (
     <div className="flex items-start gap-2 rounded-sm border border-line bg-surface px-3 py-2">{body}</div>
   );
@@ -36,7 +36,7 @@ function Message({ m, last, busy, onRetry }: { m: ChatMessage; last: boolean; bu
   if (m.role === 'user') {
     return (
       <div className="flex justify-end">
-        <p className="max-w-[85%] whitespace-pre-wrap rounded-lg rounded-br-xs bg-navy px-4 py-2.5 text-body text-white dark:text-[#0E1B2C]">{m.content}</p>
+        <p className="max-w-[85%] whitespace-pre-wrap rounded-lg rounded-br-xs bg-primary px-4 py-2.5 text-body text-white dark:text-[#2A0E0C]">{m.content}</p>
       </div>
     );
   }
@@ -160,7 +160,7 @@ export default function AssistantPage() {
             <p className="mt-1 text-caption text-muted">可以問你的課表、作業、考試、教室位置，或學校規定該看哪份文件。</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {QUICK.map((q) => (
-                <button key={q} type="button" onClick={() => send(q)} className="rounded-full border border-line bg-surface px-3.5 py-2 text-caption font-medium text-ink hover:border-navy/40">{q}</button>
+                <button key={q} type="button" onClick={() => send(q)} className="rounded-full border border-line bg-surface px-3.5 py-2 text-caption font-medium text-ink hover:border-primary/40">{q}</button>
               ))}
             </div>
           </div>

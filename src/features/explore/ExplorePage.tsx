@@ -55,7 +55,7 @@ export default function ExplorePage() {
                 type="button"
                 aria-pressed={cat === c}
                 onClick={() => setCat(c)}
-                className={cn('h-8 shrink-0 rounded-full border px-3 text-caption font-semibold', cat === c ? 'border-navy bg-navy text-white dark:text-[#0E1B2C]' : 'border-line text-muted hover:text-ink')}
+                className={cn('h-8 shrink-0 rounded-full border px-3 text-caption font-semibold', cat === c ? 'border-primary bg-primary text-white dark:text-[#2A0E0C]' : 'border-line text-muted hover:text-ink')}
               >
                 {c === 'all' ? '全部' : PLACE_CATEGORY_LABELS[c]}
               </button>
@@ -72,9 +72,9 @@ export default function ExplorePage() {
                     type="button"
                     onClick={() => select(p)}
                     aria-current={selected?.code === p.code}
-                    className={cn('flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-sunken', selected?.code === p.code && 'bg-navy/[0.06]')}
+                    className={cn('flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-sunken', selected?.code === p.code && 'bg-primary/[0.06]')}
                   >
-                    <span className="tabular flex h-9 w-11 shrink-0 items-center justify-center rounded-xs bg-navy/[0.08] text-body font-bold text-navy">{p.code}</span>
+                    <span className="tabular flex h-9 w-11 shrink-0 items-center justify-center rounded-xs bg-primary/[0.08] text-body font-bold text-primary">{p.code}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-body font-semibold text-ink">{p.name}</span>
                       <span className="block text-caption text-muted">{PLACE_CATEGORY_LABELS[p.category]}</span>
@@ -115,7 +115,7 @@ function PlaceDetail({ place, onClose }: { place: CampusPlace; onClose: () => vo
       <p className="mt-1 text-caption text-muted">{PLACE_CATEGORY_LABELS[place.category]}{place.note ? `｜${place.note}` : ''}</p>
       <p className="mt-3 text-body text-muted">教室編號以 {place.code} 開頭的課程（例如 {place.code}101）在這棟建築。</p>
       <div className="mt-4 flex flex-wrap gap-2">
-        <a href={mapsSearchUrl(place)} target="_blank" rel="noreferrer noopener" className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-navy px-3 text-caption font-semibold text-white dark:text-[#0E1B2C]">
+        <a href={mapsSearchUrl(place)} target="_blank" rel="noreferrer noopener" className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-primary px-3 text-caption font-semibold text-white dark:text-[#2A0E0C]">
           <Navigation className="h-4 w-4" />在 Google 地圖導航
         </a>
       </div>

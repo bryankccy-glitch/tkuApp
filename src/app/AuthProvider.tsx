@@ -17,7 +17,8 @@ interface AuthState {
 const AuthContext = createContext<AuthState | null>(null);
 const localRepo = new LocalRepository();
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+/** `localRepository` lets tests inject an isolated store; the app uses the shared default. */
+export function AuthProvider({ children, localRepository = localRepo }: { children: ReactNode; localRepository?: DataRepository }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(Boolean(supabase));
 
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AuthState>(() => {
     if (!supabase) {
-      return { mode: 'local', loading: false, session: null, repo: localRepo, signOut: async () => {} };
+      return { mode: 'local', loading: false, session: null, repo: localRepository, signOut: async () => {} };
     }
     const client = supabase;
     return {
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await client.auth.signOut();
       },
     };
-  }, [session, loading]);
+  }, [session, loading, localRepository]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

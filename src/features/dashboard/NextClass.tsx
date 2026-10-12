@@ -17,7 +17,7 @@ export function NextClassCard({ next, now }: { next: NextClassT | null; now: Dat
         <h2 id="next-class" className="text-label text-muted">下一堂課</h2>
         <p className="mt-2 text-h3 text-ink">這週沒有排課</p>
         <p className="mt-1 text-caption text-muted">把課程加進課表，這裡會顯示下一堂課的教室與倒數時間。</p>
-        <Link to="/schedule?add=1" className="mt-4 inline-flex h-10 items-center rounded-sm bg-navy px-4 font-semibold text-white dark:text-[#0E1B2C]">新增課程</Link>
+        <Link to="/schedule?add=1" className="mt-4 inline-flex h-10 items-center rounded-sm bg-primary px-4 font-semibold text-white dark:text-[#2A0E0C]">新增課程</Link>
       </section>
     );
   }
