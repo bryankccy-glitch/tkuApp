@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "build:preview": "PREVIEW_BUILD=1 VITE_HASH_ROUTER=1 VITE_PREVIEW_DEMO=1 vite build --outDir dist-preview",
     "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",

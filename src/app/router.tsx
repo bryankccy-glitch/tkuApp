@@ -1,5 +1,5 @@
 import { lazy, type ReactNode } from 'react';
-import { createBrowserRouter, Link, Navigate, Outlet } from 'react-router-dom';
+import { createBrowserRouter, createHashRouter, Link, Navigate, Outlet } from 'react-router-dom';
 import { AppShell, Page } from '@/components/layout/AppShell';
 import { useAuth } from './AuthProvider';
 import { SemesterProvider } from './SemesterProvider';
@@ -32,7 +32,10 @@ function NotFound() {
   );
 }
 
-export const router = createBrowserRouter([
+// Hash routing only for hosted preview builds (no server-side SPA rewrite available).
+const createRouter = import.meta.env.VITE_HASH_ROUTER === '1' ? createHashRouter : createBrowserRouter;
+
+export const router = createRouter([
   { path: '/login', element: <LoginPage /> },
   {
     element: (

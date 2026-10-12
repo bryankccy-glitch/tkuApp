@@ -104,6 +104,9 @@ export function AppShell() {
       <a href="#main" className="sr-only z-50 rounded-sm bg-navy px-3 py-2 text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3">跳到主要內容</a>
       <Sidebar />
       <main id="main" ref={main} tabIndex={-1} className="min-w-0 flex-1 pb-28 outline-none lg:pb-10">
+        {import.meta.env.VITE_PREVIEW_DEMO === '1' && (
+          <p className="bg-navy/[0.07] px-4 py-2 text-center text-caption text-ink">預覽版：已放入範例課程與待辦，資料只存在這個瀏覽器。可以自由新增、編輯、刪除。</p>
+        )}
         <Suspense fallback={<LoadingMark />}>
           <Outlet />
         </Suspense>

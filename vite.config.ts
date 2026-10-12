@@ -3,10 +3,15 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'node:path';
 
+// PREVIEW_BUILD=1 → relative asset paths, hash routing, no service worker (for hosted previews).
+const previewBuild = process.env.PREVIEW_BUILD === '1';
+
 export default defineConfig({
+  base: previewBuild ? './' : '/',
   plugins: [
     react(),
     VitePWA({
+      disable: previewBuild,
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {

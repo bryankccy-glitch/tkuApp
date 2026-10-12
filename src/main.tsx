@@ -8,6 +8,9 @@ import { ToastProvider } from './components/ui/Toast';
 import { LoadingMark } from './components/brand/Logo';
 import { router } from './app/router';
 import './styles/index.css';
+import { seedPreviewDemo } from './lib/data/previewDemo';
+
+if (import.meta.env.VITE_PREVIEW_DEMO === '1') seedPreviewDemo();
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } },
