@@ -5,3 +5,4 @@
 
 ## 2026-10-12（下午）— Claude Code
 - 主題色改為宮燈紅；Splash、light/dark logo；忘記密碼；RTL 元件測試與 Playwright E2E；修正學期載入閃爍。
+- 標誌更換為開發者提供的 TKU Campus OS 標誌。

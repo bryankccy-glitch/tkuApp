@@ -1,7 +1,7 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-12 16:40（Asia/Taipei, UTC+8）
+2026-10-12 16:45（Asia/Taipei, UTC+8）
 
 ## Updated By
 Claude Code
@@ -11,7 +11,7 @@ Claude Code
 
 ## Completed
 - 專案骨架：Vite 6 + React 18 + TS strict + Tailwind 3 + React Router 6 + TanStack Query 5 + RHF + Zod + PWA
-- Design System：tokens（主題色 `primary` = 宮燈紅 #A84643）、深色模式、字級、Logo（含 light/dark SVG）、App Icon、Favicon、Splash Screen、Loading、空狀態插畫、宮燈拱廊帶
+- Design System：tokens（主題色 `primary` = 宮燈紅 #A84643）、深色模式、字級、**開發者提供的正式標誌**（App Icon、Favicon、介面 Logo、Splash）、Loading、空狀態插畫、宮燈拱廊帶
 - 導覽：手機底部 5 格、桌面 Sidebar、skip link、focus 樣式
 - 資料層：`DataRepository` ＋ `LocalRepository` ＋ `SupabaseRepository`
 - 首頁、課表（CRUD/節次/衝突/週檢視/學期/CSV/詳情）、作業考試、校園探索、活動、AI 助理 UI（本機引擎）、我的、登入/註冊、**忘記密碼與重設密碼**、關於與隱私
@@ -20,6 +20,7 @@ Claude Code
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **標誌更換**為開發者提供的 TKU Campus OS 標誌（宮燈教室＋書卷＋TKU 字標）：產生 App Icon 192/512/maskable、apple-touch、favicon 32/48、介面用 logo-128/256/512；原始檔放 `design/brand/`；移除舊的 SVG 標誌檔
 - 主題色由淡江藍改為宮燈紅：新增 `primary` token；首頁歡迎區改紅色系天色；Logo/Icon/Favicon/Splash/manifest theme_color 改紅底＋金色宮燈
 - 新增 Splash Screen、`public/brand/` light/dark logo
 - 新增忘記密碼（登入頁）與 `/reset-password` 頁
@@ -27,6 +28,7 @@ Claude Code
 - 新增 React Testing Library 元件測試與 Playwright E2E
 
 ## Files Changed
+- 標誌：`src/components/brand/Logo.tsx`、`index.html`（favicon、splash）、`vite.config.ts`（includeAssets）、`public/icons/*`、`public/brand/logo-*.png`、`design/brand/tku-campus-os-logo-1024.png`；刪除 `public/favicon.svg`、`public/icons/icon.svg`、`public/brand/*.svg`
 - 樣式/品牌：`src/styles/index.css`、`tailwind.config.js`、`src/components/brand/*`、`src/components/layout/AppShell.tsx`、`src/features/dashboard/Hero.tsx`、`index.html`、`vite.config.ts`、`public/favicon.svg`、`public/icons/*`、`public/brand/*`、`docs/DESIGN_SYSTEM.md`
 - 全部 `src/**/*.tsx` 中 `*-navy` class 改為 `*-primary`
 - 認證：`src/features/auth/LoginPage.tsx`、`src/features/auth/ResetPasswordPage.tsx`、`src/app/router.tsx`
@@ -54,7 +56,8 @@ Claude Code
 ## Known Issues
 - 雲端模式（登入、重設密碼、RLS）尚未在真實 Supabase 專案驗證
 - 建築代碼來源為學生整理、座標未查核；T 棟名稱待核對
-- 淡江官方品牌規範未找到公開來源；紅色主題為開發者指定的設計提案
+- 淡江官方品牌規範未找到公開來源；紅色主題與標誌為開發者指定
+- 新標誌細節多，favicon（32px）較難辨識；可考慮另做簡化版小圖示
 - 預覽版（Artifact）無法顯示 OSM 地圖底圖、無法下載 CSV/.ics
 - npm audit 有建置工具鏈警告，尚未處理
 
@@ -65,7 +68,7 @@ Claude Code
 
 ## Git Status
 - Branch：`main`
-- Commits：`feat: initial TKU Campus OS MVP` → `feat: add hosted preview build with example data` → `feat: red theme, splash, password reset, component and e2e tests`
+- Commits：initial MVP → preview build → red theme/tests → `feat: use developer-provided TKU Campus OS logo`
 - 未提交修改：無
 - Worktree：`../tkuApp-codex`（`feat/ai-backend`，Codex）
 - 尚未設定 remote

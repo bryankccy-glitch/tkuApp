@@ -3,7 +3,7 @@
 > 色彩為**產品設計提案**，不是淡江大學官方標準色。2026-10-12 搜尋未找到淡江公開的品牌識別規範（CIS），待查核。
 
 ## 視覺概念：宮燈拱廊
-- **主識別**：宮燈教室的拱窗節奏＋懸掛的宮燈（紅底上為金色燈光 #F2C46B）。用在 Logo、首頁歡迎區底部的「拱廊帶」（`Colonnade`）、Loading 動畫。
+- **主識別**：開發者提供的 TKU Campus OS 標誌（宮燈教室建築與書卷曲線）。首頁歡迎區底部的「拱廊帶」（`Colonnade`，金色宮燈）延續相同建築意象。
 - **書卷曲線**：用在空狀態插畫（`ScrollIllustration`）與 Logo 底部波線。
 - **淡水天空**：首頁歡迎區以宮燈紅為底，依時段切換色調（清晨/白天/黃昏/夜晚），不使用天氣資料。
 - 一次只讓一個元素突出：首頁的拱廊帶。其他區塊保持安靜、資訊清楚。
@@ -54,7 +54,11 @@ Inter（英數）＋ Noto Sans TC（中文），系統字型 fallback。數字�
 WCAG 2.2 AA 目標：可見 focus ring、跳到主要內容連結、表單 label、`aria-live` 訊息、`prefers-reduced-motion` 停用動畫、44px 左右觸控目標。
 
 ## 品牌資產
-`public/favicon.svg`、`public/icons/icon.svg` 與 PNG（192/512/maskable/apple-touch）。原創設計，未使用淡江校徽。
-- `public/brand/logo-light.svg`、`logo-dark.svg`、`mark.svg`
+**主標誌**（2026-10-12 由開發者提供）：宮燈教室建築＋書卷曲線＋淡水夕照＋紅色 TKU 字標＋「Campus OS」。非淡江官方校徽。
+- 原始檔：`design/brand/tku-campus-os-logo-1024.png`（不進 PWA 快取）
+- App Icon：`public/icons/icon-192.png`、`icon-512.png`、`icon-maskable-512.png`（圖案縮至安全區 78%）、`apple-touch-icon.png`
+- Favicon：`public/icons/favicon-32.png`、`favicon-48.png`
+- 介面用：`public/brand/logo-128/256/512.png`（透明圓角），由 `LogoMark` / `Wordmark` / `LoadingMark` 使用
+- 標誌為白底磁磚，深淺色模式共用同一版本；小尺寸（≤32px）細節會糊化，未來可考慮另做簡化版圖示
 - Splash Screen：`index.html` 內的啟動畫面（React 掛載後自動被取代），支援深色與減少動態。
 ⚠ 自訂字級已註冊於 tailwind-merge；新增色彩 token 不需註冊。

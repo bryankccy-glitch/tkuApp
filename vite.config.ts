@@ -13,7 +13,7 @@ export default defineConfig({
     VitePWA({
       disable: previewBuild,
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
+      includeAssets: ['icons/favicon-32.png', 'icons/favicon-48.png', 'icons/apple-touch-icon.png', 'brand/logo-128.png', 'brand/logo-256.png'],
       manifest: {
         name: 'TKU Campus OS 淡江智慧校園',
         short_name: '淡江校園',

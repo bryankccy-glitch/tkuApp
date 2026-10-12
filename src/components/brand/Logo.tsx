@@ -1,26 +1,30 @@
 import { cn } from '@/lib/cn';
 
+const base = import.meta.env.BASE_URL;
+const src = (size: 128 | 256 | 512) => `${base}brand/logo-${size}.png`;
+
 /**
- * TKU Campus OS mark — 「宮燈拱窗」：
- * 拱形窗框取自宮燈教室的窗廊節奏，懸掛的紅色宮燈為視覺焦點，
- * 底部波線同時暗示書卷曲線與淡水河。原創設計，未使用淡江官方校徽。
+ * TKU Campus OS 標誌：宮燈教室建築、書卷曲線、淡水夕照與 TKU 字標。
+ * 開發者提供的原創設計（design/brand/），非淡江大學官方校徽。
  */
 export function LogoMark({ className, title = 'TKU Campus OS' }: { className?: string; title?: string }) {
   return (
-    <svg viewBox="0 0 64 64" className={cn('h-9 w-9 shrink-0', className)} role="img" aria-label={title}>
-      <rect width="64" height="64" rx="15" className="fill-[#A84643] dark:fill-[#8E3936]" />
-      <path d="M20 49V30a12 12 0 0 1 24 0v19" fill="none" stroke="#F8F6F1" strokeWidth="4.5" strokeLinecap="round" />
-      <path d="M32 18v9" stroke="#F8F6F1" strokeWidth="2" strokeLinecap="round" />
-      <rect x="28.5" y="27" width="7" height="9" rx="3.5" fill="#F2C46B" />
-      <path d="M11 50c8-5 15-5 21 0s13 5 21 0" fill="none" stroke="#7FB2EA" strokeWidth="3.5" strokeLinecap="round" />
-    </svg>
+    <img
+      src={src(128)}
+      srcSet={`${src(128)} 1x, ${src(256)} 2x, ${src(512)} 4x`}
+      alt={title}
+      width={36}
+      height={36}
+      decoding="async"
+      className={cn('h-9 w-9 shrink-0 rounded-[22%] shadow-[0_0_0_1px_rgb(0_0_0/0.06)]', className)}
+    />
   );
 }
 
 export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={cn('flex items-center gap-2.5', className)}>
-      <LogoMark />
+      <LogoMark className="h-10 w-10" />
       <span className="leading-tight">
         <span className="block text-[15px] font-bold tracking-tight text-ink">TKU Campus OS</span>
         <span className="block text-[11px] font-medium tracking-[0.12em] text-muted">淡江智慧校園</span>
@@ -29,19 +33,20 @@ export function Wordmark({ className }: { className?: string }) {
   );
 }
 
-/** Loading mark: the lantern sways gently (disabled under reduced motion). */
+/** Loading mark: the logo breathes gently (static under reduced motion). */
 export function LoadingMark({ label = '載入中' }: { label?: string }) {
   return (
     <div role="status" className="flex flex-col items-center gap-3 py-10 text-muted">
-      <svg viewBox="0 0 64 64" className="h-10 w-10" aria-hidden>
-        <path d="M20 49V30a12 12 0 0 1 24 0v19" fill="none" className="stroke-primary" strokeWidth="4" strokeLinecap="round" />
-        <g className="origin-[32px_18px] motion-safe:animate-[sway_1.6s_ease-in-out_infinite]">
-          <path d="M32 18v9" className="stroke-primary" strokeWidth="2" strokeLinecap="round" />
-          <rect x="28.5" y="27" width="7" height="9" rx="3.5" className="fill-[#E0A93E]" />
-        </g>
-      </svg>
+      <img
+        src={src(128)}
+        srcSet={`${src(128)} 1x, ${src(256)} 2x`}
+        alt=""
+        width={48}
+        height={48}
+        className="h-12 w-12 rounded-[22%] motion-safe:animate-[breathe_1.6s_ease-in-out_infinite]"
+      />
       <span className="text-caption">{label}</span>
-      <style>{`@keyframes sway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}`}</style>
+      <style>{`@keyframes breathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.94);opacity:.75}}`}</style>
     </div>
   );
 }
