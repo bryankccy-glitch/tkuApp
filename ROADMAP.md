@@ -19,7 +19,8 @@ HANDOFF / AGENTS / README / ROADMAP / ARCHITECTURE / .env.example
 ## Phase 3 — 學習中心 🟡
 - ✅ Dashboard（真實資料）、課表 CRUD、節次、衝突檢測、CSV 匯入匯出、學期切換、課程詳情
 - ✅ 作業/考試 CRUD、今日/本週/即將截止/逾期/已完成、`.ics` 提醒
-- ⬜ Web Push 推播提醒（使用 `notification_preferences`）
+- ✅ 上課與截止提醒（系統通知，App 執行中有效）
+- ⬜ 伺服器端 Web Push（App 關閉時也能提醒，使用 `notification_preferences`）
 - ⬜ 課程目錄（`courses`）搜尋並加入課表
 
 ## 首頁像素場景 ✅
@@ -41,11 +42,12 @@ HANDOFF / AGENTS / README / ROADMAP / ARCHITECTURE / .env.example
 ## Phase 6 — 正式 MVP ⬜
 - ✅ Vitest 單元＋元件測試（39 項）、Playwright E2E（36 項，桌面＋手機）
 - ⬜ RLS 測試（Codex）、登入/登出 E2E（需 Supabase）
-- ⬜ Vercel 部署、CSP header、效能檢查、Beta 測試
+- ✅ CSP 與安全標頭（vercel.json）、WCAG 2.2 AA 自動檢測（axe，9 頁 × 淺色/深色）
+- ⬜ Vercel 部署、效能檢查、Beta 測試
 
-## i18n 🟡
-- ✅ i18next 架構、中英文切換（我的 → 語言）、首頁問候/天氣/快捷操作/天氣錯誤訊息
-- ⬜ 其餘頁面文字抽出為字典
+## i18n ✅
+- ✅ 全部頁面中英文（建築名稱、官方文件標題、CSV 格式維持中文）；本機 AI 助理理解中英文問題
+- ⬜ 雲端 AI（Codex）回答語言跟隨介面語言
 
 ## Phase 7 — Super App ⬜
 校園社群、社團討論、揪團、二手書/二手物品（須先完成防詐、檢舉封鎖、審核、個資保護設計）、職涯中心、個人化推薦、AI 行程規劃、跨校架構。

@@ -7,6 +7,7 @@ import { ThemeProvider } from './app/ThemeProvider';
 import { ToastProvider } from './components/ui/Toast';
 import { LoadingMark } from './components/brand/Logo';
 import { router } from './app/router';
+import { LanguageRoot } from './app/LanguageRoot';
 import './styles/index.css';
 import './i18n';
 import { seedPreviewDemo } from './lib/data/previewDemo';
@@ -23,9 +24,11 @@ createRoot(document.getElementById('root')!).render(
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ToastProvider>
-            <Suspense fallback={<LoadingMark />}>
-              <RouterProvider router={router} />
-            </Suspense>
+            <LanguageRoot>
+              <Suspense fallback={<LoadingMark />}>
+                <RouterProvider router={router} />
+              </Suspense>
+            </LanguageRoot>
           </ToastProvider>
         </AuthProvider>
       </QueryClientProvider>

@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n/t';
 
 const base = import.meta.env.BASE_URL;
 const src = (size: 128 | 256 | 512) => `${base}brand/logo-${size}.png`;
@@ -27,14 +28,14 @@ export function Wordmark({ className }: { className?: string }) {
       <LogoMark className="h-10 w-10" />
       <span className="leading-tight">
         <span className="block text-[15px] font-bold tracking-tight text-ink">TKU Campus OS</span>
-        <span className="block text-[11px] font-medium tracking-[0.12em] text-muted">淡江智慧校園</span>
+        <span className="block text-[11px] font-medium tracking-[0.12em] text-muted">{t('brand.subtitle')}</span>
       </span>
     </span>
   );
 }
 
 /** Loading mark: the logo breathes gently (static under reduced motion). */
-export function LoadingMark({ label = '載入中' }: { label?: string }) {
+export function LoadingMark({ label = t('common.loading') }: { label?: string }) {
   return (
     <div role="status" className="flex flex-col items-center gap-3 py-10 text-muted">
       <img

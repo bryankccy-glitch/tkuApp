@@ -21,6 +21,7 @@ import { CsvImport } from './CsvImport';
 import { SemesterSwitcher } from './SemesterSwitcher';
 import { LoadingMark } from '@/components/brand/Logo';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n/t';
 
 type View = 'day' | 'week';
 
@@ -45,16 +46,16 @@ export default function SchedulePage() {
     if (!semester) return;
     try {
       await save.mutateAsync({ ...v, semesterId: semester.id, slots: v.slots.map((s) => ({ ...s, weekday: s.weekday as Weekday, room: s.room.toUpperCase() })) });
-      toast({ tone: 'success', message: `已加入「${v.name}」` });
+      toast({ tone: 'success', message: t('schedule.added', { name: v.name }) });
       closeForm();
     } catch (e) {
-      toast({ tone: 'error', message: e instanceof Error ? e.message : '儲存失敗，請再試一次' });
+      toast({ tone: 'error', message: e instanceof Error ? e.message : t('common.saveFailed') });
     }
   };
 
   const exportCsv = () => {
-    downloadText(`TKU課表-${semester?.code ?? ''}.csv`, coursesToCsv(courses), 'text/csv;charset=utf-8');
-    toast({ tone: 'success', message: `已匯出 ${courses.length} 門課` });
+    downloadText(t('schedule.csvFile', { code: semester?.code ?? '' }), coursesToCsv(courses), 'text/csv;charset=utf-8');
+    toast({ tone: 'success', message: t('schedule.exported', { count: courses.length }) });
   };
 
   const days: Weekday[] = [1, 2, 3, 4, 5, 6, 7];
@@ -62,13 +63,13 @@ export default function SchedulePage() {
   return (
     <Page wide>
       <PageHeader
-        title="課表"
+        title={t('schedule.title')}
         subtitle={<SemesterSwitcher />}
         actions={
           <>
-            <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4" />匯入 CSV</Button>
-            <Button variant="secondary" size="sm" onClick={exportCsv} disabled={!courses.length}><Download className="h-4 w-4" />匯出 CSV</Button>
-            <Button size="sm" onClick={() => setParams({ add: '1' })}><Plus className="h-4 w-4" />新增課程</Button>
+            <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4" />{t('common.importCsv')}</Button>
+            <Button variant="secondary" size="sm" onClick={exportCsv} disabled={!courses.length}><Download className="h-4 w-4" />{t('common.exportCsv')}</Button>
+            <Button size="sm" onClick={() => setParams({ add: '1' })}><Plus className="h-4 w-4" />{t('schedule.addCourse')}</Button>
           </>
         }
       />
@@ -77,11 +78,11 @@ export default function SchedulePage() {
         <div role="alert" className="mb-4 flex gap-2 rounded-sm border border-danger/30 bg-danger/5 p-3 text-caption">
           <AlertTriangle className="h-4 w-4 shrink-0 text-danger" />
           <div>
-            <p className="font-semibold text-danger">有 {conflicts.length} 組課程時間衝突</p>
+            <p className="font-semibold text-danger">{t('schedule.conflicts', { count: conflicts.length })}</p>
             <ul className="mt-0.5 text-muted">
               {conflicts.slice(0, 4).map((c, i) => (
                 <li key={i}>
-                  {WEEKDAY_LABELS[c.a.slot.weekday]}：{c.a.course.name}（{c.a.slot.startTime}–{c.a.slot.endTime}）與 {c.b.course.name}（{c.b.slot.startTime}–{c.b.slot.endTime}）
+                  {t('schedule.conflictLine', { day: WEEKDAY_LABELS[c.a.slot.weekday], a: c.a.course.name, aStart: c.a.slot.startTime, aEnd: c.a.slot.endTime, b: c.b.course.name, bStart: c.b.slot.startTime, bEnd: c.b.slot.endTime })}
                 </li>
               ))}
             </ul>
@@ -95,24 +96,24 @@ export default function SchedulePage() {
         <ErrorNotice error={error} onRetry={refetch} />
       ) : courses.length === 0 ? (
         <EmptyState
-          title="這學期還沒有課程"
-          body="手動新增課程，或用 CSV 一次匯入。我們不會要求你提供校務系統帳號密碼。"
-          action={<div className="flex gap-2"><Button onClick={() => setParams({ add: '1' })}><Plus className="h-4 w-4" />新增第一門課</Button><Button variant="secondary" onClick={() => setImportOpen(true)}>匯入 CSV</Button></div>}
+          title={t('schedule.emptyTitle')}
+          body={t('schedule.emptyBody')}
+          action={<div className="flex gap-2"><Button onClick={() => setParams({ add: '1' })}><Plus className="h-4 w-4" />{t('schedule.addFirst')}</Button><Button variant="secondary" onClick={() => setImportOpen(true)}>{t('common.importCsv')}</Button></div>}
         />
       ) : (
         <>
           <Segmented<View>
-            label="課表檢視"
+            label={t('schedule.view')}
             className="mb-4 w-fit"
             value={view}
             onChange={setView}
-            options={[{ value: 'day', label: '單日' }, { value: 'week', label: '週課表' }]}
+            options={[{ value: 'day', label: t('schedule.day') }, { value: 'week', label: t('schedule.week') }]}
           />
           {view === 'week' ? (
             <WeekGrid courses={courses} today={today} conflictSlotIds={conflictIds} />
           ) : (
             <div>
-              <div role="tablist" aria-label="選擇星期" className="mb-4 grid grid-cols-7 gap-1">
+              <div role="tablist" aria-label={t('schedule.pickDay')} className="mb-4 grid grid-cols-7 gap-1">
                 {days.map((d) => {
                   const count = occurrencesOn(courses, d).length;
                   return (
@@ -120,7 +121,7 @@ export default function SchedulePage() {
                       key={d}
                       role="tab"
                       aria-selected={day === d}
-                      aria-label={`${WEEKDAY_LABELS[d]}，${count} 堂課`}
+                      aria-label={t('schedule.dayCount', { day: WEEKDAY_LABELS[d], count })}
                       onClick={() => setDay(d)}
                       className={cn('flex flex-col items-center rounded-sm py-2 text-caption font-semibold transition-colors', day === d ? 'bg-primary text-white dark:text-[#1A0506]' : 'text-muted hover:bg-sunken')}
                     >
@@ -135,7 +136,7 @@ export default function SchedulePage() {
               {occurrencesOn(courses, day).length ? (
                 <DayTimeline items={occurrencesOn(courses, day)} now={day === today ? now : undefined} />
               ) : (
-                <EmptyState compact title={`${WEEKDAY_LABELS[day]}沒有課`} />
+                <EmptyState compact title={t('schedule.noClassesOn', { day: WEEKDAY_LABELS[day] })} />
               )}
             </div>
           )}
@@ -150,9 +151,9 @@ export default function SchedulePage() {
         onImport={async (list) => {
           try {
             await importMany.mutateAsync(list);
-            toast({ tone: 'success', message: `已匯入 ${list.length} 門課` });
+            toast({ tone: 'success', message: t('schedule.imported', { count: list.length }) });
           } catch (e) {
-            toast({ tone: 'error', message: e instanceof Error ? e.message : '匯入失敗' });
+            toast({ tone: 'error', message: e instanceof Error ? e.message : t('schedule.importFailed') });
           }
         }}
       />

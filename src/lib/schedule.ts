@@ -1,5 +1,6 @@
 import type { Course, ScheduleSlot, Weekday } from './types';
 import { toMinutes, weekdayOf, nowHHMM } from './time';
+import i18n from '@/i18n';
 
 export interface Occurrence {
   course: Course;
@@ -42,8 +43,8 @@ export function conflictsFor(candidate: Pick<Course, 'id' | 'slots'>, courses: C
 }
 
 export function validateSlot(slot: Pick<ScheduleSlot, 'startTime' | 'endTime'>): string | null {
-  if (!/^\d{2}:\d{2}$/.test(slot.startTime) || !/^\d{2}:\d{2}$/.test(slot.endTime)) return '時間格式需為 HH:mm';
-  if (toMinutes(slot.endTime) <= toMinutes(slot.startTime)) return '下課時間必須晚於上課時間';
+  if (!/^\d{2}:\d{2}$/.test(slot.startTime) || !/^\d{2}:\d{2}$/.test(slot.endTime)) return i18n.t('validation.timeFormat');
+  if (toMinutes(slot.endTime) <= toMinutes(slot.startTime)) return i18n.t('validation.endAfterStart');
   return null;
 }
 

@@ -12,6 +12,7 @@ import { CampusInfo } from './CampusInfo';
 import { DayTimeline } from '@/features/schedule/DayTimeline';
 import { ErrorNotice } from '@/components/ui/misc';
 import { LoadingMark } from '@/components/brand/Logo';
+import { t } from '@/i18n/t';
 
 export default function DashboardPage() {
   const now = useNow();
@@ -32,7 +33,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Hero name={profile.data?.displayName ?? '淡江同學'} summary={{ total: today.length, remaining: remaining.length, dueToday }} />
+      <Hero name={profile.data?.displayName ?? t('defaults.studentName')} summary={{ total: today.length, remaining: remaining.length, dueToday }} />
       <QuickActions />
       <Page className="pt-5">
         <div className="grid gap-6">
@@ -42,13 +43,13 @@ export default function DashboardPage() {
 
           <section aria-labelledby="today-title" className="scroll-mt-4">
             <div className="mb-3 flex items-center justify-between">
-              <h2 id="today-title" className="text-h3 text-ink">今日課表</h2>
-              <Link to="/schedule" className="text-caption font-semibold text-link hover:underline">週課表</Link>
+              <h2 id="today-title" className="text-h3 text-ink">{t('home.todayClasses')}</h2>
+              <Link to="/schedule" className="text-caption font-semibold text-link hover:underline">{t('home.weekView')}</Link>
             </div>
             {today.length ? (
               <DayTimeline items={today} now={now} />
             ) : (
-              <p className="rounded-sm bg-sunken px-4 py-4 text-caption text-muted">今天沒有排課。</p>
+              <p className="rounded-sm bg-sunken px-4 py-4 text-caption text-muted">{t('home.noClassesToday')}</p>
             )}
           </section>
 

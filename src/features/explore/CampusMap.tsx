@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { CAMPUS_CENTER, type CampusPlace } from '@/data/places';
+import { t } from '@/i18n/t';
 
 /**
  * OpenStreetMap-based campus map. Only shows markers whose coordinates are verified;
@@ -34,12 +35,12 @@ export default function CampusMap({ places, selected }: { places: CampusPlace[];
         iconSize: [18, 18],
         iconAnchor: [9, 18],
       });
-    L.marker([CAMPUS_CENTER.lat, CAMPUS_CENTER.lng], { icon: icon(true), title: '淡江大學淡水校園' }).bindPopup('淡江大學淡水校園（校園中心概略位置）').addTo(g);
+    L.marker([CAMPUS_CENTER.lat, CAMPUS_CENTER.lng], { icon: icon(true), title: t('map.campus') }).bindPopup(t('map.campusPopup')).addTo(g);
     places.filter((p) => p.coords).forEach((p) => {
       L.marker([p.coords!.lat, p.coords!.lng], { icon: icon(p.code === selected?.code), title: p.name }).bindPopup(`${p.code}｜${p.name}`).addTo(g);
     });
     if (selected?.coords) map.current?.setView([selected.coords.lat, selected.coords.lng], 18);
   }, [places, selected]);
 
-  return <div ref={el} className="h-full w-full" role="region" aria-label="淡江大學淡水校園地圖" />;
+  return <div ref={el} className="h-full w-full" role="region" aria-label={t('map.label')} />;
 }

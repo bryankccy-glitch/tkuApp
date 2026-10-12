@@ -5,6 +5,7 @@ import { useCourses, useTasks } from '@/lib/hooks';
 import { useCampusEvents } from '@/lib/events';
 import { uid } from '@/lib/id';
 import { answerLocally } from './localEngine';
+import { t } from '@/i18n/t';
 import type { ChatMessage, SourceRef } from './types';
 
 const KEY = 'tku.chat.v1';
@@ -70,8 +71,8 @@ export function useChat() {
     });
     // 503 = server AI not configured; 404 / non-SSE = API not deployed yet (e.g. vite dev). Fall back to local engine.
     if (res.status === 503 || res.status === 404 || (res.ok && !res.headers.get('content-type')?.includes('text/event-stream'))) return 'unavailable' as const;
-    if (res.status === 429) throw new Error('提問太頻繁了，請一分鐘後再試。');
-    if (!res.ok || !res.body) throw new Error(`助理暫時無法回應（${res.status}）`);
+    if (res.status === 429) throw new Error(t('ai.rateLimited'));
+    if (!res.ok || !res.body) throw new Error(t('ai.unavailable', { status: res.status }));
     const reader = res.body.getReader();
     const dec = new TextDecoder();
     let buf = '';
@@ -88,7 +89,7 @@ export function useChat() {
         if (data.type === 'meta' && data.conversationId) conversationId.current = data.conversationId;
         if (data.type === 'delta' && data.text) patch(id, (m) => ({ ...m, content: m.content + data.text }));
         if (data.type === 'sources') patch(id, (m) => ({ ...m, sources: data.sources }));
-        if (data.type === 'error') throw new Error(data.message ?? '回答時發生錯誤');
+        if (data.type === 'error') throw new Error(data.message ?? t('ai.error'));
       }
     }
     patch(id, (m) => ({ ...m, engine: 'cloud' }));
@@ -113,9 +114,9 @@ export function useChat() {
         }
       } catch (e) {
         if ((e as Error).name === 'AbortError') {
-          patch(reply.id, (m) => ({ ...m, content: m.content || '已停止回答。' }));
+          patch(reply.id, (m) => ({ ...m, content: m.content || t('ai.stopped') }));
         } else {
-          patch(reply.id, (m) => ({ ...m, error: true, content: e instanceof Error ? e.message : '回答時發生錯誤' }));
+          patch(reply.id, (m) => ({ ...m, error: true, content: e instanceof Error ? e.message : t('ai.error') }));
         }
       } finally {
         setBusy(false);

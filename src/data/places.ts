@@ -7,6 +7,8 @@
  * - 個別建築座標：尚未取得可信來源，一律為 null，不在地圖上標記。
  * - 校園中心座標：Wikipedia「Tamkang University」條目（25.175, 121.449）。
  */
+import i18n from '@/i18n';
+
 export type PlaceCategory = 'academic' | 'library' | 'admin' | 'sports' | 'culture' | 'service' | 'gate' | 'other';
 
 export interface CampusPlace {
@@ -20,10 +22,8 @@ export interface CampusPlace {
   note?: string;
 }
 
-export const PLACE_CATEGORY_LABELS: Record<PlaceCategory, string> = {
-  academic: '教學大樓', library: '圖書館', admin: '行政', sports: '運動', culture: '文化展覽',
-  service: '生活服務', gate: '出入口', other: '其他',
-};
+/** Category labels in the active language. */
+export const PLACE_CATEGORY_LABELS = new Proxy({} as Record<PlaceCategory, string>, { get: (_t, k) => (typeof k === 'string' ? i18n.t(`placeCategory.${k}`) : undefined) });
 
 const CODE_SOURCE = {
   name: '淡江教室代碼整理（1111 大學網，學生社群）',

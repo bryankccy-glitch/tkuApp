@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n/t';
 
 /**
  * Modal sheet: bottom sheet on phones, centered dialog on ≥ sm.
@@ -78,7 +79,7 @@ export function Sheet({
             <h2 id={titleId} className="text-h3 text-ink">{title}</h2>
             {description && <p id={descId} className="mt-0.5 text-caption text-muted">{description}</p>}
           </div>
-          <button data-close type="button" onClick={onClose} aria-label="關閉" className="-mr-2 rounded-sm p-2 text-muted hover:bg-sunken hover:text-ink">
+          <button data-close type="button" onClick={onClose} aria-label={t('common.close')} className="-mr-2 rounded-sm p-2 text-muted hover:bg-sunken hover:text-ink">
             <X className="h-5 w-5" />
           </button>
         </header>
@@ -103,7 +104,7 @@ export function ConfirmSheet({
       size="sm"
       footer={
         <>
-          <button type="button" onClick={onClose} className="h-10 flex-1 rounded-sm border border-line font-semibold text-ink hover:bg-sunken">取消</button>
+          <button type="button" onClick={onClose} className="h-10 flex-1 rounded-sm border border-line font-semibold text-ink hover:bg-sunken">{t('common.cancel')}</button>
           <button
             type="button"
             onClick={onConfirm}

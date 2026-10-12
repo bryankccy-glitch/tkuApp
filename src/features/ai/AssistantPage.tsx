@@ -7,8 +7,9 @@ import { ConfirmSheet } from '@/components/ui/Sheet';
 import { useChat } from './useChat';
 import type { ChatMessage, SourceRef } from './types';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n/t';
 
-const QUICK = ['明天第一堂課在哪裡？', '這週有哪些作業？', '幫我整理接下來的考試', '淡江病假怎麼請？', 'FL105 在哪一棟？', '第 5 節是幾點？'];
+const QUICK = [1, 2, 3, 4, 5, 6].map((i) => `ai.quick.${i}`);
 
 function SourceCard({ s }: { s: SourceRef }) {
   const Icon = s.kind === 'personal' ? UserRound : s.kind === 'campus' ? MapPin : FileText;
@@ -18,7 +19,7 @@ function SourceCard({ s }: { s: SourceRef }) {
       <span className="min-w-0">
         <span className="block truncate text-caption font-semibold text-ink">{s.title}</span>
         <span className="block truncate text-[11px] text-muted">
-          {s.kind === 'personal' ? '你的個人資料' : [s.publisher, s.updated].filter(Boolean).join('｜') || (s.url ? new URL(s.url).hostname : '')}
+          {s.kind === 'personal' ? t('ai.yourData') : [s.publisher, s.updated].filter(Boolean).join('｜') || (s.url ? new URL(s.url).hostname : '')}
         </span>
       </span>
       {s.url && <ExternalLink className="ml-auto mt-0.5 h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />}
@@ -43,19 +44,19 @@ function Message({ m, last, busy, onRetry }: { m: ChatMessage; last: boolean; bu
   const streaming = last && busy;
   return (
     <div className="flex gap-3">
-      <LogoMark className="mt-0.5 h-7 w-7" title="校園助理" />
+      <LogoMark className="mt-0.5 h-7 w-7" title={t('ai.avatar')} />
       <div className="min-w-0 flex-1">
         {m.error ? (
           <div role="alert" className="rounded-sm border border-danger/30 bg-danger/5 px-3 py-2.5 text-body">
             <p className="text-ink">{m.content}</p>
-            <button type="button" onClick={onRetry} className="mt-1.5 inline-flex items-center gap-1 text-caption font-semibold text-link hover:underline"><RotateCcw className="h-3.5 w-3.5" />重試</button>
+            <button type="button" onClick={onRetry} className="mt-1.5 inline-flex items-center gap-1 text-caption font-semibold text-link hover:underline"><RotateCcw className="h-3.5 w-3.5" />{t('ai.retry')}</button>
           </div>
         ) : m.content === '' && streaming ? (
           <p className="flex items-center gap-1.5 py-2 text-caption text-muted" role="status">
             <span className="flex gap-1" aria-hidden>
               {[0, 1, 2].map((i) => <span key={i} className="h-1.5 w-1.5 rounded-full bg-heritage motion-safe:animate-bounce" style={{ animationDelay: `${i * 120}ms` }} />)}
             </span>
-            正在查詢資料
+            {t('ai.searching')}
           </p>
         ) : (
           <div className="prose-chat text-body text-ink">
@@ -75,7 +76,7 @@ function Message({ m, last, busy, onRetry }: { m: ChatMessage; last: boolean; bu
         )}
         {!streaming && !m.error && m.sources && m.sources.length > 0 && (
           <div className="mt-2">
-            <p className="text-[11px] font-semibold text-muted">資料來源</p>
+            <p className="text-[11px] font-semibold text-muted">{t('ai.sources')}</p>
             <div className="mt-1 grid gap-1.5">{m.sources.map((s, i) => <SourceCard key={i} s={s} />)}</div>
           </div>
         )}
@@ -86,9 +87,9 @@ function Message({ m, last, busy, onRetry }: { m: ChatMessage; last: boolean; bu
               onClick={async () => { try { await navigator.clipboard.writeText(m.content); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* ignore */ } }}
               className="inline-flex items-center gap-1 rounded-xs py-1 hover:text-ink"
             >
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? '已複製' : '複製回答'}
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? t('ai.copied') : t('ai.copy')}
             </button>
-            {m.engine === 'local' && <span>本機助理：只使用你的資料與已查核的校園資訊</span>}
+            {m.engine === 'local' && <span>{t('ai.localNote')}</span>}
           </div>
         )}
       </div>
@@ -141,14 +142,14 @@ export default function AssistantPage() {
     <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-3xl flex-col px-4 pt-5">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-h1 text-ink">AI 校園助理</h1>
+          <h1 className="text-h1 text-ink">{t('ai.title')}</h1>
           <p className="mt-1 text-caption text-muted">
-            {mode === 'cloud' ? '回答會附上資料來源；資料不足時會直接說明。' : '本機模式：根據你的課表、待辦與已查核的校園資料回答，不會上傳任何內容。'}
+            {mode === 'cloud' ? t('ai.cloudHint') : t('ai.localHint')}
           </p>
         </div>
         {messages.length > 0 && (
           <button type="button" onClick={() => setConfirmClear(true)} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-sm px-2.5 text-caption font-semibold text-muted hover:bg-sunken hover:text-ink">
-            <Trash2 className="h-4 w-4" />清除對話
+            <Trash2 className="h-4 w-4" />{t('ai.clear')}
           </button>
         )}
       </header>
@@ -156,10 +157,10 @@ export default function AssistantPage() {
       <div className="flex-1 py-6" aria-live="polite">
         {messages.length === 0 ? (
           <div className="flex flex-col items-start">
-            <p className="text-h3 text-ink">想知道什麼？</p>
-            <p className="mt-1 text-caption text-muted">可以問你的課表、作業、考試、教室位置，或學校規定該看哪份文件。</p>
+            <p className="text-h3 text-ink">{t('ai.emptyTitle')}</p>
+            <p className="mt-1 text-caption text-muted">{t('ai.emptyBody')}</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              {QUICK.map((q) => (
+              {QUICK.map((k) => t(k)).map((q) => (
                 <button key={q} type="button" onClick={() => send(q)} className="rounded-full border border-line bg-surface px-3.5 py-2 text-caption font-medium text-ink hover:border-primary/40">{q}</button>
               ))}
             </div>
@@ -174,7 +175,7 @@ export default function AssistantPage() {
 
       <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-4 bg-gradient-to-t from-canvas via-canvas to-canvas/0 px-4 pb-3 pt-4">
         <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex items-end gap-2 rounded-lg border border-line bg-surface p-2 shadow-lift focus-within:border-link">
-          <label htmlFor="chat-input" className="sr-only">輸入問題</label>
+          <label htmlFor="chat-input" className="sr-only">{t('ai.inputLabel')}</label>
           <textarea
             id="chat-input"
             ref={inputRef}
@@ -183,22 +184,22 @@ export default function AssistantPage() {
             maxLength={1000}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={onKey}
-            placeholder="輸入問題，例如：這週有哪些考試？"
+            placeholder={t('ai.placeholder')}
             enterKeyHint="send"
             className="max-h-36 min-h-[2.5rem] flex-1 resize-none bg-transparent px-2 py-2 text-body text-ink placeholder:text-muted focus:outline-none"
           />
           {busy ? (
-            <button type="button" onClick={stop} aria-label="停止回答" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-ink text-canvas"><Square className="h-4 w-4" /></button>
+            <button type="button" onClick={stop} aria-label={t('ai.stop')} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-ink text-canvas"><Square className="h-4 w-4" /></button>
           ) : (
-            <button type="submit" aria-label="送出" disabled={!text.trim()} className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-heritage text-white transition-opacity disabled:opacity-35')}>
+            <button type="submit" aria-label={t('ai.send')} disabled={!text.trim()} className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-heritage text-white transition-opacity disabled:opacity-35')}>
               <ArrowUp className="h-5 w-5" />
             </button>
           )}
         </form>
-        <p className="mt-1.5 text-center text-[11px] text-muted">AI 可能出錯。涉及成績、學籍與規定的事項，請以學校公告為準。</p>
+        <p className="mt-1.5 text-center text-[11px] text-muted">{t('ai.disclaimer')}</p>
       </div>
 
-      <ConfirmSheet open={confirmClear} onClose={() => setConfirmClear(false)} title="清除對話紀錄？" message="這個裝置上的對話紀錄會被刪除。" confirmLabel="清除" onConfirm={() => { clear(); setConfirmClear(false); }} />
+      <ConfirmSheet open={confirmClear} onClose={() => setConfirmClear(false)} title={t('ai.clearTitle')} message={t('ai.clearBody')} confirmLabel={t('ai.clearConfirm')} onConfirm={() => { clear(); setConfirmClear(false); }} />
     </div>
   );
 }

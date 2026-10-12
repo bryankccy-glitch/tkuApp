@@ -5,10 +5,11 @@ import { Wordmark } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/app/AuthProvider';
 import { supabase } from '@/lib/supabase';
+import { t } from '@/i18n/t';
 
 const schema = z
-  .object({ password: z.string().min(8, '密碼至少 8 個字元').max(72, '密碼最多 72 個字元'), confirm: z.string() })
-  .refine((v) => v.password === v.confirm, { message: '兩次輸入的密碼不一致', path: ['confirm'] });
+  .object({ password: z.string().min(8, t('auth.passwordMin')).max(72, t('auth.passwordMax')), confirm: z.string() })
+  .refine((v) => v.password === v.confirm, { message: t('auth.mismatch'), path: ['confirm'] });
 
 /**
  * Landing page for the Supabase recovery email link.
@@ -46,22 +47,22 @@ export default function ResetPasswordPage() {
     <div className="app-frame mx-auto flex min-h-dvh w-full max-w-app items-start justify-center bg-canvas px-4 pt-16">
       <div className="w-full max-w-md rounded-lg bg-surface p-6 shadow-lift">
         <Wordmark />
-        <h1 className="mt-6 text-h2 text-ink">設定新密碼</h1>
+        <h1 className="mt-6 text-h2 text-ink">{t('auth.newPasswordTitle')}</h1>
         {!session ? (
           loading || !waited ? (
-            <p role="status" className="mt-3 text-body text-muted">正在驗證重設連結…</p>
+            <p role="status" className="mt-3 text-body text-muted">{t('auth.verifying')}</p>
           ) : (
             <div className="mt-3">
-              <p role="alert" className="text-body text-ink">這個重設連結無效或已過期。</p>
-              <Link to="/login" className="mt-3 inline-block font-semibold text-link hover:underline">回到登入頁重新申請</Link>
+              <p role="alert" className="text-body text-ink">{t('auth.linkInvalid')}</p>
+              <Link to="/login" className="mt-3 inline-block font-semibold text-link hover:underline">{t('auth.requestAgain')}</Link>
             </div>
           )
         ) : (
           <form onSubmit={submit} noValidate className="mt-4 grid gap-3">
-            <div><label className="label" htmlFor="np">新密碼</label><input id="np" type="password" autoComplete="new-password" className="field" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-            <div><label className="label" htmlFor="np2">再輸入一次</label><input id="np2" type="password" autoComplete="new-password" className="field" value={confirm} onChange={(e) => setConfirm(e.target.value)} /></div>
+            <div><label className="label" htmlFor="np">{t('auth.newPassword')}</label><input id="np" type="password" autoComplete="new-password" className="field" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+            <div><label className="label" htmlFor="np2">{t('auth.confirmPassword')}</label><input id="np2" type="password" autoComplete="new-password" className="field" value={confirm} onChange={(e) => setConfirm(e.target.value)} /></div>
             {error && <p role="alert" className="text-caption text-danger">{error}</p>}
-            <Button type="submit" size="lg" loading={saving}>更新密碼</Button>
+            <Button type="submit" size="lg" loading={saving}>{t('auth.updatePassword')}</Button>
           </form>
         )}
       </div>

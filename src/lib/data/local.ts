@@ -1,4 +1,5 @@
 import { uid } from '../id';
+import i18n from '@/i18n';
 import type { Course, Profile, Semester, Task } from '../types';
 import type { CourseInput, DataRepository, ExportBundle, SemesterInput, TaskInput } from './repository';
 import { inferSemester } from './semesters';
@@ -52,7 +53,7 @@ export class LocalRepository implements DataRepository {
 
   async updateProfile(p: Partial<Omit<Profile, 'id'>>) {
     const s = this.read();
-    const profile: Profile = { id: 'local', displayName: '淡江同學', ...s.profile, ...p };
+    const profile: Profile = { id: 'local', displayName: i18n.t('defaults.studentName'), ...s.profile, ...p };
     this.write({ ...s, profile });
     return profile;
   }

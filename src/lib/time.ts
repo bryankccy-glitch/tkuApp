@@ -1,3 +1,4 @@
+import i18n from '@/i18n';
 import type { Weekday } from './types';
 
 export function toMinutes(hhmm: string): number {
@@ -53,25 +54,36 @@ export function combineLocal(date: string, time: string): string {
   return new Date(y ?? 1970, (mo ?? 1) - 1, da ?? 1, h ?? 0, mi ?? 0).toISOString();
 }
 
-const dateFmt = new Intl.DateTimeFormat('zh-TW', { month: 'long', day: 'numeric', weekday: 'long' });
-const shortFmt = new Intl.DateTimeFormat('zh-TW', { month: 'numeric', day: 'numeric', weekday: 'short' });
-const timeFmt = new Intl.DateTimeFormat('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
+const locale = () => (i18n.language === 'en' ? 'en-US' : 'zh-TW');
+const fmtCache = new Map<string, Intl.DateTimeFormat>();
+function fmt(kind: 'long' | 'short' | 'time'): Intl.DateTimeFormat {
+  const key = `${locale()}|${kind}`;
+  let f = fmtCache.get(key);
+  if (!f) {
+    const opts: Intl.DateTimeFormatOptions =
+      kind === 'long' ? { month: 'long', day: 'numeric', weekday: 'long' }
+      : kind === 'short' ? { month: 'numeric', day: 'numeric', weekday: 'short' }
+      : { hour: '2-digit', minute: '2-digit', hour12: false };
+    f = new Intl.DateTimeFormat(locale(), opts);
+    fmtCache.set(key, f);
+  }
+  return f;
+}
 
-export const formatDateLong = (d: Date) => dateFmt.format(d);
-export const formatDateShort = (d: Date) => shortFmt.format(d);
-export const formatTime = (d: Date) => timeFmt.format(d);
+export const formatDateLong = (d: Date) => fmt('long').format(d);
+export const formatDateShort = (d: Date) => fmt('short').format(d);
+export const formatTime = (d: Date) => fmt('time').format(d);
 
-/** Human countdown in zh-TW: 「12 分鐘後」「1 小時 5 分後」「3 天後」. */
+/** Human countdown: 「12 分鐘後」/ "in 12 min". */
 export function formatCountdown(ms: number): string {
-  if (ms <= 0) return '已開始';
+  if (ms <= 0) return i18n.t('time.started');
   const min = Math.round(ms / 60000);
-  if (min < 1) return '即將開始';
-  if (min < 60) return `${min} 分鐘後`;
+  if (min < 1) return i18n.t('time.soon');
+  if (min < 60) return i18n.t('time.inMinutes', { count: min });
   const h = Math.floor(min / 60);
   const m = min % 60;
-  if (h < 24) return m ? `${h} 小時 ${m} 分後` : `${h} 小時後`;
-  const days = Math.round(h / 24);
-  return `${days} 天後`;
+  if (h < 24) return m ? i18n.t('time.inHoursMinutes', { h, m }) : i18n.t('time.inHours', { count: h });
+  return i18n.t('time.inDays', { count: Math.round(h / 24) });
 }
 
 export function formatDue(dueIso: string, now: Date): string {
@@ -81,28 +93,10 @@ export function formatDue(dueIso: string, now: Date): string {
   const t = formatTime(due);
   if (diff < 0) {
     const d = Math.abs(dayDiff);
-    return d === 0 ? `已逾期（今天 ${t}）` : `已逾期 ${d} 天`;
+    return d === 0 ? i18n.t('time.overdueToday', { time: t }) : i18n.t('time.overdueDays', { count: d });
   }
-  if (dayDiff === 0) return `今天 ${t}`;
-  if (dayDiff === 1) return `明天 ${t}`;
+  if (dayDiff === 0) return i18n.t('time.today', { time: t });
+  if (dayDiff === 1) return i18n.t('time.tomorrow', { time: t });
   if (dayDiff < 7) return `${formatDateShort(due)} ${t}`;
   return `${formatDateShort(due)}`;
-}
-
-export function greeting(d: Date): string {
-  const h = d.getHours();
-  if (h < 5) return '夜深了';
-  if (h < 11) return '早安';
-  if (h < 14) return '午安';
-  if (h < 18) return '午後好';
-  return '晚安';
-}
-
-export type DayPhase = 'dawn' | 'day' | 'dusk' | 'night';
-export function dayPhase(d: Date): DayPhase {
-  const h = d.getHours();
-  if (h >= 5 && h < 8) return 'dawn';
-  if (h >= 8 && h < 16) return 'day';
-  if (h >= 16 && h < 19) return 'dusk';
-  return 'night';
 }

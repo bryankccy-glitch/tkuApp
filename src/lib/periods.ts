@@ -3,6 +3,8 @@
  * 來源：淡江大學德文系 113-1 課程表（tfgx.tku.edu.tw）所列節次時間，1–12 節。
  * 夜間 13、14 節尚未查核，故不列入；使用者可直接輸入自訂時間。
  */
+import i18n from '@/i18n';
+
 export interface Period {
   no: number;
   start: string;
@@ -45,5 +47,5 @@ export function formatPeriods(nos: number[]): string {
   if (nos.length === 0) return '';
   const first = nos[0];
   const last = nos[nos.length - 1];
-  return first === last ? `第 ${first} 節` : `第 ${first}–${last} 節`;
+  return first === last ? i18n.t('periods.one', { n: first }) : i18n.t('periods.range', { from: first, to: last });
 }

@@ -5,6 +5,7 @@ import { useAuth } from './AuthProvider';
 import { SemesterProvider } from './SemesterProvider';
 import { LoadingMark } from '@/components/brand/Logo';
 import { EmptyState } from '@/components/ui/misc';
+import { t } from '@/i18n/t';
 import DashboardPage from '@/features/dashboard/DashboardPage';
 
 const SchedulePage = lazy(() => import('@/features/schedule/SchedulePage'));
@@ -20,7 +21,7 @@ const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage')
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { loading, repo } = useAuth();
-  if (loading) return <LoadingMark label="確認登入狀態" />;
+  if (loading) return <LoadingMark label={t('common.checkingSignIn')} />;
   if (!repo) return <Navigate to="/login" replace />;
   return <SemesterProvider>{children}</SemesterProvider>;
 }
@@ -28,7 +29,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
 function NotFound() {
   return (
     <Page>
-      <EmptyState title="找不到這個頁面" body="網址可能有誤，或頁面已移動。" action={<Link to="/" className="font-semibold text-link hover:underline">回到首頁</Link>} />
+      <EmptyState title={t('common.notFoundTitle')} body={t('common.notFoundBody')} action={<Link to="/" className="font-semibold text-link hover:underline">{t('common.backHome')}</Link>} />
     </Page>
   );
 }

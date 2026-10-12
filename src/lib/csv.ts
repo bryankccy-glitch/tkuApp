@@ -1,5 +1,6 @@
 import { COURSE_COLORS, type Course, type CourseColor, type Weekday } from './types';
 import { validateSlot } from './schedule';
+import i18n from '@/i18n';
 
 /**
  * CSV 欄位（第一列為標題）：
@@ -73,7 +74,7 @@ export function csvToCourses(text: string): ImportResult {
   const rows = parseCsv(text);
   const errors: ImportResult['errors'] = [];
   const map = new Map<string, ImportedCourse>();
-  if (rows.length === 0) return { courses: [], errors: [{ line: 1, message: '檔案是空的' }] };
+  if (rows.length === 0) return { courses: [], errors: [{ line: 1, message: i18n.t('csv.empty') }] };
   const header = rows[0]!.map((h) => h.trim());
   const start = header[0] === CSV_HEADER[0] ? 1 : 0;
   rows.slice(start).forEach((r, idx) => {
@@ -81,10 +82,10 @@ export function csvToCourses(text: string): ImportResult {
     const [name = '', code = '', instructor = '', day = '', st = '', et = '', room = '', color = '', notes = ''] = r.map((c) =>
       c.trim().replace(/^'(?=[=+\-@])/, ''),
     );
-    if (!name) return errors.push({ line, message: '缺少課程名稱' });
-    if (name.length > 80) return errors.push({ line, message: '課程名稱過長（上限 80 字）' });
+    if (!name) return errors.push({ line, message: i18n.t('csv.missingName') });
+    if (name.length > 80) return errors.push({ line, message: i18n.t('csv.nameTooLong') });
     const weekday = (/^[1-7]$/.test(day) ? Number(day) : ZH_DAYS[day.replace(/^(週|星期)/, '')]) as Weekday | undefined;
-    if (!weekday) return errors.push({ line, message: `無法辨識星期「${day}」` });
+    if (!weekday) return errors.push({ line, message: i18n.t('csv.badWeekday', { day }) });
     const slot = { weekday, startTime: normTime(st), endTime: normTime(et), room: room.slice(0, 20) };
     const err = validateSlot(slot);
     if (err) return errors.push({ line, message: err });

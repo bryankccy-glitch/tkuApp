@@ -5,6 +5,7 @@ import { formatDue } from '@/lib/time';
 import { TASK_KIND_LABELS } from '@/lib/labels';
 import { useTaskMutations } from '@/lib/hooks';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n/t';
 import { TaskCheck } from '@/features/tasks/TaskCheck';
 
 export function TaskSummary({ tasks, courses, now }: { tasks: Task[]; courses: Course[]; now: Date }) {
@@ -21,16 +22,16 @@ export function TaskSummary({ tasks, courses, now }: { tasks: Task[]; courses: C
     <section aria-labelledby="tasks-title" className="rounded-lg border border-line bg-surface p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 id="tasks-title" className="text-h3 text-ink">本週待辦</h2>
+          <h2 id="tasks-title" className="text-h3 text-ink">{t('summary.title')}</h2>
           <p className="tabular mt-0.5 text-caption text-muted">
-            {total ? `本週到期 ${total} 項，已完成 ${done} 項` : '本週沒有到期項目'}
-            {overdue.length > 0 && <span className="text-danger">，{overdue.length} 項已逾期</span>}
+            {total ? t('summary.counts', { total, done }) : t('summary.none')}
+            {overdue.length > 0 && <span className="text-danger">{t('summary.overdue', { count: overdue.length })}</span>}
           </p>
         </div>
-        <Link to="/tasks" className="shrink-0 text-caption font-semibold text-link hover:underline">全部待辦</Link>
+        <Link to="/tasks" className="shrink-0 text-caption font-semibold text-link hover:underline">{t('summary.all')}</Link>
       </div>
       {total > 0 && (
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="本週完成比例">
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={t('summary.progress')}>
           <div className="h-full rounded-full bg-success transition-[width]" style={{ width: `${pct}%` }} />
         </div>
       )}
@@ -54,16 +55,16 @@ export function TaskSummary({ tasks, courses, now }: { tasks: Task[]; courses: C
           })}
         </ul>
       ) : (
-        <p className="mt-4 text-caption text-muted">目前沒有待辦。<Link to="/tasks?add=1" className="font-semibold text-link hover:underline">新增作業或考試</Link></p>
+        <p className="mt-4 text-caption text-muted">{t('summary.empty')}<Link to="/tasks?add=1" className="font-semibold text-link hover:underline">{t('summary.add')}</Link></p>
       )}
 
       {exams.length > 0 && (
         <div className="mt-4 rounded-sm bg-heritage/[0.06] p-3">
-          <h3 className="text-label text-heritage">兩週內考試</h3>
+          <h3 className="text-label text-heritage">{t('summary.exams')}</h3>
           <ul className="mt-1.5 space-y-1">
             {exams.slice(0, 3).map((e) => (
               <li key={e.id} className="flex justify-between gap-3 text-caption">
-                <span className="truncate text-ink">{TASK_KIND_LABELS[e.kind]}：{courseName(e.courseId) ?? e.title}</span>
+                <span className="truncate text-ink">{TASK_KIND_LABELS[e.kind]}{t('ai.colon')}{courseName(e.courseId) ?? e.title}</span>
                 <span className="tabular shrink-0 text-muted">{formatDue(e.dueAt, now)}</span>
               </li>
             ))}

@@ -6,6 +6,7 @@ import { COURSE_COLOR_STYLES } from '@/lib/labels';
 import { TKU_PERIODS } from '@/lib/periods';
 import { toMinutes } from '@/lib/time';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n/t';
 
 const PX_PER_MIN = 0.95;
 
@@ -28,13 +29,13 @@ export function WeekGrid({ courses, today, conflictSlotIds }: { courses: Course[
         {days.map((d) => (
           <div key={d} className={cn('border-b border-l border-line py-2 text-center text-caption font-semibold', d === today ? 'bg-primary/[0.06] text-primary' : 'text-muted')}>
             <span aria-hidden>{WEEKDAY_SHORT[d]}</span>
-            <span className="sr-only">{WEEKDAY_LABELS[d]}{d === today ? '（今天）' : ''}</span>
+            <span className="sr-only">{WEEKDAY_LABELS[d]}{d === today ? t('week.today') : ''}</span>
           </div>
         ))}
 
         <div className="relative" style={{ height }}>
           {periods.map((p) => (
-            <div key={p.no} className="tabular absolute inset-x-0 pt-0.5 text-center text-[11px] font-semibold leading-tight text-muted" style={{ top: (toMinutes(p.start) - startMin) * PX_PER_MIN }} title={`第 ${p.no} 節 ${p.start}–${p.end}`}>
+            <div key={p.no} className="tabular absolute inset-x-0 pt-0.5 text-center text-[11px] font-semibold leading-tight text-muted" style={{ top: (toMinutes(p.start) - startMin) * PX_PER_MIN }} title={t('week.periodTitle', { n: p.no, start: p.start, end: p.end })}>
               {p.no}
             </div>
           ))}
@@ -56,7 +57,7 @@ export function WeekGrid({ courses, today, conflictSlotIds }: { courses: Course[
                   to={`/schedule/course/${course.id}`}
                   className={cn('absolute inset-x-0.5 overflow-hidden rounded-[5px] py-1 pl-1.5 pr-0.5 transition-[filter] active:brightness-95', st.tint, conflict && 'ring-2 ring-inset ring-danger')}
                   style={{ top: top + 1, height: h - 2 }}
-                  aria-label={`${WEEKDAY_LABELS[d]} ${slot.startTime}–${slot.endTime} ${course.name} ${slot.room}${conflict ? '（時間衝突）' : ''}`}
+                  aria-label={`${WEEKDAY_LABELS[d]} ${slot.startTime}–${slot.endTime} ${course.name} ${slot.room}${conflict ? t('week.conflict') : ''}`}
                 >
                   <span className={cn('absolute inset-y-0 left-0 w-[3px]', st.bar)} aria-hidden />
                   <span className={cn('line-clamp-3 break-all text-[11px] font-semibold leading-[1.25]', st.text)}>{course.name}</span>

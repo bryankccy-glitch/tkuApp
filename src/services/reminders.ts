@@ -3,6 +3,7 @@ import { occurrencesOn } from '@/lib/schedule';
 import { addDays, weekdayOf } from '@/lib/time';
 import { TASK_KIND_LABELS } from '@/lib/labels';
 import { buildingFromRoom } from '@/data/places';
+import i18n from '@/i18n';
 
 /**
  * 本機提醒：App 開著（或在背景仍執行）時，以系統通知提醒上課與截止。
@@ -60,7 +61,7 @@ export function remindersBetween(courses: Course[], tasks: Task[], prefs: Remind
           out.push({
             id: `class:${slot.id}:${start}`,
             at,
-            title: `${prefs.classMinutes} 分鐘後上課：${course.name}`,
+            title: i18n.t('reminder.classTitle', { minutes: prefs.classMinutes, course: course.name }),
             body: [slot.room && `${slot.room}${b ? `（${b.name}）` : ''}`, `${slot.startTime}–${slot.endTime}`, course.instructor].filter(Boolean).join('　'),
             url: `/schedule/course/${course.id}`,
           });
@@ -77,8 +78,8 @@ export function remindersBetween(courses: Course[], tasks: Task[], prefs: Remind
         out.push({
           id: `task:${t.id}:${due}:${t.remindMinutesBefore}`,
           at,
-          title: `${TASK_KIND_LABELS[t.kind]}即將截止：${t.title}`,
-          body: `截止時間 ${new Date(due).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei' })}`,
+          title: i18n.t('reminder.taskTitle', { kind: TASK_KIND_LABELS[t.kind], title: t.title }),
+          body: i18n.t('reminder.taskBody', { time: new Date(due).toLocaleString(i18n.language === 'en' ? 'en-US' : 'zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei' }) }),
           url: '/tasks',
         });
       }

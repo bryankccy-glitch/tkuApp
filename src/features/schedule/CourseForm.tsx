@@ -10,6 +10,7 @@ import { COURSE_COLOR_STYLES, WEEKDAY_LABELS } from '@/lib/labels';
 import { TKU_PERIODS, periodRangeToTimes } from '@/lib/periods';
 import { conflictsFor } from '@/lib/schedule';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n/t';
 
 const blankSlot = { weekday: 1 as Weekday, startTime: '08:10', endTime: '10:00', room: '' };
 
@@ -57,35 +58,35 @@ export function CourseForm({
     <Sheet
       open={open}
       onClose={onClose}
-      title={initial ? '編輯課程' : '新增課程'}
-      description="節次時間依淡江日間部 1–12 節；也可以直接輸入自訂時間。"
+      title={initial ? t('course.edit') : t('course.add')}
+      description={t('course.formHint')}
       size="lg"
       footer={
         <>
-          <Button variant="secondary" className="flex-1" onClick={onClose}>取消</Button>
-          <Button type="submit" form="course-form" className="flex-1" loading={saving}>{initial ? '儲存變更' : '加入課表'}</Button>
+          <Button variant="secondary" className="flex-1" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button type="submit" form="course-form" className="flex-1" loading={saving}>{initial ? t('common.save') : t('course.addToSchedule')}</Button>
         </>
       }
     >
       <form id="course-form" noValidate onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
         <div>
-          <label className="label" htmlFor="c-name">課程名稱</label>
-          <input id="c-name" className="field" placeholder="例如：資料結構" {...register('name')} aria-invalid={!!errors.name} />
+          <label className="label" htmlFor="c-name">{t('course.name')}</label>
+          <input id="c-name" className="field" placeholder={t('course.namePlaceholder')} {...register('name')} aria-invalid={!!errors.name} />
           {errors.name && <p className="mt-1 text-caption text-danger">{errors.name.message}</p>}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="label" htmlFor="c-instructor">授課教師</label>
-            <input id="c-instructor" className="field" placeholder="選填" {...register('instructor')} />
+            <label className="label" htmlFor="c-instructor">{t('course.instructor')}</label>
+            <input id="c-instructor" className="field" placeholder={t('common.optional')} {...register('instructor')} />
           </div>
           <div>
-            <label className="label" htmlFor="c-code">課號</label>
-            <input id="c-code" className="field" placeholder="選填" {...register('code')} />
+            <label className="label" htmlFor="c-code">{t('course.code')}</label>
+            <input id="c-code" className="field" placeholder={t('common.optional')} {...register('code')} />
           </div>
         </div>
 
         <fieldset>
-          <legend className="label">顏色</legend>
+          <legend className="label">{t('course.color')}</legend>
           <div className="flex flex-wrap gap-2">
             {COURSE_COLORS.map((c) => (
               <label key={c} className="cursor-pointer">
@@ -100,28 +101,28 @@ export function CourseForm({
         </fieldset>
 
         <fieldset className="grid gap-3">
-          <legend className="label">上課時段</legend>
+          <legend className="label">{t('course.slots')}</legend>
           {fields.map((f, i) => {
             const e = errors.slots?.[i];
             return (
               <div key={f.id} className="rounded-sm border border-line p-3">
                 <div className="grid grid-cols-[1fr_1fr] gap-2">
                   <div>
-                    <label className="label" htmlFor={`s-day-${i}`}>星期</label>
+                    <label className="label" htmlFor={`s-day-${i}`}>{t('course.weekday')}</label>
                     <select id={`s-day-${i}`} className="field" {...register(`slots.${i}.weekday`)}>
                       {([1, 2, 3, 4, 5, 6, 7] as Weekday[]).map((d) => <option key={d} value={d}>{WEEKDAY_LABELS[d]}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="label" htmlFor={`s-room-${i}`}>教室</label>
+                    <label className="label" htmlFor={`s-room-${i}`}>{t('course.room')}</label>
                     <input id={`s-room-${i}`} className="field uppercase" placeholder="E304" {...register(`slots.${i}.room`)} />
                   </div>
                   <div>
-                    <label className="label" htmlFor={`s-start-${i}`}>開始</label>
+                    <label className="label" htmlFor={`s-start-${i}`}>{t('course.start')}</label>
                     <input id={`s-start-${i}`} type="time" className="field tabular" {...register(`slots.${i}.startTime`)} />
                   </div>
                   <div>
-                    <label className="label" htmlFor={`s-end-${i}`}>結束</label>
+                    <label className="label" htmlFor={`s-end-${i}`}>{t('course.end')}</label>
                     <input id={`s-end-${i}`} type="time" className="field tabular" {...register(`slots.${i}.endTime`)} aria-invalid={!!e?.endTime} />
                   </div>
                 </div>
@@ -130,7 +131,7 @@ export function CourseForm({
                   <PeriodPicker onPick={(a, b) => applyPeriods(i, a, b)} idx={i} />
                   {fields.length > 1 && (
                     <button type="button" onClick={() => remove(i)} className="ml-auto inline-flex items-center gap-1 text-caption text-danger hover:underline">
-                      <Trash2 className="h-3.5 w-3.5" />移除時段
+                      <Trash2 className="h-3.5 w-3.5" />{t('course.removeSlot')}
                     </button>
                   )}
                 </div>
@@ -139,7 +140,7 @@ export function CourseForm({
           })}
           {errors.slots?.root && <p className="text-caption text-danger">{errors.slots.root.message}</p>}
           <button type="button" onClick={() => append({ ...blankSlot })} className="inline-flex items-center gap-1.5 justify-self-start text-caption font-semibold text-link hover:underline">
-            <Plus className="h-4 w-4" />再加一個時段
+            <Plus className="h-4 w-4" />{t('course.addSlot')}
           </button>
         </fieldset>
 
@@ -147,20 +148,20 @@ export function CourseForm({
           <div role="alert" className="flex gap-2 rounded-sm border border-warning/40 bg-warning/10 p-3 text-caption text-ink">
             <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />
             <div>
-              <p className="font-semibold">時間與其他課程重疊</p>
+              <p className="font-semibold">{t('course.overlap')}</p>
               <ul className="mt-0.5 text-muted">
                 {conflicts.map((c) => (
                   <li key={c.slot.id}>{c.course.name}（{WEEKDAY_LABELS[c.slot.weekday]} {c.slot.startTime}–{c.slot.endTime}）</li>
                 ))}
               </ul>
-              <p className="mt-1 text-muted">仍可儲存，課表會以紅框標示衝突。</p>
+              <p className="mt-1 text-muted">{t('course.overlapNote')}</p>
             </div>
           </div>
         )}
 
         <div>
-          <label className="label" htmlFor="c-notes">備註</label>
-          <textarea id="c-notes" rows={3} className="field" placeholder="例如：期中報告分組、助教 Office Hour" {...register('notes')} />
+          <label className="label" htmlFor="c-notes">{t('course.notes')}</label>
+          <textarea id="c-notes" rows={3} className="field" placeholder={t('course.notesPlaceholder')} {...register('notes')} />
           {errors.notes && <p className="mt-1 text-caption text-danger">{errors.notes.message}</p>}
         </div>
       </form>
@@ -171,7 +172,7 @@ export function CourseForm({
 function PeriodPicker({ onPick, idx }: { onPick: (a: number, b: number) => void; idx: number }) {
   return (
     <div className="flex items-center gap-1.5 text-caption text-muted">
-      <label htmlFor={`p-from-${idx}`}>以節次設定：第</label>
+      <label htmlFor={`p-from-${idx}`}>{t('course.periodFrom')}</label>
       <select
         id={`p-from-${idx}`}
         className="rounded-xs border border-line bg-surface px-1.5 py-1 text-ink"
@@ -186,7 +187,7 @@ function PeriodPicker({ onPick, idx }: { onPick: (a: number, b: number) => void;
         <option value="" disabled>–</option>
         {TKU_PERIODS.map((p) => <option key={p.no} value={p.no}>{p.no}</option>)}
       </select>
-      <label htmlFor={`p-to-${idx}`}>到</label>
+      <label htmlFor={`p-to-${idx}`}>{t('course.periodTo')}</label>
       <select
         id={`p-to-${idx}`}
         className="rounded-xs border border-line bg-surface px-1.5 py-1 text-ink"
@@ -201,7 +202,7 @@ function PeriodPicker({ onPick, idx }: { onPick: (a: number, b: number) => void;
         <option value="" disabled>–</option>
         {TKU_PERIODS.map((p) => <option key={p.no} value={p.no}>{p.no}</option>)}
       </select>
-      <span>節</span>
+      {t('course.periodSuffix') && <span>{t('course.periodSuffix')}</span>}
     </div>
   );
 }

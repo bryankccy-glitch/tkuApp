@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n/t';
 import { ScrollIllustration } from '@/components/brand/Colonnade';
 
 export function EmptyState({ title, body, action, compact }: { title: string; body?: string; action?: ReactNode; compact?: boolean }) {
@@ -60,12 +61,12 @@ export function SectionTitle({ children, action, id }: { children: ReactNode; ac
 }
 
 export function ErrorNotice({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
-  const msg = error instanceof Error ? error.message : '發生未知錯誤';
+  const msg = error instanceof Error ? error.message : t('common.unknownError');
   return (
     <div role="alert" className="rounded-sm border border-danger/30 bg-danger/5 p-4 text-body text-ink">
-      <p className="font-semibold text-danger">資料載入失敗</p>
+      <p className="font-semibold text-danger">{t('common.loadFailed')}</p>
       <p className="mt-1 text-caption text-muted">{msg}</p>
-      {onRetry && <button type="button" onClick={onRetry} className="mt-2 text-caption font-semibold text-link hover:underline">重新載入</button>}
+      {onRetry && <button type="button" onClick={onRetry} className="mt-2 text-caption font-semibold text-link hover:underline">{t('common.reload')}</button>}
     </div>
   );
 }

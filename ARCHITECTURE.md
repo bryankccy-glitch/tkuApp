@@ -59,3 +59,17 @@ lib/solar.ts (offline sunrise/sunset) ──▶ useTimeOfDay ──────�
 - **天氣**：Open-Meteo（免費、免金鑰），座標使用淡江校園中心 25.175, 121.449（需求文件建議的 25.174, 121.443 在同一網格）。失敗時顯示最後有效資料並標示「天氣資料未更新」，從未取得時顯示「暫時無法取得天氣」，不顯示虛構溫度。
 - **預覽參數**：`/?scene=night,rainy`（sunrise 等時段：dawn/morning/noon/afternoon/dusk/night；天氣：sunny/cloudy/rainy/fog；sunset）只改畫面，不改真實資料。
 - **淡江大橋造型依據**（2026-10-12 查核）：單塔不對稱斜張橋、主塔 211 m、主跨 450 m、側跨 175 m、半扇形鋼索、主塔偏淡水側、2026-05-12 通車。**待查核**：塔身輪廓與單/雙索面，目前畫成漸縮單柱＋中央單索面。
+
+## 多語系（i18n）
+- i18next＋react-i18next。字典在 `src/i18n/locales/zh-TW.ts` 與 `en.ts`；**新增文字時兩個檔案都要加同一個 key**（`src/i18n/__tests__/locales.test.ts` 會檢查兩邊 key、`{{佔位符}}` 一致，且英文不得含中文）。
+- 元件內用 `t()`（`src/i18n/t.ts`）；週一~週日、作業類型、活動分類等對照表（`src/lib/labels.ts`）在讀取時即時翻譯。
+- 切換語言時 `LanguageRoot` 會重新掛載整個介面（資料快取保留），所以元件不需各自訂閱語言變化。
+- 保留中文的內容：建築名稱、官方文件標題（英文介面另附英文說明）、CSV 檔案格式與範本、使用者自己輸入的資料。
+- 本機 AI 助理同時理解中英文問題，依目前介面語言回答。
+
+## 提醒
+- `src/services/reminders.ts`（純函式 `remindersBetween`）＋ `useReminderScheduler`（每 30 秒檢查，掛在 AppShell）。透過 Service Worker `showNotification`（Android 必要）或 `Notification` 顯示；已發送紀錄存 localStorage 避免重複；錯過超過 5 分鐘不補發。
+- 只在 App 執行中（含背景）有效；關閉 App 後的推播需伺服器端 Web Push（Roadmap）。
+
+## 安全標頭（vercel.json）
+CSP：`script-src 'self'`（無 inline script；主題初始化移到 `public/theme-init.js`）、`style-src` 允許 inline（Leaflet 與 React style 屬性需要）、`connect-src` 只允許 Open-Meteo 與 Supabase、`img-src` 允許 OSM 圖磚、`frame-ancestors 'none'`；另有 HSTS、COOP、X-Frame-Options、Permissions-Policy。`e2e/csp.spec.ts` 以相同標頭載入頁面並確認沒有 CSP 違規。新增外部服務時記得更新 CSP。

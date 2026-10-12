@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import i18n from '@/i18n';
 import type { Course, CourseColor, Profile, Semester, Task, TaskKind, TaskPriority, Weekday } from '../types';
 import type { CourseInput, DataRepository, ExportBundle, SemesterInput, TaskInput } from './repository';
 import { inferSemester } from './semesters';
@@ -37,7 +38,7 @@ interface SemesterRow { id: string; code: string; name: string; start_date: stri
 /** Throws on error or missing data. */
 function check<T>(res: Res<T>): NonNullable<T> {
   if (res.error) throw new Error(res.error.message);
-  if (res.data === null) throw new Error('找不到資料');
+  if (res.data === null) throw new Error(i18n.t('errors.notFound'));
   return res.data as NonNullable<T>;
 }
 function checkMaybe<T>(res: Res<T>): T | null {

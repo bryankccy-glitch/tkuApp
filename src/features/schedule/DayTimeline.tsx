@@ -4,8 +4,9 @@ import { statusAt } from '@/lib/schedule';
 import { COURSE_COLOR_STYLES } from '@/lib/labels';
 import { formatPeriods, timesToPeriods } from '@/lib/periods';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n/t';
 
-const STATUS_LABEL = { done: '已下課', ongoing: '上課中', upcoming: '尚未開始' } as const;
+const STATUS_LABEL = { done: 'class.done', ongoing: 'class.ongoing', upcoming: 'class.upcoming' } as const;
 
 /** Vertical timeline for one day. `now` is only used when the list is for today. */
 export function DayTimeline({ items, now }: { items: Occurrence[]; now?: Date }) {
@@ -39,10 +40,10 @@ export function DayTimeline({ items, now }: { items: Occurrence[]; now?: Date })
               <span className="min-w-0 flex-1 px-3 py-2.5">
                 <span className="flex items-center justify-between gap-2">
                   <span className={cn('truncate text-body font-semibold', style.text)}>{course.name}</span>
-                  {now && <span className={cn('shrink-0 text-[11px] font-semibold', st === 'ongoing' ? 'text-heritage' : 'text-muted')}>{STATUS_LABEL[st]}</span>}
+                  {now && <span className={cn('shrink-0 text-[11px] font-semibold', st === 'ongoing' ? 'text-heritage' : 'text-muted')}>{t(STATUS_LABEL[st])}</span>}
                 </span>
                 <span className="tabular mt-0.5 block truncate text-caption text-muted">
-                  {[slot.room || '教室未填', course.instructor, formatPeriods(timesToPeriods(slot.startTime, slot.endTime))].filter(Boolean).join('　')}
+                  {[slot.room || t('common.roomNotSet'), course.instructor, formatPeriods(timesToPeriods(slot.startTime, slot.endTime))].filter(Boolean).join('　')}
                 </span>
               </span>
             </Link>

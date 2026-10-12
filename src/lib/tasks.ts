@@ -1,12 +1,11 @@
 import type { Task } from './types';
 import { addDays, startOfDay, startOfWeek } from './time';
 import { EXAM_KINDS } from './labels';
+import i18n from '@/i18n';
 
 export type TaskView = 'today' | 'week' | 'upcoming' | 'overdue' | 'done' | 'all';
 
-export const TASK_VIEW_LABELS: Record<TaskView, string> = {
-  today: '今日', week: '本週', upcoming: '即將截止', overdue: '已逾期', done: '已完成', all: '全部',
-};
+export const TASK_VIEW_LABELS = new Proxy({} as Record<TaskView, string>, { get: (_t, k) => (typeof k === 'string' ? i18n.t(`taskView.${k}`) : undefined) });
 
 const byDue = (a: Task, b: Task) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime();
 

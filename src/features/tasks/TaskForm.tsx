@@ -7,25 +7,26 @@ import { Button } from '@/components/ui/Button';
 import { TASK_KINDS, TASK_PRIORITIES, type Course, type Task } from '@/lib/types';
 import { PRIORITY_LABELS, TASK_KIND_LABELS } from '@/lib/labels';
 import { combineLocal, toDateInput, nowHHMM } from '@/lib/time';
+import { t } from '@/i18n/t';
 
 export const taskSchema = z.object({
-  title: z.string().trim().min(1, '請輸入標題').max(120, '標題最多 120 字'),
-  description: z.string().trim().max(2000, '說明最多 2000 字').optional(),
+  title: z.string().trim().min(1, t('taskForm.titleRequired')).max(120, t('taskForm.titleMax')),
+  description: z.string().trim().max(2000, t('taskForm.descMax')).optional(),
   kind: z.enum(TASK_KINDS),
   courseId: z.string().optional(),
-  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, '請選擇日期'),
-  dueTime: z.string().regex(/^\d{2}:\d{2}$/, '請選擇時間'),
+  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, t('taskForm.pickDate')),
+  dueTime: z.string().regex(/^\d{2}:\d{2}$/, t('taskForm.pickTime')),
   priority: z.enum(TASK_PRIORITIES),
   remind: z.string(),
 });
 export type TaskFormValues = z.infer<typeof taskSchema>;
 
 const REMIND_OPTIONS = [
-  { value: 'none', label: '不提醒' },
-  { value: '30', label: '30 分鐘前' },
-  { value: '60', label: '1 小時前' },
-  { value: '1440', label: '1 天前' },
-  { value: '4320', label: '3 天前' },
+  { value: 'none', label: 'taskForm.remindNone' },
+  { value: '30', label: 'taskForm.remind30' },
+  { value: '60', label: 'taskForm.remind60' },
+  { value: '1440', label: 'taskForm.remind1440' },
+  { value: '4320', label: 'taskForm.remind4320' },
 ];
 
 export function toTaskInput(v: TaskFormValues, prev?: Task) {
@@ -69,55 +70,55 @@ export function TaskForm({
     <Sheet
       open={open}
       onClose={onClose}
-      title={initial ? '編輯待辦' : '新增作業或考試'}
-      footer={<><Button variant="secondary" className="flex-1" onClick={onClose}>取消</Button><Button type="submit" form="task-form" className="flex-1" loading={saving}>{initial ? '儲存變更' : '新增'}</Button></>}
+      title={initial ? t('taskForm.edit') : t('taskForm.add')}
+      footer={<><Button variant="secondary" className="flex-1" onClick={onClose}>{t('common.cancel')}</Button><Button type="submit" form="task-form" className="flex-1" loading={saving}>{initial ? t('common.save') : t('tasks.add')}</Button></>}
     >
       <form id="task-form" noValidate onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
         <div>
-          <label className="label" htmlFor="t-title">標題</label>
-          <input id="t-title" className="field" placeholder="例如：第三章習題" {...register('title')} aria-invalid={!!errors.title} />
+          <label className="label" htmlFor="t-title">{t('taskForm.title')}</label>
+          <input id="t-title" className="field" placeholder={t('taskForm.titlePlaceholder')} {...register('title')} aria-invalid={!!errors.title} />
           {errors.title && <p className="mt-1 text-caption text-danger">{errors.title.message}</p>}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="label" htmlFor="t-kind">類型</label>
+            <label className="label" htmlFor="t-kind">{t('taskForm.kind')}</label>
             <select id="t-kind" className="field" {...register('kind')}>
               {TASK_KINDS.map((k) => <option key={k} value={k}>{TASK_KIND_LABELS[k]}</option>)}
             </select>
           </div>
           <div>
-            <label className="label" htmlFor="t-course">關聯課程</label>
+            <label className="label" htmlFor="t-course">{t('taskForm.course')}</label>
             <select id="t-course" className="field" {...register('courseId')}>
-              <option value="">不指定</option>
+              <option value="">{t('taskForm.noCourse')}</option>
               {courses.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="label" htmlFor="t-date">截止日期</label>
+            <label className="label" htmlFor="t-date">{t('taskForm.dueDate')}</label>
             <input id="t-date" type="date" className="field" {...register('dueDate')} />
             {errors.dueDate && <p className="mt-1 text-caption text-danger">{errors.dueDate.message}</p>}
           </div>
           <div>
-            <label className="label" htmlFor="t-time">截止時間</label>
+            <label className="label" htmlFor="t-time">{t('taskForm.dueTime')}</label>
             <input id="t-time" type="time" className="field tabular" {...register('dueTime')} />
             {errors.dueTime && <p className="mt-1 text-caption text-danger">{errors.dueTime.message}</p>}
           </div>
           <div>
-            <label className="label" htmlFor="t-priority">優先程度</label>
+            <label className="label" htmlFor="t-priority">{t('taskForm.priority')}</label>
             <select id="t-priority" className="field" {...register('priority')}>
               {TASK_PRIORITIES.map((p) => <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>)}
             </select>
           </div>
           <div>
-            <label className="label" htmlFor="t-remind">提醒</label>
+            <label className="label" htmlFor="t-remind">{t('taskForm.remind')}</label>
             <select id="t-remind" className="field" {...register('remind')}>
-              {REMIND_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {REMIND_OPTIONS.map((o) => <option key={o.value} value={o.value}>{t(o.label)}</option>)}
             </select>
           </div>
         </div>
         <div>
-          <label className="label" htmlFor="t-desc">說明</label>
-          <textarea id="t-desc" rows={3} className="field" placeholder="選填" {...register('description')} />
+          <label className="label" htmlFor="t-desc">{t('taskForm.desc')}</label>
+          <textarea id="t-desc" rows={3} className="field" placeholder={t('common.optional')} {...register('description')} />
         </div>
       </form>
     </Sheet>

@@ -1,7 +1,7 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-12 17:30（Asia/Taipei, UTC+8）
+2026-10-12 19:30（Asia/Taipei, UTC+8）
 
 ## Updated By
 Claude Code
@@ -20,6 +20,11 @@ Claude Code
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **全站中英文**：所有頁面、表單驗證、Toast、錯誤訊息、日期時間格式、本機 AI 助理（中英文問題皆可）；字典 `src/i18n/locales/`，key 一致性有測試把關
+- **上課與截止提醒**：「我的」可開啟系統通知（上課前 5/10/15/30 分鐘、作業依各自設定）、測試通知；App 執行中有效
+- **安全標頭**：vercel.json 加入 CSP、HSTS、COOP 等；移除 index.html 內嵌 script
+- **無障礙**：axe WCAG 2.2 AA 掃描 9 頁 × 淺/深色全部通過（修正 About 連結、深色主色對比）
+- 修正：學期名稱改由代碼即時產生（舊資料存中文名稱）；英文星期縮寫改兩個字母
 - **淡江紅＋紅黑白品牌**：Primary #B3262D、Black #171717、White、Off White #FAF9F7；連結改為深淡江紅（`link` token，取代 `blue`）；`navy`/`blue` 只留給課程顏色；地圖標記、manifest、splash、meta theme-color 同步
 - **首頁 Hero 改為淡江大橋動態像素場景**（`src/components/campus-scene/`）：晴天/多雲/雨天/夕陽/夜晚＋時間與天氣組合（例如雨夜）；雲、鳥、水面閃光與倒影、雨滴與漣漪、樹搖、大橋與建築燈光、星星；2.5 秒調色盤過渡
 - **即時天氣**：`src/services/weatherService.ts`（Open-Meteo、8 秒逾時、快取最後有效資料）＋ `useCampusWeather`（20 分鐘更新、離線/逾時/過期處理）；`useTimeOfDay` 依 API 日出日落，離線時用 `src/lib/solar.ts` 計算
@@ -34,6 +39,8 @@ Claude Code
 - 新增 React Testing Library 元件測試與 Playwright E2E
 
 ## Files Changed
+- 本輪新增：`src/i18n/{t.ts,locales/zh-TW.ts,locales/en.ts,__tests__/locales.test.ts}`、`src/app/LanguageRoot.tsx`、`src/services/reminders.ts`、`src/hooks/useReminderScheduler.ts`、`src/features/profile/ReminderSettings.tsx`、`public/theme-init.js`、`e2e/{a11y,csp,english,reminders}.spec.ts`、`src/services/__tests__/reminders.test.ts`；刪除 `src/i18n/resources.ts`
+- 本輪修改：幾乎所有 `src/features/**` 與 `src/components/**`（文字改 `t()`）、`src/lib/{labels,time,periods,schedule,tasks,csv,hooks}.ts`、`src/data/{places,sources}.ts`（英文關鍵字與說明）、`src/features/ai/localEngine.ts`（重寫，中英文）、`vercel.json`、`index.html`、`src/styles/index.css`
 - 新增：`src/components/campus-scene/{PixelCampusScene.tsx,PixelSky.ts,PixelClouds.ts,PixelRiver.ts,PixelBridge.ts,PixelTerrain.ts,PixelRain.ts,PixelLighting.ts,SceneController.ts,sceneTypes.ts,palettes.ts,pixel.ts,layout.ts}`、`src/services/weatherService.ts`、`src/hooks/{useCampusWeather,useTimeOfDay,useReducedMotion}.ts`、`src/lib/solar.ts`、`src/i18n/{index,resources}.ts`、相關測試、`e2e/campus-scene.spec.ts`
 - 修改：`src/features/dashboard/{Hero,DashboardPage}.tsx`、`src/styles/index.css`、`tailwind.config.js`、所有使用 `*-blue` 連結色的元件（改 `*-link`）、`src/lib/labels.ts`、`src/features/explore/CampusMap.tsx`、`src/features/profile/ProfilePage.tsx`、`src/main.tsx`、`src/test/setup.ts`、`index.html`、`vite.config.ts`、`package.json`（i18next、react-i18next）、文件
 - App 版面：`src/components/layout/AppShell.tsx`、`nav.ts`、`src/components/ui/Sheet.tsx`、`src/styles/index.css`、`tailwind.config.js`（`max-w-app`）、`src/features/schedule/WeekGrid.tsx`、`SchedulePage.tsx`、`src/features/profile/ProfilePage.tsx`、`EventsPage.tsx`、登入/重設密碼頁、所有含斷點 class 的頁面、`vite.config.ts`、`e2e/rwd-pwa.spec.ts`、`docs/DESIGN_SYSTEM.md`、`ARCHITECTURE.md`
@@ -48,6 +55,8 @@ Claude Code
 - 前端直接呼叫 Open-Meteo（公開 API、免金鑰，不需伺服器端）。資料庫無變更。`/api/chat` 合約見 `api/README.md`（Codex 實作中）。
 
 ## Technical Decisions
+- i18n：切換語言時重新掛載整個 UI（LanguageRoot），標籤對照表在讀取時翻譯；新增文字必須同時加到 zh-TW 與 en 字典
+- 本機提醒用 Service Worker showNotification；伺服器端 Web Push 留待 Codex/後端
 - 所有「校園時間」判斷（時段、問候、日出日落日期）一律用 Asia/Taipei（`src/lib/taipei.ts`），不依賴裝置時區
 - 像素場景用 Canvas 2D 自行繪製（不引入 PixiJS），程序化產生、可依寬度裁切，確保主塔在手機可見
 - 天氣座標使用校園中心（25.175, 121.449）
@@ -61,14 +70,13 @@ Claude Code
 執行於 Claude 雲端工作區（Node 22.22）：
 - `npm run lint` ✅
 - `npm run typecheck` ✅
-- `npm run test` ✅ 14 files, 53 tests；在 UTC、America/Los_Angeles、Asia/Taipei、Europe/London 時區皆通過（新增天氣解析/錯誤分類/快取、場景與日出日落、太陽計算）
+- `npm run test` ✅ 16 files, 59 tests（新增提醒、翻譯 key 一致性）；在 UTC、America/Los_Angeles、Asia/Taipei、Europe/London 時區皆通過（新增天氣解析/錯誤分類/快取、場景與日出日落、太陽計算）
 - `npm run build` ✅
-- `npm run test:e2e` ✅ 50 passed（新增：即時天氣顯示、API 失敗備援不顯示虛構溫度、Canvas 真實像素與限制色盤且會動、reduced motion 靜態、英文切換、快捷操作）；原 38（desktop 1360×900、mobile Pixel 7）：主要流程、衝突、待辦、CSV 匯入、探索、AI 來源、深色模式、8 頁無水平捲動、App 版面（底部導覽＋480px 框）、週課表不超出手機寬度、PWA manifest＋service worker、skip link
+- `npm run test:e2e` ✅ 118 passed（本輪新增：axe 無障礙 36、CSP 10、英文介面 20、提醒 2；先前：新增：即時天氣顯示、API 失敗備援不顯示虛構溫度、Canvas 真實像素與限制色盤且會動、reduced motion 靜態、英文切換、快捷操作）；原 38（desktop 1360×900、mobile Pixel 7）：主要流程、衝突、待辦、CSV 匯入、探索、AI 來源、深色模式、8 頁無水平捲動、App 版面（底部導覽＋480px 框）、週課表不超出手機寬度、PWA manifest＋service worker、skip link
 - 未執行：RLS 測試、登入/登出與重設密碼的實際流程（需 Supabase 專案）
 
 ## Known Issues
 - 淡江大橋塔身輪廓與單/雙索面待查核（目前為詮釋）
-- 只有首頁與天氣完成英文翻譯，其他頁面仍為中文
 - Artifact 預覽環境無法連線 Open-Meteo，會顯示「暫時無法取得天氣」（實際部署正常）
 - 雲端模式（登入、重設密碼、RLS）尚未在真實 Supabase 專案驗證
 - 建築代碼來源為學生整理、座標未查核；T 棟名稱待核對
@@ -79,12 +87,13 @@ Claude Code
 
 ## Next Steps
 - **Codex（feat/ai-backend）**：`api/chat.ts`、`scripts/ingest.ts`、RLS 測試（只改 `api/`、`scripts/`、`supabase/tests/`、新增 migration）。⚠ `main` 已更新，開始前請 `git rebase main` 或在合併時處理
-- **Claude Code（main）**：Web Push 課前提醒、活動管理後台 UI（需 Codex 的 admin API）、i18n 架構（英文介面預留）
+- **Claude Code（main）**：活動管理後台 UI（需 Codex 的 admin API）、Capacitor 打包 iOS/Android（待開發者決定）
+- **Codex**：`/api/chat` 回答語言請依 request 的介面語言（建議前端在 body 加 `lang`，需要時通知 Claude Code）；伺服器端 Web Push
 - **開發者**：建立 Supabase 專案並套用 migration；建立 GitHub repo；提供 Vercel 環境變數
 
 ## Git Status
 - Branch：`main`
-- Commits：initial MVP → preview build → red theme/tests → logo → phone layout → `feat: Tamkang red brand and animated pixel-art bridge homepage`
+- Commits：… → pixel-art homepage → timezone fix → `feat: reminders, security headers and accessibility audit` → `feat: English translation for the whole app`
 - 未提交修改：無
 - Worktree：`../tkuApp-codex`（`feat/ai-backend`，Codex）
 - 尚未設定 remote

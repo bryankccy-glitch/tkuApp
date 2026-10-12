@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import i18n from '@/i18n';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth, useRepo } from '@/app/AuthProvider';
 import type { CourseInput, SemesterInput, TaskInput } from './data/repository';
@@ -71,7 +72,7 @@ export function useCourseMutations(semesterId: string | undefined) {
     remove: useMutation({ mutationFn: (id: string) => repo.deleteCourse(id), onSuccess: invalidate }),
     importMany: useMutation({
       mutationFn: async (list: Omit<CourseInput, 'semesterId'>[]) => {
-        if (!semesterId) throw new Error('尚未選擇學期');
+        if (!semesterId) throw new Error(i18n.t('errors.noSemester'));
         for (const c of list) await repo.upsertCourse({ ...c, semesterId });
       },
       onSuccess: invalidate,

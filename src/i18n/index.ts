@@ -1,6 +1,9 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { resources } from './resources';
+import zhTW from './locales/zh-TW';
+import en from './locales/en';
+
+export const resources = { 'zh-TW': { translation: zhTW }, en: { translation: en } } as const;
 
 export type AppLanguage = 'zh-TW' | 'en';
 const KEY = 'tku.lang';

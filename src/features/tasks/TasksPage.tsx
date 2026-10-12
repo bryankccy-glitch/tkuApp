@@ -17,6 +17,7 @@ import { TaskCheck } from './TaskCheck';
 import { TaskForm, toTaskInput, type TaskFormValues } from './TaskForm';
 import { LoadingMark } from '@/components/brand/Logo';
 import { cn } from '@/lib/cn';
+import { t as tx } from '@/i18n/t';
 
 const VIEWS: TaskView[] = ['today', 'week', 'upcoming', 'overdue', 'done', 'all'];
 
@@ -42,29 +43,29 @@ export default function TasksPage() {
   const submit = async (v: TaskFormValues) => {
     try {
       await save.mutateAsync(toTaskInput(v, editing ?? undefined));
-      toast({ tone: 'success', message: editing ? '已儲存變更' : `已新增「${v.title}」` });
+      toast({ tone: 'success', message: editing ? tx('common.saved') : tx('tasks.added', { title: v.title }) });
       closeForm();
     } catch (e) {
-      toast({ tone: 'error', message: e instanceof Error ? e.message : '儲存失敗' });
+      toast({ tone: 'error', message: e instanceof Error ? e.message : tx('common.saveFailed') });
     }
   };
 
   const toggle = (t: Task) => {
     save.mutate({ ...t, completed: !t.completed }, {
-      onSuccess: () => toast({ tone: 'success', message: t.completed ? '已標記為未完成' : '完成了！', action: t.completed ? undefined : { label: '復原', run: () => save.mutate({ ...t, completed: false }) } }),
+      onSuccess: () => toast({ tone: 'success', message: t.completed ? tx('tasks.markedUndone') : tx('tasks.done'), action: t.completed ? undefined : { label: tx('tasks.undo'), run: () => save.mutate({ ...t, completed: false }) } }),
     });
   };
 
   const remindIcs = (t: Task) => {
     downloadIcs({ uid: t.id, title: `${TASK_KIND_LABELS[t.kind]}：${t.title}`, start: new Date(t.dueAt), end: new Date(new Date(t.dueAt).getTime() + 30 * 60000), description: t.description, alarmMinutesBefore: t.remindMinutesBefore ?? 0 }, `${t.title}.ics`);
-    toast({ tone: 'success', message: '已產生行事曆提醒檔' });
+    toast({ tone: 'success', message: tx('tasks.icsToast') });
   };
 
   return (
     <Page>
-      <PageHeader title="作業與考試" subtitle="作業、報告、考試與個人任務都在這裡。" actions={<Button size="sm" onClick={() => setParams({ add: '1' })}><Plus className="h-4 w-4" />新增</Button>} />
+      <PageHeader title={tx('tasks.title')} subtitle={tx('tasks.subtitle')} actions={<Button size="sm" onClick={() => setParams({ add: '1' })}><Plus className="h-4 w-4" />{tx('tasks.add')}</Button>} />
       <Segmented<TaskView>
-        label="待辦篩選"
+        label={tx('tasks.filter')}
         className="mb-4"
         value={view}
         onChange={setView}
@@ -73,9 +74,9 @@ export default function TasksPage() {
 
       {isLoading ? <LoadingMark /> : error ? <ErrorNotice error={error} onRetry={refetch} /> : list.length === 0 ? (
         <EmptyState
-          title={view === 'overdue' ? '沒有逾期項目' : view === 'done' ? '還沒有完成的項目' : '這裡目前是空的'}
-          body={view === 'overdue' ? '很好，全部都在進度內。' : '新增作業或考試，首頁與課表會同步顯示。'}
-          action={view !== 'overdue' && view !== 'done' ? <Button onClick={() => setParams({ add: '1' })}><Plus className="h-4 w-4" />新增作業或考試</Button> : undefined}
+          title={view === 'overdue' ? tx('tasks.emptyOverdue') : view === 'done' ? tx('tasks.emptyDone') : tx('tasks.empty')}
+          body={view === 'overdue' ? tx('tasks.emptyOverdueBody') : tx('tasks.emptyBody')}
+          action={view !== 'overdue' && view !== 'done' ? <Button onClick={() => setParams({ add: '1' })}><Plus className="h-4 w-4" />{tx('summary.add')}</Button> : undefined}
         />
       ) : (
         <ul className="divide-y divide-line rounded-lg border border-line bg-surface">
@@ -89,16 +90,16 @@ export default function TasksPage() {
                   <p className="mt-0.5 flex flex-wrap gap-x-2 text-caption text-muted">
                     <span className={cn(['quiz', 'midterm', 'final'].includes(t.kind) && 'font-semibold text-heritage')}>{TASK_KIND_LABELS[t.kind]}</span>
                     {courseName(t.courseId) && <span>{courseName(t.courseId)}</span>}
-                    {t.priority === 'high' && <span className="text-heritage">優先：{PRIORITY_LABELS[t.priority]}</span>}
+                    {t.priority === 'high' && <span className="text-heritage">{tx('tasks.priorityLine', { p: PRIORITY_LABELS[t.priority] })}</span>}
                   </p>
                   {t.description && <p className="mt-1 line-clamp-2 text-caption text-muted">{t.description}</p>}
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span className={cn('tabular text-caption', late ? 'font-semibold text-danger' : 'text-muted')}>{formatDue(t.dueAt, now)}</span>
                   <div className="-mr-2 flex">
-                    {!t.completed && <IconButton label="加入行事曆提醒" className="h-8 w-8" onClick={() => remindIcs(t)}><BellPlus className="h-4 w-4" /></IconButton>}
-                    <IconButton label="編輯" className="h-8 w-8" onClick={() => setEditing(t)}><Pencil className="h-4 w-4" /></IconButton>
-                    <IconButton label="刪除" className="h-8 w-8 hover:text-danger" onClick={() => setDeleting(t)}><Trash2 className="h-4 w-4" /></IconButton>
+                    {!t.completed && <IconButton label={tx('tasks.calendar')} className="h-8 w-8" onClick={() => remindIcs(t)}><BellPlus className="h-4 w-4" /></IconButton>}
+                    <IconButton label={tx('common.edit')} className="h-8 w-8" onClick={() => setEditing(t)}><Pencil className="h-4 w-4" /></IconButton>
+                    <IconButton label={tx('common.delete')} className="h-8 w-8 hover:text-danger" onClick={() => setDeleting(t)}><Trash2 className="h-4 w-4" /></IconButton>
                   </div>
                 </div>
               </li>
@@ -111,14 +112,14 @@ export default function TasksPage() {
       <ConfirmSheet
         open={!!deleting}
         onClose={() => setDeleting(null)}
-        title="刪除這個待辦？"
-        message={deleting ? `「${deleting.title}」刪除後無法復原。` : ''}
-        confirmLabel="刪除"
+        title={tx('tasks.deleteTitle')}
+        message={deleting ? tx('tasks.deleteBody', { title: deleting.title }) : ''}
+        confirmLabel={tx('common.delete')}
         loading={remove.isPending}
         onConfirm={async () => {
           if (!deleting) return;
           await remove.mutateAsync(deleting.id);
-          toast({ tone: 'success', message: '已刪除' });
+          toast({ tone: 'success', message: tx('tasks.deleted') });
           setDeleting(null);
         }}
       />
