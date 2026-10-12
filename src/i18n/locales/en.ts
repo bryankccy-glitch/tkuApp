@@ -889,6 +889,38 @@ const en = {
       "closed": "This post is closed to comments",
       "alreadyReported": "You’ve already reported this post"
     }
+  },
+  "imageImport": {
+    "button": "Import photo",
+    "title": "Import from a timetable screenshot",
+    "description": "Upload a screenshot or photo of your Tamkang timetable. AI reads each course’s day, periods and room, and nothing is added until you confirm.",
+    "choose": "Choose a timetable image or take a photo",
+    "chooseHint": "Screenshots and photos (JPEG, PNG, WebP)",
+    "privacy": "The image is sent to our server for AI recognition and isn’t stored. Crop out your name or student ID first if they’re visible.",
+    "useCsv": "Use CSV instead",
+    "needAccount": "Image recognition needs an account. You can use CSV import instead.",
+    "reading": "Reading your timetable…",
+    "readingHint": "Takes about 10–30 seconds",
+    "reviewHint": "Check each course the AI found — rename, untick or remove time slots as needed.",
+    "found": "Found {{count}} courses",
+    "skipped": "{{count}} cells are in periods 13–14, whose times aren’t verified yet, so they weren’t added. Add them manually.",
+    "includeName": "Add {{name}}",
+    "courseName": "Course name",
+    "instructor": "Instructor",
+    "removeSlot": "Remove this time slot",
+    "duplicate": "A course with this name is already in your timetable, so it’s unticked.",
+    "clash": "Clashes with “{{name}}”",
+    "again": "Choose another image",
+    "addN": "Add {{count}} courses",
+    "groupNote": "Offered by: {{group}}",
+    "err": {
+      "unavailable": "Image import works on the deployed site (the server isn’t set up here). Use CSV import for now.",
+      "auth": "Your session expired — sign in again and retry.",
+      "rate": "Too many attempts — try again in a minute.",
+      "not_timetable": "This doesn’t look like a timetable. Try a clearer screenshot.",
+      "too_large": "The image is too large or unreadable — crop it and try again.",
+      "failed": "Couldn’t read the image. Try a clearer one, or use CSV import."
+    }
   }
 } as const;
 export default en;

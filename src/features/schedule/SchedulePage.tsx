@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { AlertTriangle, Download, Plus, Upload } from 'lucide-react';
+import { AlertTriangle, Download, ImagePlus, Plus } from 'lucide-react';
 import { Page } from '@/components/layout/AppShell';
 import { PageHeader, Segmented, EmptyState, ErrorNotice } from '@/components/ui/misc';
 import { Button } from '@/components/ui/Button';
@@ -18,6 +18,7 @@ import { DayTimeline } from './DayTimeline';
 import { CourseForm } from './CourseForm';
 import type { CourseFormValues } from './courseSchema';
 import { CsvImport } from './CsvImport';
+import { ImageImport } from './ImageImport';
 import { SemesterSwitcher } from './SemesterSwitcher';
 import { FriendsPanel } from '@/features/friends/FriendsPanel';
 import { useFriends } from '@/lib/social/hooks';
@@ -39,6 +40,7 @@ export default function SchedulePage() {
   const [view, setView] = useState<View>('day');
   const [day, setDay] = useState<Weekday>(today);
   const [importOpen, setImportOpen] = useState(false);
+  const [imageOpen, setImageOpen] = useState(false);
   const formOpen = params.get('add') === '1';
   const tab: Tab = params.get('tab') === 'friends' ? 'friends' : 'mine';
   const setTab = (next: Tab) => {
@@ -76,7 +78,7 @@ export default function SchedulePage() {
         subtitle={<SemesterSwitcher />}
         actions={tab === 'friends' ? undefined :
           <>
-            <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4" />{t('common.importCsv')}</Button>
+            <Button variant="secondary" size="sm" onClick={() => setImageOpen(true)}><ImagePlus className="h-4 w-4" />{t('imageImport.button')}</Button>
             <Button variant="secondary" size="sm" onClick={exportCsv} disabled={!courses.length}><Download className="h-4 w-4" />{t('common.exportCsv')}</Button>
             <Button size="sm" onClick={() => setParams({ add: '1' })}><Plus className="h-4 w-4" />{t('schedule.addCourse')}</Button>
           </>
@@ -119,7 +121,7 @@ export default function SchedulePage() {
         <EmptyState
           title={t('schedule.emptyTitle')}
           body={t('schedule.emptyBody')}
-          action={<div className="flex gap-2"><Button onClick={() => setParams({ add: '1' })}><Plus className="h-4 w-4" />{t('schedule.addFirst')}</Button><Button variant="secondary" onClick={() => setImportOpen(true)}>{t('common.importCsv')}</Button></div>}
+          action={<div className="flex gap-2"><Button onClick={() => setParams({ add: '1' })}><Plus className="h-4 w-4" />{t('schedule.addFirst')}</Button><Button variant="secondary" onClick={() => setImageOpen(true)}><ImagePlus className="h-4 w-4" />{t('imageImport.button')}</Button></div>}
         />
       ) : (
         <>
@@ -167,6 +169,21 @@ export default function SchedulePage() {
       )}
 
       <CourseForm open={formOpen} onClose={closeForm} courses={courses} onSubmit={onCreate} saving={save.isPending} />
+      <ImageImport
+        open={imageOpen}
+        onClose={() => setImageOpen(false)}
+        existing={courses}
+        importing={importMany.isPending}
+        onUseCsv={() => setImportOpen(true)}
+        onImport={async (list) => {
+          try {
+            await importMany.mutateAsync(list);
+            toast({ tone: 'success', message: t('schedule.imported', { count: list.length }) });
+          } catch (e) {
+            toast({ tone: 'error', message: e instanceof Error ? e.message : t('schedule.importFailed') });
+          }
+        }}
+      />
       <CsvImport
         open={importOpen}
         onClose={() => setImportOpen(false)}

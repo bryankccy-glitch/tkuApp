@@ -28,6 +28,10 @@ export function Sheet({
   const panel = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const descId = useId();
+  // Read the latest onClose without re-running the open effect: callers often pass a new
+  // function each render, and re-running would steal focus from the field being typed in.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
@@ -37,7 +41,7 @@ export function Sheet({
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
       if (e.key === 'Tab' && panel.current) {
         const f = panel.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])');
         if (!f.length) return;
@@ -53,7 +57,7 @@ export function Sheet({
       document.body.style.overflow = prevOverflow;
       opener?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
   return createPortal(

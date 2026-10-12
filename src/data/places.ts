@@ -81,6 +81,14 @@ export function buildingFromRoom(room: string): CampusPlace | undefined {
   return CAMPUS_PLACES.find((pl) => pl.code === letters) ?? CAMPUS_PLACES.find((pl) => pl.code === letters[0]);
 }
 
+/** "B217" → "B217 · 商管大樓" so people know which building to walk to; unknown codes stay as-is. */
+export function roomWithBuilding(room: string): string {
+  const r = room.trim();
+  if (!r) return r;
+  const b = buildingFromRoom(r);
+  return b ? `${r} · ${b.name}` : r;
+}
+
 /** External navigation without fabricated coordinates: Google Maps search by name. */
 export function mapsSearchUrl(place: Pick<CampusPlace, 'name' | 'coords'>): string {
   if (place.coords) return `https://www.google.com/maps/search/?api=1&query=${place.coords.lat},${place.coords.lng}`;

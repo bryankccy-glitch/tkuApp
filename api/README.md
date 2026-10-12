@@ -29,3 +29,9 @@ Status：503 未設定 AI/Supabase（前端自動改用本機助理）、401 tok
 - `searchUniversityKnowledge` returns official-source fallback links even when the vector search has no reliable match; retrieved text is enclosed in untrusted-data markers before it is sent back to the model.
 - Required server-only variables: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`. Optional: `OPENAI_MODEL`, `OPENAI_EMBEDDING_MODEL`, `AI_RATE_LIMIT_PER_MINUTE`.
 - `npm run ingest` downloads supported public PDF/HTML documents listed in `src/data/sources.ts`. Unavailable or unsupported sources are logged and skipped. It requires `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `OPENAI_API_KEY`.
+
+## POST /api/timetable-import
+Headers：`Authorization: Bearer <Supabase access token>`。Body：`{ "image": "data:image/(jpeg|png|webp);base64,…" }`（前端先縮到長邊 ≤ 2000px JPEG，≤ 3.5 MB）。
+Response 200：`{ "cells": [{ "weekday": 1-7, "period": 1-14, "group", "course", "teacher", "room" }] }`（每個有課的格子一筆；合併節次、換算時間、衝堂檢查在前端 `src/lib/timetableImport.ts` 以程式處理）。
+Status：503 未設定、401、429（共用 `ai_usage` 每分鐘上限）、400、422 `not_timetable`、502 模型錯誤（不回傳細節）。
+圖片只送給模型（`store: false`），伺服器不保存。可選 `OPENAI_VISION_MODEL`（預設沿用 `OPENAI_MODEL`）。`vercel.json` 設定此函式 `maxDuration` 60 秒。

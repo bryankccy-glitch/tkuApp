@@ -1,7 +1,7 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-12 21:35（Asia/Taipei, UTC+8）
+2026-10-12 22:15（Asia/Taipei, UTC+8）
 
 ## Updated By
 Claude Code（合併 Codex `feat/ai-backend`）
@@ -20,6 +20,9 @@ Claude Code（合併 Codex `feat/ai-backend`）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **課表圖片匯入**（取代 CSV 成為主要匯入；CSV 仍可從匯入視窗進入）：`ImageImport.tsx` 縮圖（長邊 2000px JPEG、去 EXIF）→ `POST /api/timetable-import`（Claude Code 依使用者要求撰寫於 `api/`，沿用 Codex 的 `readServerEnv`、`CampusStore` 驗證與 `ai_usage` 限流）→ OpenAI Responses API（圖片＋strict JSON schema、`store: false`）只回傳「每格」內容 → `src/lib/timetableImport.ts` 以程式合併連續節次（同教室）、同課名跨天合併、助教課不當授課教師、教室正規化（`B 217`→`B217`）、第 13–14 節（時間未查核）略過並提示 → 確認畫面可改名／教師、取消勾選、移除時段，標示同名課程（預設不加入）與衝堂，按確認才寫入。需登入；未部署時提示改用 CSV
+- **在哪裡上課**：教室代碼後顯示大樓名稱（`roomWithBuilding`，例：`B217 · 商管大樓`），用於每日時間軸與圖片匯入確認畫面
+- 修正 `Sheet`：focus effect 不再因 `onClose` 每次 render 改變而重跑（之前在確認畫面打字會被搶走焦點）
 - **好友課表**（課表頁上方「我的課表｜好友」）：每人 8 碼好友代碼（無易混字元）＋邀請連結 `/schedule?tab=friends&code=XXXX`；送出/接受/拒絕/取消/移除好友；雙方接受後可看對方**相同學期代碼**的週課表（唯讀，不含備註）；「共同空堂」列出週一到週五第 1–12 節兩人都沒課的時段；可重新產生代碼。不提供以 Email/學號搜尋他人
 - **二手市集**（`/market`、`/market/:id`）：出售/徵求、5 種分類、參考價格（空白=可議、0=免費；徵求顯示「預算」）、課號、物品狀況；搜尋與篩選（全部/出售/徵求/我的、分類、顯示已完成）；留言區自行約面交；刊登者可改狀態（刊登中/已保留/已完成）、編輯、刪除、刪除自己貼文下的留言；檢舉（每人每篇一次）；發文前需勾選交易提醒（不經手金錢、校內公開場所面交、禁止盜版/影印課本、禁止違禁品與代寫、勿公開個資）
 - **底部導覽仍 5 格**：「探索」改名「校園」，頁首切換「地點｜活動｜市集」（`src/features/explore/CampusTabs.tsx`）；在 /events、/market 時「校園」保持選取
@@ -102,7 +105,9 @@ Claude Code（合併 Codex `feat/ai-backend`）
 - 好友/市集元件測試：`src/features/friends/__tests__`（4）、`src/features/market/__tests__`（6）、`src/lib/social/__tests__`（4）
 - 好友/市集畫面（雲端建置＋模擬 Supabase 回應）axe WCAG 2.2 AA：好友列表、好友週課表、市集列表、貼文、我的貼文、發文表單，淺/深色 0 violations
 - 合併後 `npm run lint` ✅、`typecheck` ✅、`test` ✅ 18 files / 89 tests（含 Codex API 測試 9 項）、`build` ✅
-- ⚠ 合併後尚未重跑 `npm run test:e2e`（上一輪 118 passed；本輪底部導覽「探索」改名「校園」，e2e 未依名稱尋找該連結）
+- 圖片匯入測試：`src/lib/__tests__/timetableImport.test.ts`（以開發者提供的真實淡江課表截圖逐格轉錄為 fixture：11 門課、節次與時間正確）、`api/timetable-import.test.ts`、`src/features/schedule/__tests__/ImageImport.test.tsx`；以真實截圖上傳＋模擬 API 截圖檢查，axe 0 violations。**尚未用真實 OpenAI 模型辨識**（需部署與 `OPENAI_API_KEY`）
+- 目前 `npm run test` ✅ 21 files / 103 tests、lint ✅、typecheck ✅、build ✅
+- ⚠ 尚未重跑 `npm run test:e2e`（上一輪 118 passed；本輪底部導覽「探索」改名「校園」，e2e 未依名稱尋找該連結）
 - 未執行：自動化 RLS 測試（Codex `supabase/tests/`）；重設密碼流程（雲端工作區無法連 supabase.co；Email 驗證信限制見 Known Issues）
 
 ## Known Issues
@@ -118,7 +123,7 @@ Claude Code（合併 Codex `feat/ai-backend`）
 - npm audit 有建置工具鏈警告，尚未處理
 
 ## Next Steps
-- **Codex**：`feat/ai-backend` 已合併進 `main`；之後請從最新 `main` 開新分支。可補：好友/市集的 pgTAP RLS 測試（`supabase/tests/`）、市集檢舉的管理端 API
+- **Codex**：`api/timetable-import.ts` 由 Claude Code 新增（使用者要求），之後可由 Codex 維護。`feat/ai-backend` 已合併進 `main`；之後請從最新 `main` 開新分支。可補：好友/市集的 pgTAP RLS 測試（`supabase/tests/`）、市集檢舉的管理端 API
 - **Claude Code（main）**：市集照片上傳（Supabase Storage）、好友邀請通知；重跑 e2e 並新增好友/市集 e2e（需模擬 Supabase）
 - **Claude Code（main）**：活動管理後台 UI（需 Codex 的 admin API）、Capacitor 打包 iOS/Android（待開發者決定）
 - **開發者**：決定 Email 驗證策略（關閉或自訂 SMTP）；部署後在 Supabase Auth 設定 Site URL 與 Redirect URLs；建立 GitHub repo；Vercel 環境變數填 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`（publishable key）

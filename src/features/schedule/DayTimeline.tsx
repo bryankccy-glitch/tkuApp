@@ -4,6 +4,7 @@ import type { Occurrence } from '@/lib/schedule';
 import { statusAt } from '@/lib/schedule';
 import { COURSE_COLOR_STYLES } from '@/lib/labels';
 import { formatPeriods, timesToPeriods } from '@/lib/periods';
+import { roomWithBuilding } from '@/data/places';
 import { cn } from '@/lib/cn';
 import { t } from '@/i18n/t';
 
@@ -49,7 +50,7 @@ export function DayTimeline({ items, now, readOnly }: { items: Occurrence[]; now
                   {now && <span className={cn('shrink-0 text-[11px] font-semibold', st === 'ongoing' ? 'text-heritage' : 'text-muted')}>{t(STATUS_LABEL[st])}</span>}
                 </span>
                 <span className="tabular mt-0.5 block truncate text-caption text-muted">
-                  {[slot.room || t('common.roomNotSet'), course.instructor, formatPeriods(timesToPeriods(slot.startTime, slot.endTime))].filter(Boolean).join('　')}
+                  {[slot.room ? roomWithBuilding(slot.room) : t('common.roomNotSet'), course.instructor, formatPeriods(timesToPeriods(slot.startTime, slot.endTime))].filter(Boolean).join('　')}
                 </span>
               </span>
             </Row>

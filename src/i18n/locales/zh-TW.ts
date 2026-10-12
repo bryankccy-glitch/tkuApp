@@ -889,6 +889,38 @@ const zh = {
       "closed": "這篇貼文已完成，無法留言",
       "alreadyReported": "你已經檢舉過這篇貼文了"
     }
+  },
+  "imageImport": {
+    "button": "圖片匯入",
+    "title": "用課表截圖匯入",
+    "description": "上傳淡江選課系統的課表截圖或照片，AI 會讀出每門課的星期、節次與教室，你確認後才會加入。",
+    "choose": "選擇課表圖片或拍照",
+    "chooseHint": "支援截圖與照片（JPEG、PNG、WebP）",
+    "privacy": "圖片會傳到伺服器交給 AI 辨識，辨識完不會保存。截圖上若有姓名、學號，建議先裁掉。",
+    "useCsv": "改用 CSV 匯入",
+    "needAccount": "圖片辨識需要登入帳號才能使用。你也可以改用 CSV 匯入。",
+    "reading": "正在辨識課表…",
+    "readingHint": "大約需要 10–30 秒",
+    "reviewHint": "請逐一確認 AI 讀到的課程，可以修改名稱、取消勾選或移除時段。",
+    "found": "讀到 {{count}} 門課",
+    "skipped": "有 {{count}} 格位在第 13–14 節，這兩節的時間尚未查核，沒有自動加入，請手動新增。",
+    "includeName": "加入 {{name}}",
+    "courseName": "課程名稱",
+    "instructor": "授課教師",
+    "removeSlot": "移除這個時段",
+    "duplicate": "課表裡已經有同名課程，預設不加入。",
+    "clash": "和「{{name}}」時間衝突",
+    "again": "重新選圖",
+    "addN": "加入 {{count}} 門課",
+    "groupNote": "開課班級：{{group}}",
+    "err": {
+      "unavailable": "圖片辨識需要在部署後的網站使用（伺服器尚未設定）。你可以先改用 CSV 匯入。",
+      "auth": "登入已過期，請重新登入後再試。",
+      "rate": "辨識太頻繁了，請一分鐘後再試。",
+      "not_timetable": "這張圖片看起來不像課表，請換一張清楚的課表截圖。",
+      "too_large": "圖片太大或無法讀取，請裁切後再試。",
+      "failed": "辨識失敗，請換一張更清楚的圖片，或改用 CSV 匯入。"
+    }
   }
 } as const;
 export default zh;
