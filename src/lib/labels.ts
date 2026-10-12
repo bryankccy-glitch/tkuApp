@@ -1,3 +1,4 @@
+import type { PlaceCategory } from '@/data/places';
 import i18n from '@/i18n';
 import type { CourseColor, EventCategory, TaskKind, TaskPriority, Weekday } from './types';
 
@@ -15,6 +16,8 @@ export const EXAM_KINDS: TaskKind[] = ['quiz', 'midterm', 'final'];
 export const PRIORITY_LABELS = translated<TaskPriority>('priority');
 
 export const EVENT_CATEGORY_LABELS = translated<EventCategory>('eventCategory');
+
+export const PLACE_CATEGORY_LABELS = translated<PlaceCategory>('placeCategory');
 
 /** Tailwind-safe class sets for course colors (bg tint, solid bar, text). */
 export const COURSE_COLOR_STYLES: Record<CourseColor, { bar: string; tint: string; text: string; label: string }> = {

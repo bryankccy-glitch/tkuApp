@@ -20,6 +20,8 @@ Claude Code（合併 Codex `feat/ai-backend`）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **部署設定**：GitHub `bryankccy-glitch/tkuApp`（private）＋ Vercel 專案 `tku-app`（team CampusHub，已連 GitHub 自動部署）。`vercel.json` 固定 framework=vite、`npm ci`、`npm run build`、輸出 `dist`；新增 `.env.production`（只含公開的 Supabase URL 與 publishable key，供正式建置；`.gitignore` 例外放行）。伺服器端 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`OPENAI_API_KEY` 需在 Vercel 後台設定
+- `src/data/places.ts` 移除 `@/i18n` 依賴（`PLACE_CATEGORY_LABELS` 移到 `src/lib/labels.ts`），讓 `api/` 函式在 Vercel 的 Node 環境能載入；已用 esbuild 打包後在純 Node ESM 載入 `api/chat.ts`、`api/timetable-import.ts` 驗證
 - **校園探索「我的位置」**：地圖右下角按鈕，按下才請求定位權限（`useMyLocation`，watchPosition、高精準度；每次按都重新定位並置中），地圖上顯示藍點＋誤差圈；離校園 >2 km 會顯示距離；拒絕/逾時/不支援/非 https 有對應說明；位置只在裝置上使用不上傳。`vercel.json` 的 Permissions-Policy 改為 `geolocation=(self)`（原本 `()` 會在正式網站封鎖定位）。e2e `e2e/geolocation.spec.ts` 6 項通過（桌面＋手機）
 - **本機也能跑 API**：`vite-dev-api.ts`（只在 `npm run dev` 生效）把 `/api/chat`、`/api/timetable-import` 交給 `api/` 的 handler 執行，伺服器端金鑰從 `.env.local` 讀（`SUPABASE_SERVICE_ROLE_KEY`、`OPENAI_API_KEY`，不加 `VITE_`）；`SUPABASE_URL`/`SUPABASE_ANON_KEY` 預設沿用 `VITE_` 值。未設金鑰時回 503，App 照常走備援。已驗證：無金鑰 503、未登入 401、格式錯誤 400、App 頁面正常
 - **課表圖片匯入**（取代 CSV 成為主要匯入；CSV 仍可從匯入視窗進入）：`ImageImport.tsx` 縮圖（長邊 2000px JPEG、去 EXIF）→ `POST /api/timetable-import`（Claude Code 依使用者要求撰寫於 `api/`，沿用 Codex 的 `readServerEnv`、`CampusStore` 驗證與 `ai_usage` 限流）→ OpenAI Responses API（圖片＋strict JSON schema、`store: false`）只回傳「每格」內容 → `src/lib/timetableImport.ts` 以程式合併連續節次（同教室）、同課名跨天合併、助教課不當授課教師、教室正規化（`B 217`→`B217`）、第 13–14 節（時間未查核）略過並提示 → 確認畫面可改名／教師、取消勾選、移除時段，標示同名課程（預設不加入）與衝堂，按確認才寫入。需登入；未部署時提示改用 CSV
