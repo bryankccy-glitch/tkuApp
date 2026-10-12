@@ -30,7 +30,7 @@ export default function CampusMap({ places, selected }: { places: CampusPlace[];
     const icon = (accent: boolean) =>
       L.divIcon({
         className: '',
-        html: `<span style="display:block;width:18px;height:18px;border-radius:9px 9px 9px 2px;transform:rotate(-45deg);background:${accent ? '#A84643' : '#15345A'};border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)"></span>`,
+        html: `<span style="display:block;width:18px;height:18px;border-radius:9px 9px 9px 2px;transform:rotate(-45deg);background:${accent ? '#B3262D' : '#171717'};border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)"></span>`,
         iconSize: [18, 18],
         iconAnchor: [9, 18],
       });

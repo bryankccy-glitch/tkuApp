@@ -90,7 +90,7 @@ export function CourseForm({
             {COURSE_COLORS.map((c) => (
               <label key={c} className="cursor-pointer">
                 <input type="radio" value={c} {...register('color')} className="peer sr-only" />
-                <span className={cn('flex h-9 items-center gap-2 rounded-full border px-3 text-caption font-medium peer-focus-visible:ring-2 peer-focus-visible:ring-blue', color === c ? 'border-ink text-ink' : 'border-line text-muted')}>
+                <span className={cn('flex h-9 items-center gap-2 rounded-full border px-3 text-caption font-medium peer-focus-visible:ring-2 peer-focus-visible:ring-link', color === c ? 'border-ink text-ink' : 'border-line text-muted')}>
                   <span className={cn('h-3 w-3 rounded-full', COURSE_COLOR_STYLES[c].bar)} aria-hidden />
                   {COURSE_COLOR_STYLES[c].label}
                 </span>
@@ -138,7 +138,7 @@ export function CourseForm({
             );
           })}
           {errors.slots?.root && <p className="text-caption text-danger">{errors.slots.root.message}</p>}
-          <button type="button" onClick={() => append({ ...blankSlot })} className="inline-flex items-center gap-1.5 justify-self-start text-caption font-semibold text-blue hover:underline">
+          <button type="button" onClick={() => append({ ...blankSlot })} className="inline-flex items-center gap-1.5 justify-self-start text-caption font-semibold text-link hover:underline">
             <Plus className="h-4 w-4" />再加一個時段
           </button>
         </fieldset>

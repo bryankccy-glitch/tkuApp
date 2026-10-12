@@ -53,7 +53,7 @@ export default function ResetPasswordPage() {
           ) : (
             <div className="mt-3">
               <p role="alert" className="text-body text-ink">這個重設連結無效或已過期。</p>
-              <Link to="/login" className="mt-3 inline-block font-semibold text-blue hover:underline">回到登入頁重新申請</Link>
+              <Link to="/login" className="mt-3 inline-block font-semibold text-link hover:underline">回到登入頁重新申請</Link>
             </div>
           )
         ) : (

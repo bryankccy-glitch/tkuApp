@@ -77,7 +77,7 @@ export default function LoginPage() {
               <div>
                 <div className="flex items-center justify-between">
                   <label className="label" htmlFor="pw">密碼</label>
-                  {tab === 'in' && <button type="button" onClick={() => { setTab('forgot'); setError(null); setInfo(null); }} className="mb-1.5 text-label text-blue hover:underline">忘記密碼？</button>}
+                  {tab === 'in' && <button type="button" onClick={() => { setTab('forgot'); setError(null); setInfo(null); }} className="mb-1.5 text-label text-link hover:underline">忘記密碼？</button>}
                 </div>
                 <input id="pw" type="password" autoComplete={tab === 'in' ? 'current-password' : 'new-password'} className="field" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
@@ -85,7 +85,7 @@ export default function LoginPage() {
             {error && <p role="alert" className="text-caption text-danger">{error}</p>}
             {info && <p role="status" className="text-caption text-success">{info}</p>}
             <Button type="submit" size="lg" loading={loading} className="mt-1">{tab === 'in' ? '登入' : tab === 'up' ? '建立帳號' : '寄送重設連結'}</Button>
-            {tab === 'forgot' && <button type="button" onClick={() => { setTab('in'); setError(null); setInfo(null); }} className="text-caption font-semibold text-blue hover:underline">返回登入</button>}
+            {tab === 'forgot' && <button type="button" onClick={() => { setTab('in'); setError(null); setInfo(null); }} className="text-caption font-semibold text-link hover:underline">返回登入</button>}
           </form>
           <p className="mt-4 text-[11px] leading-relaxed text-muted">
             這是 TKU Campus OS 的帳號，與淡江校務系統無關。請勿使用校務系統密碼。本服務為學生自主開發，非淡江大學官方 App。

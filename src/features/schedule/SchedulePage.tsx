@@ -122,7 +122,7 @@ export default function SchedulePage() {
                       aria-selected={day === d}
                       aria-label={`${WEEKDAY_LABELS[d]}，${count} 堂課`}
                       onClick={() => setDay(d)}
-                      className={cn('flex flex-col items-center rounded-sm py-2 text-caption font-semibold transition-colors', day === d ? 'bg-primary text-white dark:text-[#2A0E0C]' : 'text-muted hover:bg-sunken')}
+                      className={cn('flex flex-col items-center rounded-sm py-2 text-caption font-semibold transition-colors', day === d ? 'bg-primary text-white dark:text-[#1A0506]' : 'text-muted hover:bg-sunken')}
                     >
                       <span className={cn(d === today && day !== d && 'text-heritage')}>{WEEKDAY_SHORT[d]}</span>
                       <span className="mt-1 flex h-1.5 gap-0.5">

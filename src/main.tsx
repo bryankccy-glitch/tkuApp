@@ -8,6 +8,7 @@ import { ToastProvider } from './components/ui/Toast';
 import { LoadingMark } from './components/brand/Logo';
 import { router } from './app/router';
 import './styles/index.css';
+import './i18n';
 import { seedPreviewDemo } from './lib/data/previewDemo';
 
 if (import.meta.env.VITE_PREVIEW_DEMO === '1') seedPreviewDemo();

@@ -65,7 +65,7 @@ export function ErrorNotice({ error, onRetry }: { error: unknown; onRetry?: () =
     <div role="alert" className="rounded-sm border border-danger/30 bg-danger/5 p-4 text-body text-ink">
       <p className="font-semibold text-danger">資料載入失敗</p>
       <p className="mt-1 text-caption text-muted">{msg}</p>
-      {onRetry && <button type="button" onClick={onRetry} className="mt-2 text-caption font-semibold text-blue hover:underline">重新載入</button>}
+      {onRetry && <button type="button" onClick={onRetry} className="mt-2 text-caption font-semibold text-link hover:underline">重新載入</button>}
     </div>
   );
 }

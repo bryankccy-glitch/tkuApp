@@ -109,7 +109,7 @@ export default function EventsPage() {
               <dd className="tabular text-ink">{formatDateShort(new Date(open.startsAt))} {formatTime(new Date(open.startsAt))}{open.endsAt ? ` – ${formatTime(new Date(open.endsAt))}` : ''}</dd>
               {open.location && <><dt className="text-muted">地點</dt><dd className="text-ink">{open.location}</dd></>}
               <dt className="text-muted">來源</dt>
-              <dd><a href={open.sourceUrl} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 text-blue hover:underline">{open.sourceName}<ExternalLink className="h-3.5 w-3.5" /></a></dd>
+              <dd><a href={open.sourceUrl} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 text-link hover:underline">{open.sourceName}<ExternalLink className="h-3.5 w-3.5" /></a></dd>
               <dt className="text-muted">發布</dt>
               <dd className="text-ink">{formatDateShort(new Date(open.publishedAt))}</dd>
             </dl>

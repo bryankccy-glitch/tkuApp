@@ -37,7 +37,7 @@ export function Colonnade({ className, arches = 14 }: { className?: string; arch
 export function ScrollIllustration({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 160 96" className={cn('h-20 w-auto', className)} aria-hidden>
-      <path d="M18 70c18-26 44-38 62-30s44 4 62-20" fill="none" className="stroke-blue/40" strokeWidth="10" strokeLinecap="round" />
+      <path d="M18 70c18-26 44-38 62-30s44 4 62-20" fill="none" className="stroke-link/40" strokeWidth="10" strokeLinecap="round" />
       <path d="M18 78c18-26 44-38 62-30s44 4 62-20" fill="none" className="stroke-primary/70" strokeWidth="3" strokeLinecap="round" />
       <circle cx="18" cy="74" r="9" className="fill-surface stroke-primary/70" strokeWidth="3" />
       <circle cx="142" cy="24" r="9" className="fill-surface stroke-primary/70" strokeWidth="3" />

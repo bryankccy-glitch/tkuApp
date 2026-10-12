@@ -21,7 +21,7 @@ export const EVENT_CATEGORY_LABELS: Record<EventCategory, string> = {
 export const COURSE_COLOR_STYLES: Record<CourseColor, { bar: string; tint: string; text: string; label: string }> = {
   navy: { bar: 'bg-[#15345A] dark:bg-[#7FA6D6]', tint: 'bg-[#15345A]/10 dark:bg-[#7FA6D6]/15', text: 'text-[#15345A] dark:text-[#AFC8EA]', label: '淡江藍' },
   blue: { bar: 'bg-[#3478C8]', tint: 'bg-[#3478C8]/12 dark:bg-[#3478C8]/20', text: 'text-[#245C9E] dark:text-[#9CC4F0]', label: '校園藍' },
-  heritage: { bar: 'bg-[#A84643] dark:bg-[#DE7870]', tint: 'bg-[#A84643]/10 dark:bg-[#DE7870]/15', text: 'text-[#8E3936] dark:text-[#F0A9A3]', label: '宮燈紅' },
+  heritage: { bar: 'bg-[#B3262D] dark:bg-[#E8545A]', tint: 'bg-[#B3262D]/10 dark:bg-[#E8545A]/15', text: 'text-[#961C24] dark:text-[#F4A0A3]', label: '淡江紅' },
   teal: { bar: 'bg-[#1F7A72]', tint: 'bg-[#1F7A72]/10 dark:bg-[#1F7A72]/25', text: 'text-[#17625B] dark:text-[#86D1C8]', label: '淡水綠' },
   amber: { bar: 'bg-[#B9781B]', tint: 'bg-[#B9781B]/12 dark:bg-[#B9781B]/25', text: 'text-[#8A5710] dark:text-[#F0C77F]', label: '夕照橘' },
   violet: { bar: 'bg-[#6B4FA0]', tint: 'bg-[#6B4FA0]/10 dark:bg-[#6B4FA0]/25', text: 'text-[#56408A] dark:text-[#C3B0EA]', label: '暮色紫' },

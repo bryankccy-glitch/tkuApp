@@ -28,7 +28,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
 function NotFound() {
   return (
     <Page>
-      <EmptyState title="找不到這個頁面" body="網址可能有誤，或頁面已移動。" action={<Link to="/" className="font-semibold text-blue hover:underline">回到首頁</Link>} />
+      <EmptyState title="找不到這個頁面" body="網址可能有誤，或頁面已移動。" action={<Link to="/" className="font-semibold text-link hover:underline">回到首頁</Link>} />
     </Page>
   );
 }

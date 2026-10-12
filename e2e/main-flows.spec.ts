@@ -19,6 +19,7 @@ test('course added in 課表 appears on the home dashboard', async ({ page }) =>
   await addCourseToday(page, '端對端測試課', 'FL105');
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('淡江同學');
+  // hero greeting comes from the pixel-scene header
   await expect(page.getByRole('region', { name: /今日課表/ }).or(page.locator('section[aria-labelledby="today-title"]'))).toContainText('端對端測試課');
   await expect(page.locator('section[aria-labelledby="next-class"]')).toContainText('外國語文大樓');
 });

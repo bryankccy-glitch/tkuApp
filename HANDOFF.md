@@ -1,7 +1,7 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-12 16:55（Asia/Taipei, UTC+8）
+2026-10-12 17:30（Asia/Taipei, UTC+8）
 
 ## Updated By
 Claude Code
@@ -20,6 +20,11 @@ Claude Code
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **淡江紅＋紅黑白品牌**：Primary #B3262D、Black #171717、White、Off White #FAF9F7；連結改為深淡江紅（`link` token，取代 `blue`）；`navy`/`blue` 只留給課程顏色；地圖標記、manifest、splash、meta theme-color 同步
+- **首頁 Hero 改為淡江大橋動態像素場景**（`src/components/campus-scene/`）：晴天/多雲/雨天/夕陽/夜晚＋時間與天氣組合（例如雨夜）；雲、鳥、水面閃光與倒影、雨滴與漣漪、樹搖、大橋與建築燈光、星星；2.5 秒調色盤過渡
+- **即時天氣**：`src/services/weatherService.ts`（Open-Meteo、8 秒逾時、快取最後有效資料）＋ `useCampusWeather`（20 分鐘更新、離線/逾時/過期處理）；`useTimeOfDay` 依 API 日出日落，離線時用 `src/lib/solar.ts` 計算
+- **i18n**：i18next＋react-i18next；首頁問候、天氣、快捷操作、錯誤訊息中英文；「我的」可切換語言，並同步 `<html lang>`
+- 首頁版面：Hero 全寬、左側問候、右側淡水天氣、Hero 下方快捷操作（下一堂課/今日課表/找教室/校園活動/待辦事項）；移除 Hero 內的 AI 輸入框（AI 在底部導覽）
 - **改為純手機 App 版面**：移除桌面 Sidebar 與所有 `sm:/md:/lg:` 斷點；`.app-frame` 最大寬 480px 置中；Bottom sheet 限制在 App 寬度；週課表重新設計為手機可完整顯示（不需左右捲動）；課表預設單日檢視；「作業與考試」「活動與機會」快速入口移到「我的」；PWA `orientation: portrait`
 - **標誌更換**為開發者提供的 TKU Campus OS 標誌（宮燈教室＋書卷＋TKU 字標）：產生 App Icon 192/512/maskable、apple-touch、favicon 32/48、介面用 logo-128/256/512；原始檔放 `design/brand/`；移除舊的 SVG 標誌檔
 - 主題色由淡江藍改為宮燈紅：新增 `primary` token；首頁歡迎區改紅色系天色；Logo/Icon/Favicon/Splash/manifest theme_color 改紅底＋金色宮燈
@@ -29,6 +34,8 @@ Claude Code
 - 新增 React Testing Library 元件測試與 Playwright E2E
 
 ## Files Changed
+- 新增：`src/components/campus-scene/{PixelCampusScene.tsx,PixelSky.ts,PixelClouds.ts,PixelRiver.ts,PixelBridge.ts,PixelTerrain.ts,PixelRain.ts,PixelLighting.ts,SceneController.ts,sceneTypes.ts,palettes.ts,pixel.ts,layout.ts}`、`src/services/weatherService.ts`、`src/hooks/{useCampusWeather,useTimeOfDay,useReducedMotion}.ts`、`src/lib/solar.ts`、`src/i18n/{index,resources}.ts`、相關測試、`e2e/campus-scene.spec.ts`
+- 修改：`src/features/dashboard/{Hero,DashboardPage}.tsx`、`src/styles/index.css`、`tailwind.config.js`、所有使用 `*-blue` 連結色的元件（改 `*-link`）、`src/lib/labels.ts`、`src/features/explore/CampusMap.tsx`、`src/features/profile/ProfilePage.tsx`、`src/main.tsx`、`src/test/setup.ts`、`index.html`、`vite.config.ts`、`package.json`（i18next、react-i18next）、文件
 - App 版面：`src/components/layout/AppShell.tsx`、`nav.ts`、`src/components/ui/Sheet.tsx`、`src/styles/index.css`、`tailwind.config.js`（`max-w-app`）、`src/features/schedule/WeekGrid.tsx`、`SchedulePage.tsx`、`src/features/profile/ProfilePage.tsx`、`EventsPage.tsx`、登入/重設密碼頁、所有含斷點 class 的頁面、`vite.config.ts`、`e2e/rwd-pwa.spec.ts`、`docs/DESIGN_SYSTEM.md`、`ARCHITECTURE.md`
 - 標誌：`src/components/brand/Logo.tsx`、`index.html`（favicon、splash）、`vite.config.ts`（includeAssets）、`public/icons/*`、`public/brand/logo-*.png`、`design/brand/tku-campus-os-logo-1024.png`；刪除 `public/favicon.svg`、`public/icons/icon.svg`、`public/brand/*.svg`
 - 樣式/品牌：`src/styles/index.css`、`tailwind.config.js`、`src/components/brand/*`、`src/components/layout/AppShell.tsx`、`src/features/dashboard/Hero.tsx`、`index.html`、`vite.config.ts`、`public/favicon.svg`、`public/icons/*`、`public/brand/*`、`docs/DESIGN_SYSTEM.md`
@@ -38,9 +45,11 @@ Claude Code
 - 測試：`src/test/*`、`src/features/**/__tests__/*`、`e2e/*`、`playwright.config.ts`、`tsconfig.node.json`、`package.json`（`test:e2e`）
 
 ## Database & API Changes
-本次無。`/api/chat` 合約見 `api/README.md`（Codex 實作中）。
+- 前端直接呼叫 Open-Meteo（公開 API、免金鑰，不需伺服器端）。資料庫無變更。`/api/chat` 合約見 `api/README.md`（Codex 實作中）。
 
 ## Technical Decisions
+- 像素場景用 Canvas 2D 自行繪製（不引入 PixiJS），程序化產生、可依寬度裁切，確保主塔在手機可見
+- 天氣座標使用校園中心（25.175, 121.449）
 - 產品為手機 App：不再使用 Tailwind 斷點；新增 UI 時只設計手機版面（寬 ≤ 480px）
 - 主題色 token 命名為 `primary`；`navy` 保留為輔助色；課程顏色 key `navy` 不變（資料相容）
 - 紅底上的宮燈改為金色 #F2C46B 以保持辨識度
@@ -51,12 +60,15 @@ Claude Code
 執行於 Claude 雲端工作區（Node 22.22）：
 - `npm run lint` ✅
 - `npm run typecheck` ✅
-- `npm run test` ✅ 11 files, 39 tests
+- `npm run test` ✅ 14 files, 52 tests（新增天氣解析/錯誤分類/快取、場景與日出日落、太陽計算）
 - `npm run build` ✅
-- `npm run test:e2e` ✅ 38 passed（desktop 1360×900、mobile Pixel 7）：主要流程、衝突、待辦、CSV 匯入、探索、AI 來源、深色模式、8 頁無水平捲動、App 版面（底部導覽＋480px 框）、週課表不超出手機寬度、PWA manifest＋service worker、skip link
+- `npm run test:e2e` ✅ 50 passed（新增：即時天氣顯示、API 失敗備援不顯示虛構溫度、Canvas 真實像素與限制色盤且會動、reduced motion 靜態、英文切換、快捷操作）；原 38（desktop 1360×900、mobile Pixel 7）：主要流程、衝突、待辦、CSV 匯入、探索、AI 來源、深色模式、8 頁無水平捲動、App 版面（底部導覽＋480px 框）、週課表不超出手機寬度、PWA manifest＋service worker、skip link
 - 未執行：RLS 測試、登入/登出與重設密碼的實際流程（需 Supabase 專案）
 
 ## Known Issues
+- 淡江大橋塔身輪廓與單/雙索面待查核（目前為詮釋）
+- 只有首頁與天氣完成英文翻譯，其他頁面仍為中文
+- Artifact 預覽環境無法連線 Open-Meteo，會顯示「暫時無法取得天氣」（實際部署正常）
 - 雲端模式（登入、重設密碼、RLS）尚未在真實 Supabase 專案驗證
 - 建築代碼來源為學生整理、座標未查核；T 棟名稱待核對
 - 淡江官方品牌規範未找到公開來源；紅色主題與標誌為開發者指定
@@ -71,7 +83,7 @@ Claude Code
 
 ## Git Status
 - Branch：`main`
-- Commits：initial MVP → preview build → red theme/tests → logo → `feat: switch to phone-only app layout`
+- Commits：initial MVP → preview build → red theme/tests → logo → phone layout → `feat: Tamkang red brand and animated pixel-art bridge homepage`
 - 未提交修改：無
 - Worktree：`../tkuApp-codex`（`feat/ai-backend`，Codex）
 - 尚未設定 remote

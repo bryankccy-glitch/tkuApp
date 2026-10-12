@@ -5,23 +5,22 @@
 ## 視覺概念：宮燈拱廊
 - **主識別**：開發者提供的 TKU Campus OS 標誌（宮燈教室建築與書卷曲線）。首頁歡迎區底部的「拱廊帶」（`Colonnade`，金色宮燈）延續相同建築意象。
 - **書卷曲線**：用在空狀態插畫（`ScrollIllustration`）與 Logo 底部波線。
-- **淡水天空**：首頁歡迎區以宮燈紅為底，依時段切換色調（清晨/白天/黃昏/夜晚），不使用天氣資料。
+- **淡江大橋像素場景**：首頁 Hero 為 Canvas 像素動畫（見 ARCHITECTURE.md「首頁像素場景」），依淡水即時天氣與日出日落切換。
 - 一次只讓一個元素突出：首頁的拱廊帶。其他區塊保持安靜、資訊清楚。
 
-## 色彩 tokens（`src/styles/index.css`，Tailwind 名稱）
-| Token | Light | 用途 |
-|---|---|---|
-| `primary` | #A84643 Heritage Red（**主題色**，2026-10-12 依開發者指示改為紅色） | 主要按鈕、導覽選取、首頁歡迎區、Logo、App Icon、啟動畫面 |
-| `heritage` | #A84643 | 強調：目前狀態、考試、今天標記（與主題色同色系） |
-| `navy` | #15345A TKU Navy | 輔助色（保留供資訊視覺化、地圖等使用） |
-| `blue` | #3478C8 Campus Blue | 連結、Focus ring |
-| `canvas` | #F8F6F1 Warm Ivory | 頁面背景 |
-| `surface` | #FFFFFF Cloud White | 卡片、面板 |
-| `sunken` | #E9EDF2 Soft Gray | 次要底色、segmented control |
-| `ink` | #253244 Slate Text | 主要文字 |
-| `muted` / `line` | — | 次要文字 / 分隔線 |
-| `success` `warning` `danger` | — | 狀態 |
-深色模式在 `[data-theme='dark']` 重新定義同名 tokens；所有元件只使用 tokens。
+## 色彩 tokens：紅黑白（2026-10-12 起，依開發者指定）
+淡江紅取自 TKU Campus OS 標誌（取樣約 #AE1D25），統一為 **#B3262D**；非學校官方標準色。
+| Token | Light | Dark | 用途 |
+|---|---|---|---|
+| `primary` | #B3262D 淡江紅 | #E8545A | 主要按鈕、導覽選取、品牌、Logo、Splash |
+| `heritage` | #B3262D | #E8545A | 強調：考試、今天、上課中（同主色） |
+| `link` | #961C24 深淡江紅 | #F48084 | 文字連結、focus ring |
+| `ink` | #171717 Black | #F0EFED | 主要文字 |
+| `canvas` | #FAF9F7 Off White | #111111 | 頁面背景 |
+| `surface` | #FFFFFF White | #1B1B1B | 卡片、面板 |
+| `sunken` / `line` / `muted` | 暖灰中性色 | — | 次要底色、分隔線、次要文字 |
+| `navy` / `blue` | #15345A / #3478C8 | — | **只用於課程顏色與資訊視覺化**，不用在操作元件 |
+首頁像素場景可以使用自然色（天空、河水、草地、夕陽），但所有操作元件維持紅黑白。
 
 課程顏色（7 色）在 `src/lib/labels.ts` 的 `COURSE_COLOR_STYLES`：淡江藍、校園藍、宮燈紅、淡水綠、夕照橘、暮色紫、石板灰。
 

@@ -7,6 +7,7 @@ export default {
       colors: {
         primary: 'rgb(var(--c-primary) / <alpha-value>)',
         navy: 'rgb(var(--c-navy) / <alpha-value>)',
+        link: 'rgb(var(--c-link) / <alpha-value>)',
         blue: 'rgb(var(--c-blue) / <alpha-value>)',
         heritage: 'rgb(var(--c-heritage) / <alpha-value>)',
         canvas: 'rgb(var(--c-canvas) / <alpha-value>)',

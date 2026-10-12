@@ -5,7 +5,7 @@ import { useSemester } from '@/app/SemesterProvider';
 import { findNextClass, occurrencesOn } from '@/lib/schedule';
 import { weekdayOf } from '@/lib/time';
 import { filterTasks } from '@/lib/tasks';
-import { Hero } from './Hero';
+import { Hero, QuickActions } from './Hero';
 import { NextClassCard } from './NextClass';
 import { TaskSummary } from './TaskSummary';
 import { CampusInfo } from './CampusInfo';
@@ -30,25 +30,20 @@ export default function DashboardPage() {
   const dueToday = filterTasks(taskList, 'today', now).length;
   const next = findNextClass(courseList, now);
 
-  const summary =
-    today.length === 0
-      ? `今天沒有課${dueToday ? `，有 ${dueToday} 項待辦今天到期` : '，好好安排自己的時間'}。`
-      : remaining.length === 0
-        ? `今天的 ${today.length} 堂課都上完了${dueToday ? `，還有 ${dueToday} 項待辦今天到期` : ''}。`
-        : `今天有 ${today.length} 堂課，還剩 ${remaining.length} 堂${dueToday ? `；${dueToday} 項待辦今天到期` : ''}。`;
-
   return (
-    <Page wide>
-      <Hero name={profile.data?.displayName ?? '淡江同學'} now={now} summary={summary} />
+    <>
+      <Hero name={profile.data?.displayName ?? '淡江同學'} summary={{ total: today.length, remaining: remaining.length, dueToday }} />
+      <QuickActions />
+      <Page className="pt-5">
+        <div className="grid gap-6">
+          <div className="scroll-mt-4" id="next-class-anchor">
+            <NextClassCard next={next} now={now} />
+          </div>
 
-      <div className="mt-6 grid gap-6">
-        <div className="grid content-start gap-6">
-          <NextClassCard next={next} now={now} />
-
-          <section aria-labelledby="today-title">
+          <section aria-labelledby="today-title" className="scroll-mt-4">
             <div className="mb-3 flex items-center justify-between">
               <h2 id="today-title" className="text-h3 text-ink">今日課表</h2>
-              <Link to="/schedule" className="text-caption font-semibold text-blue hover:underline">週課表</Link>
+              <Link to="/schedule" className="text-caption font-semibold text-link hover:underline">週課表</Link>
             </div>
             {today.length ? (
               <DayTimeline items={today} now={now} />
@@ -56,13 +51,11 @@ export default function DashboardPage() {
               <p className="rounded-sm bg-sunken px-4 py-4 text-caption text-muted">今天沒有排課。</p>
             )}
           </section>
-        </div>
 
-        <div className="grid content-start gap-6">
           <TaskSummary tasks={taskList} courses={courseList} now={now} />
           <CampusInfo />
         </div>
-      </div>
-    </Page>
+      </Page>
+    </>
   );
 }

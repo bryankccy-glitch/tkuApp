@@ -22,7 +22,7 @@ function BottomNav() {
                 {({ isActive }) =>
                   item.primary ? (
                     <>
-                      <span className={cn('-mt-5 flex h-12 w-12 items-center justify-center rounded-full border-4 border-canvas shadow-lift transition-colors', isActive ? 'bg-primary text-white ring-4 ring-primary/25 dark:text-[#2A0E0C]' : 'bg-primary/85 text-white dark:text-[#2A0E0C]')}>
+                      <span className={cn('-mt-5 flex h-12 w-12 items-center justify-center rounded-full border-4 border-canvas shadow-lift transition-colors', isActive ? 'bg-primary text-white ring-4 ring-primary/25 dark:text-[#1A0506]' : 'bg-primary/85 text-white dark:text-[#1A0506]')}>
                         <Icon className="h-5 w-5" strokeWidth={2.2} />
                       </span>
                       <span>{item.label}</span>

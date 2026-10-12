@@ -42,7 +42,7 @@ export function CsvImport({ open, onClose, onImport, importing }: { open: boolea
       <div className="grid gap-4">
         <div className="rounded-sm bg-sunken p-3 text-caption text-muted">
           <p>欄位順序：{CSV_HEADER.join('、')}。星期填 1–7 或「一」到「日」，時間格式 HH:mm。</p>
-          <button type="button" className="mt-1 font-semibold text-blue hover:underline" onClick={() => downloadText('課表範本.csv', '\uFEFF' + SAMPLE, 'text/csv;charset=utf-8')}>
+          <button type="button" className="mt-1 font-semibold text-link hover:underline" onClick={() => downloadText('課表範本.csv', '\uFEFF' + SAMPLE, 'text/csv;charset=utf-8')}>
             下載範本 CSV
           </button>
         </div>

@@ -14,7 +14,7 @@ export function CampusInfo() {
       <div>
         <div className="mb-2 flex items-center justify-between">
           <h2 id="campus-info" className="text-h3 text-ink">近期活動與機會</h2>
-          <Link to="/events" className="text-caption font-semibold text-blue hover:underline">查看全部</Link>
+          <Link to="/events" className="text-caption font-semibold text-link hover:underline">查看全部</Link>
         </div>
         {isLoading ? (
           <p className="text-caption text-muted">載入中…</p>

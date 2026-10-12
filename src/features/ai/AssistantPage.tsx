@@ -36,7 +36,7 @@ function Message({ m, last, busy, onRetry }: { m: ChatMessage; last: boolean; bu
   if (m.role === 'user') {
     return (
       <div className="flex justify-end">
-        <p className="max-w-[85%] whitespace-pre-wrap rounded-lg rounded-br-xs bg-primary px-4 py-2.5 text-body text-white dark:text-[#2A0E0C]">{m.content}</p>
+        <p className="max-w-[85%] whitespace-pre-wrap rounded-lg rounded-br-xs bg-primary px-4 py-2.5 text-body text-white dark:text-[#1A0506]">{m.content}</p>
       </div>
     );
   }
@@ -48,7 +48,7 @@ function Message({ m, last, busy, onRetry }: { m: ChatMessage; last: boolean; bu
         {m.error ? (
           <div role="alert" className="rounded-sm border border-danger/30 bg-danger/5 px-3 py-2.5 text-body">
             <p className="text-ink">{m.content}</p>
-            <button type="button" onClick={onRetry} className="mt-1.5 inline-flex items-center gap-1 text-caption font-semibold text-blue hover:underline"><RotateCcw className="h-3.5 w-3.5" />重試</button>
+            <button type="button" onClick={onRetry} className="mt-1.5 inline-flex items-center gap-1 text-caption font-semibold text-link hover:underline"><RotateCcw className="h-3.5 w-3.5" />重試</button>
           </div>
         ) : m.content === '' && streaming ? (
           <p className="flex items-center gap-1.5 py-2 text-caption text-muted" role="status">
@@ -61,7 +61,7 @@ function Message({ m, last, busy, onRetry }: { m: ChatMessage; last: boolean; bu
           <div className="prose-chat text-body text-ink">
             <ReactMarkdown
               components={{
-                a: ({ href, children }) => <a href={href} target="_blank" rel="noreferrer noopener" className="text-blue underline underline-offset-2">{children}</a>,
+                a: ({ href, children }) => <a href={href} target="_blank" rel="noreferrer noopener" className="text-link underline underline-offset-2">{children}</a>,
                 ul: ({ children }) => <ul className="my-2 space-y-1 pl-1">{children}</ul>,
                 li: ({ children }) => <li className="relative pl-4 before:absolute before:left-0 before:top-[0.7em] before:h-1 before:w-1 before:rounded-full before:bg-heritage">{children}</li>,
                 p: ({ children }) => <p className="my-1.5 leading-relaxed">{children}</p>,
@@ -173,7 +173,7 @@ export default function AssistantPage() {
       </div>
 
       <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-4 bg-gradient-to-t from-canvas via-canvas to-canvas/0 px-4 pb-3 pt-4">
-        <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex items-end gap-2 rounded-lg border border-line bg-surface p-2 shadow-lift focus-within:border-blue">
+        <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex items-end gap-2 rounded-lg border border-line bg-surface p-2 shadow-lift focus-within:border-link">
           <label htmlFor="chat-input" className="sr-only">輸入問題</label>
           <textarea
             id="chat-input"

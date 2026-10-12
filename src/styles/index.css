@@ -7,38 +7,41 @@
  * 色彩為產品設計提案，非淡江大學官方標準色（待查核官方識別規範）。
  */
 :root {
-  --c-primary: 168 70 67;    /* 主題色 Heritage Red #A84643 */
-  --c-navy: 21 52 90;        /* TKU Navy #15345A（輔助色） */
-  --c-blue: 52 120 200;      /* Campus Blue #3478C8 */
-  --c-heritage: 168 70 67;   /* Heritage Red #A84643 */
-  --c-canvas: 248 246 241;   /* Warm Ivory #F8F6F1 */
-  --c-surface: 255 255 255;  /* Cloud White */
-  --c-sunken: 233 237 242;   /* Soft Gray #E9EDF2 */
-  --c-ink: 37 50 68;         /* Slate Text #253244 */
-  --c-muted: 92 105 124;
-  --c-line: 222 227 234;
+  /* 紅黑白品牌系統（淡江紅取自 TKU Campus OS 標誌，非學校官方標準色） */
+  --c-primary: 179 38 45;    /* 淡江紅 Primary Red #B3262D */
+  --c-heritage: 179 38 45;   /* 強調紅（同主色） */
+  --c-link: 150 28 36;       /* 連結：深淡江紅 #961C24 */
+  --c-navy: 21 52 90;        /* TKU Navy（僅課程顏色 / 資訊視覺化） */
+  --c-blue: 52 120 200;      /* Campus Blue（僅課程顏色 / 資訊視覺化） */
+  --c-canvas: 250 249 247;   /* Off White #FAF9F7 */
+  --c-surface: 255 255 255;  /* White #FFFFFF */
+  --c-sunken: 241 239 236;
+  --c-ink: 23 23 23;         /* Black #171717 */
+  --c-muted: 98 96 94;
+  --c-line: 229 226 222;
   --c-success: 30 126 82;
   --c-warning: 176 110 18;
-  --c-danger: 186 52 52;
-  --focus: 52 120 200;
+  --c-danger: 186 32 40;
+  --focus: 179 38 45;
   color-scheme: light;
 }
 
 [data-theme='dark'] {
-  --c-primary: 232 128 118;
+  --c-primary: 232 84 90;
+  --c-heritage: 232 84 90;
+  --c-link: 244 128 132;
   --c-navy: 150 186 230;
   --c-blue: 110 165 230;
-  --c-heritage: 222 120 112;
-  --c-canvas: 14 22 34;
-  --c-surface: 22 33 49;
-  --c-sunken: 30 43 62;
-  --c-ink: 230 235 242;
-  --c-muted: 156 168 186;
-  --c-line: 44 58 80;
+  --c-canvas: 17 17 17;
+  --c-surface: 27 27 27;
+  --c-sunken: 37 36 35;
+  --c-ink: 240 239 237;
+  --c-muted: 166 163 160;
+  --c-line: 52 50 49;
   --c-success: 92 196 145;
   --c-warning: 230 170 80;
-  --c-danger: 240 120 120;
-  --focus: 140 185 240;
+  --c-danger: 245 110 110;
+  --focus: 244 128 132;
   color-scheme: dark;
 }
 

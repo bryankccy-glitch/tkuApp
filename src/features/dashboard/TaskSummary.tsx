@@ -27,7 +27,7 @@ export function TaskSummary({ tasks, courses, now }: { tasks: Task[]; courses: C
             {overdue.length > 0 && <span className="text-danger">，{overdue.length} 項已逾期</span>}
           </p>
         </div>
-        <Link to="/tasks" className="shrink-0 text-caption font-semibold text-blue hover:underline">全部待辦</Link>
+        <Link to="/tasks" className="shrink-0 text-caption font-semibold text-link hover:underline">全部待辦</Link>
       </div>
       {total > 0 && (
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="本週完成比例">
@@ -54,7 +54,7 @@ export function TaskSummary({ tasks, courses, now }: { tasks: Task[]; courses: C
           })}
         </ul>
       ) : (
-        <p className="mt-4 text-caption text-muted">目前沒有待辦。<Link to="/tasks?add=1" className="font-semibold text-blue hover:underline">新增作業或考試</Link></p>
+        <p className="mt-4 text-caption text-muted">目前沒有待辦。<Link to="/tasks?add=1" className="font-semibold text-link hover:underline">新增作業或考試</Link></p>
       )}
 
       {exams.length > 0 && (

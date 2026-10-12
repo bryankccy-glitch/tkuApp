@@ -34,7 +34,7 @@ export default function CourseDetailPage() {
   if (!course) {
     return (
       <Page>
-        <EmptyState title="找不到這門課" body="可能已被刪除，或屬於其他學期。" action={<Link to="/schedule" className="font-semibold text-blue hover:underline">回到課表</Link>} />
+        <EmptyState title="找不到這門課" body="可能已被刪除，或屬於其他學期。" action={<Link to="/schedule" className="font-semibold text-link hover:underline">回到課表</Link>} />
       </Page>
     );
   }
@@ -68,7 +68,7 @@ export default function CourseDetailPage() {
                   <span className="ml-2 text-caption text-muted">{formatPeriods(timesToPeriods(s.startTime, s.endTime))}</span>
                 </span>
                 {b ? (
-                  <Link to={`/explore?place=${b.code}`} className="inline-flex items-center gap-1 text-caption font-semibold text-blue hover:underline">
+                  <Link to={`/explore?place=${b.code}`} className="inline-flex items-center gap-1 text-caption font-semibold text-link hover:underline">
                     <MapPin className="h-3.5 w-3.5" />{s.room}<span className="text-muted">（{b.name}）</span>
                   </Link>
                 ) : (
@@ -90,7 +90,7 @@ export default function CourseDetailPage() {
       <section className="mt-6">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-h3 text-ink">相關待辦</h2>
-          <Link to={`/tasks?add=1&course=${course.id}`} className="text-caption font-semibold text-blue hover:underline">新增作業或考試</Link>
+          <Link to={`/tasks?add=1&course=${course.id}`} className="text-caption font-semibold text-link hover:underline">新增作業或考試</Link>
         </div>
         {related.length ? (
           <ul className="divide-y divide-line rounded-sm border border-line bg-surface">

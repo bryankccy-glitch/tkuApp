@@ -22,6 +22,10 @@ HANDOFF / AGENTS / README / ROADMAP / ARCHITECTURE / .env.example
 - ⬜ Web Push 推播提醒（使用 `notification_preferences`）
 - ⬜ 課程目錄（`courses`）搜尋並加入課表
 
+## 首頁像素場景 ✅
+- ✅ 淡江大橋 Pixel Art 動畫（晴/多雲/雨/夕陽/夜晚＋組合）、Open-Meteo 即時天氣、日出日落切換、reduced motion
+- ⬜ 查核淡江大橋塔身輪廓與索面；雷雨閃電效果（目前刻意不做以免過度刺激）
+
 ## Phase 4 — 校園探索 🟡
 - ✅ 建築代碼搜尋、分類、教室→建築對應、Google 地圖導航、OSM 地圖
 - ✅ 活動頁：搜尋、分類、日期、收藏、詳情、報名連結、分享、行事曆匯出
@@ -39,8 +43,9 @@ HANDOFF / AGENTS / README / ROADMAP / ARCHITECTURE / .env.example
 - ⬜ RLS 測試（Codex）、登入/登出 E2E（需 Supabase）
 - ⬜ Vercel 部署、CSP header、效能檢查、Beta 測試
 
-## i18n ⬜
-- 將介面文字抽出為字典，預留英文介面
+## i18n 🟡
+- ✅ i18next 架構、中英文切換（我的 → 語言）、首頁問候/天氣/快捷操作/天氣錯誤訊息
+- ⬜ 其餘頁面文字抽出為字典
 
 ## Phase 7 — Super App ⬜
 校園社群、社團討論、揪團、二手書/二手物品（須先完成防詐、檢舉封鎖、審核、個資保護設計）、職涯中心、個人化推薦、AI 行程規劃、跨校架構。
@@ -49,5 +54,6 @@ HANDOFF / AGENTS / README / ROADMAP / ARCHITECTURE / .env.example
 - 淡江官方品牌色碼與識別使用規範
 - 夜間第 13、14 節時間
 - 學期起訖日（目前以 8/1、2/1 推估）
+- 淡江大橋塔身輪廓、單/雙索面
 - 各建築精確座標；T＝「驚聲紀念大樓」名稱
 - 官方文件內文（請假規則、學生手冊）尚未匯入知識庫
