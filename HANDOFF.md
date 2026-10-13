@@ -7,7 +7,7 @@
 Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 
 ## Current Status
-前端 MVP 可用，Supabase 專案 `tku-campus-os` 已上線（註冊/登入/RLS 已以真實帳號驗證）。新增**好友課表**與**二手市集**（資料表已套用並以真實帳號驗證）。原 AI 後端已合併進 `main`；本輪 `feat/gemini` 將聊天、圖片課表辨識與 embedding 改用 Google Gemini，尚未合併／部署。migration `20261012080231_ai_backend_security.sql` **尚未套用到線上資料庫**；本輪不改資料庫 schema。
+前端 MVP 可用，Supabase 專案 `tku-campus-os` 已上線（註冊/登入/RLS 已以真實帳號驗證）。新增**好友課表**與**二手市集**（資料表已套用並以真實帳號驗證）。Gemini 版本已合併 `main`、推送與正式部署；真實課表圖片辨識成功，尚未確認加入（待前端保留助教／正課逐時段標示）。migration `20261012080231_ai_backend_security.sql` **尚未套用到線上資料庫**；本輪不改資料庫 schema。
 
 ## Completed
 - 專案骨架：Vite 6 + React 18 + TS strict + Tailwind 3 + React Router 6 + TanStack Query 5 + RHF + Zod + PWA
@@ -27,7 +27,7 @@ Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 - **禁止縮放**（開發者 2026-10-13 決定，固定 App 版面）：viewport `maximum-scale=1, user-scalable=no`；`html { touch-action: pan-x pan-y }`；`src/lib/noZoom.ts` 擋 iOS gesture 事件、雙指 touchmove、Ctrl/觸控板縮放與 Ctrl +/-；校園地圖（Leaflet）例外仍可縮放。a11y e2e 關閉 axe `meta-viewport` 規則（取捨：無法放大文字，屬 WCAG 1.4.4 例外決定）。e2e 新增縮放測試
 - **正式網址：https://tku-app.vercel.app**（Vercel `tku-app`，production 部署 `6662fd2` Ready）。已驗證：開啟即導向登入頁、網站可連 Supabase（CSP 正確）、`/api/timetable-import` 正常回 503（伺服器金鑰尚未設定）、Service Worker 已註冊。Supabase Auth：Site URL = `https://tku-app.vercel.app`，Redirect URLs = `https://tku-app.vercel.app/**`、`http://localhost:5173/**`
 - ⚠ GitHub push 未自動觸發第一次部署，這次是從 Vercel「Create Deployment」手動部署 `main`；之後推送若未自動部署，可在 Deployments 頁手動建立
-- **部署設定**：GitHub `bryankccy-glitch/tkuApp`（private）＋ Vercel 專案 `tku-app`（team CampusHub，已連 GitHub 自動部署）。`vercel.json` 固定 framework=vite、`npm ci`、`npm run build`、輸出 `dist`；新增 `.env.production`（只含公開的 Supabase URL 與 publishable key，供正式建置；`.gitignore` 例外放行）。伺服器端 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY` 需在 Vercel 後台設定
+- **部署設定 — Codex（2026-10-13）**：GitHub `bryankccy-glitch/tkuApp`（private）＋ Vercel `campus-hub5/tku-app`。bundle 驗證後僅 fast-forward 至 `16292dc`（包含 `ace6bce`、`8c01d32`），一般推送 `main`；已刪除未追蹤 bundle 與已合併的本機／遠端 `feat/gemini`、執行 worktree prune。乾淨的 `../tkuApp-codex` 保留為 detached HEAD，未刪除其內容。`vercel.json` 維持 vite／`npm ci`／`npm run build`／`dist`。伺服器端 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY` 已於本日設定於 Production／Preview／Development；兩項機密由使用者在後台自行輸入，Codex 僅補齊 Gemini 變數的適用環境，未讀取／輸出值。可選 `GEMINI_MODEL`、`GEMINI_VISION_MODEL`、`GEMINI_EMBEDDING_MODEL` 使用程式預設。重新部署 `dpl_BYkMy7gxa43cAgyfxMXqVbG9HREF`（來源 `main`／`16292dc`）Ready；正式網址 https://tku-app.vercel.app，未帶 token 的 POST `/api/chat` 與 `/api/timetable-import` 均實測 HTTP 401（不再是 503），`/login` 顯示登入表單。指定驗證 `npm ci`、`npx tsc -b`、lint、Vitest（21 files／112 tests）、build 全部通過；npm ci 回報 34 項依賴漏洞，未在本輪升級。正式站登入後上傳開發者提供的課表截圖，真實 Gemini 辨識成功，確認畫面顯示 11 門課／15 個合併時段；經濟學教師有 OCR 錯字，依圖片手動修正確認欄位，尚未按「加入」或寫入課程。此結果不代表辨識完全無誤或完整匯入成功。未實測真實聊天、未套用 migration／執行 ingest。僅改交接文件，未修改 `src/**` 或 `api/**`。
 - `src/data/places.ts` 移除 `@/i18n` 依賴（`PLACE_CATEGORY_LABELS` 移到 `src/lib/labels.ts`），讓 `api/` 函式在 Vercel 的 Node 環境能載入；已用 esbuild 打包後在純 Node ESM 載入 `api/chat.ts`、`api/timetable-import.ts` 驗證
 - **校園探索「我的位置」**：地圖右下角按鈕，按下才請求定位權限（`useMyLocation`，watchPosition、高精準度；每次按都重新定位並置中），地圖上顯示藍點＋誤差圈；離校園 >2 km 會顯示距離；拒絕/逾時/不支援/非 https 有對應說明；位置只在裝置上使用不上傳。`vercel.json` 的 Permissions-Policy 改為 `geolocation=(self)`（原本 `()` 會在正式網站封鎖定位）。e2e `e2e/geolocation.spec.ts` 6 項通過（桌面＋手機）
 - **本機也能跑 API**：`vite-dev-api.ts`（只在 `npm run dev` 生效）把 `/api/chat`、`/api/timetable-import` 交給 `api/` 的 handler 執行，伺服器端金鑰從 `.env.local` 讀（`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY`，不加 `VITE_`）；`SUPABASE_URL`/`SUPABASE_ANON_KEY` 預設沿用 `VITE_` 值。未設金鑰時回 503，App 照常走備援。已驗證：無金鑰 503、未登入 401、格式錯誤 400、App 頁面正常
@@ -140,6 +140,7 @@ Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 - npm audit 有建置工具鏈警告，尚未處理
 
 ## Next Steps
+- **Claude Code — 開發者新增需求（2026-10-13）**：圖片課表匯入需保留每格 teacher 的正課／助教屬性，顯示「課名（助教）」或「課名（圖片所列教師姓名）」；同教室的連續節次也不能跨不同授課者／正課助教類型合併。目前 `cellsToCourses` 只按課名分組並取最常見非助教教師，且 `DraftSlot`／`ScheduleSlot` 沒有逐時段教師欄位，因此確認畫面已失去此區分；不得把助教時段標成正課教師。單日課表改為早到晚每小時固定一列，空堂仍顯示，有課才放課程卡，課程位置仍須依真實分鐘起訖（例如 08:10），不要把學校節次時間改成整點。顯示起訖範圍由開發者確認。Codex 已保留真實辨識確認畫面，未加入該份課表；實作後再重新驗證辨識、分類及儲存。可刪除誤建且不使用的 `AGEMINI_API_KEY`（由開發者自行操作），保留正確 `GEMINI_API_KEY`。
 - **Claude Code**：前端圖片匯入隱私提示改成「圖片會傳給 Google Gemini 辨識」；`ARCHITECTURE.md` 的 AI provider 文案與 `AGENTS.md` 的目前 Codex 分支可同步更新（本輪遵守範圍未修改）。
 - **開發者**：合併 `feat/gemini` 後，設定伺服器端 Gemini/Supabase 環境變數，再登入實測真實問答與圖片課表辨識。執行 `npm run ingest` 重建 Gemini vectors，不能沿用舊 OpenAI vectors；免費額度以 Google 專案總用量計算。
 - **Codex**：`api/timetable-import.ts` 由 Claude Code 新增（使用者要求），之後可由 Codex 維護。`feat/ai-backend` 已合併進 `main`；之後請從最新 `main` 開新分支。可補：好友/市集的 pgTAP RLS 測試（`supabase/tests/`）、市集檢舉的管理端 API
