@@ -61,3 +61,20 @@ test('keyboard users can skip to main content', async ({ page }) => {
   const skip = page.getByRole('link', { name: '跳到主要內容' });
   await expect(skip).toBeFocused();
 });
+
+test('layout stays at default scale: zoom gestures are blocked, scrolling still works', async ({ page }) => {
+  await page.goto('/schedule');
+  const meta = await page.locator('meta[name="viewport"]').getAttribute('content');
+  expect(meta).toContain('maximum-scale=1.0');
+  expect(meta).toContain('user-scalable=no');
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).touchAction)).toBe('pan-x pan-y');
+  const blocked = await page.evaluate(() => {
+    const fire = (e: Event) => { document.body.dispatchEvent(e); return e.defaultPrevented; };
+    return {
+      ctrlWheel: fire(new WheelEvent('wheel', { ctrlKey: true, deltaY: -100, bubbles: true, cancelable: true })),
+      plainWheel: fire(new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true })),
+      iosPinch: fire(new Event('gesturestart', { bubbles: true, cancelable: true })),
+    };
+  });
+  expect(blocked).toEqual({ ctrlWheel: true, plainWheel: false, iosPinch: true });
+});

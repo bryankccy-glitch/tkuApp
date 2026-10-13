@@ -46,7 +46,10 @@
 }
 
 @layer base {
-  html { -webkit-text-size-adjust: 100%; }
+  /* App feel: fixed layout — no pinch-zoom or double-tap zoom (scrolling still works). */
+  html { -webkit-text-size-adjust: 100%; touch-action: pan-x pan-y; }
+  /* The campus map keeps its own pinch-to-zoom. */
+  .leaflet-container { touch-action: none; }
   body {
     @apply bg-canvas text-ink font-sans text-body antialiased;
     font-feature-settings: 'cv11', 'ss01';

@@ -20,6 +20,7 @@ Claude Code（合併 Codex `feat/ai-backend`）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **禁止縮放**（開發者 2026-10-13 決定，固定 App 版面）：viewport `maximum-scale=1, user-scalable=no`；`html { touch-action: pan-x pan-y }`；`src/lib/noZoom.ts` 擋 iOS gesture 事件、雙指 touchmove、Ctrl/觸控板縮放與 Ctrl +/-；校園地圖（Leaflet）例外仍可縮放。a11y e2e 關閉 axe `meta-viewport` 規則（取捨：無法放大文字，屬 WCAG 1.4.4 例外決定）。e2e 新增縮放測試
 - **正式網址：https://tku-app.vercel.app**（Vercel `tku-app`，production 部署 `6662fd2` Ready）。已驗證：開啟即導向登入頁、網站可連 Supabase（CSP 正確）、`/api/timetable-import` 正常回 503（伺服器金鑰尚未設定）、Service Worker 已註冊。Supabase Auth：Site URL = `https://tku-app.vercel.app`，Redirect URLs = `https://tku-app.vercel.app/**`、`http://localhost:5173/**`
 - ⚠ GitHub push 未自動觸發第一次部署，這次是從 Vercel「Create Deployment」手動部署 `main`；之後推送若未自動部署，可在 Deployments 頁手動建立
 - **部署設定**：GitHub `bryankccy-glitch/tkuApp`（private）＋ Vercel 專案 `tku-app`（team CampusHub，已連 GitHub 自動部署）。`vercel.json` 固定 framework=vite、`npm ci`、`npm run build`、輸出 `dist`；新增 `.env.production`（只含公開的 Supabase URL 與 publishable key，供正式建置；`.gitignore` 例外放行）。伺服器端 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`OPENAI_API_KEY` 需在 Vercel 後台設定

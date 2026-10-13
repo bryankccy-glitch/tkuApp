@@ -11,6 +11,9 @@ import { LanguageRoot } from './app/LanguageRoot';
 import './styles/index.css';
 import './i18n';
 import { seedPreviewDemo } from './lib/data/previewDemo';
+import { disablePageZoom } from './lib/noZoom';
+
+disablePageZoom();
 
 if (import.meta.env.VITE_PREVIEW_DEMO === '1') {
   seedPreviewDemo();
