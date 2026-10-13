@@ -11,7 +11,7 @@ Browser (React SPA, PWA)
  └─ src/data           已查核的靜態資料（建築代碼、官方連結）＋查核狀態
 
 Vercel Functions (api/)     ← Codex 負責
- └─ /api/chat   SSE；驗證 JWT → 速率限制 → tools(RLS) + RAG(pgvector) → OpenAI → 來源引用
+ └─ /api/chat   SSE；驗證 JWT → 速率限制 → tools(RLS) + RAG(pgvector) → Gemini → 來源引用
 
 Supabase
  ├─ Postgres + RLS（supabase/migrations）

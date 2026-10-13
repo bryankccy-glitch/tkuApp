@@ -46,7 +46,9 @@ test('task lifecycle: add, complete, listed under 已完成', async ({ page }) =
 
 test('CSV import adds courses', async ({ page }) => {
   await page.goto('/schedule');
-  await page.getByRole('button', { name: '匯入 CSV' }).first().click();
+  // Photo import is the main entry; CSV is reachable from inside it.
+  await page.getByRole('button', { name: '圖片匯入' }).first().click();
+  await page.getByRole('button', { name: '改用 CSV 匯入' }).first().click();
   const csv = '課程名稱,課號,教授,星期,開始,結束,教室,顏色,備註\n線性代數,,李老師,2,10:10,12:00,S102,teal,\n線性代數,,李老師,4,10:10,11:00,S102,teal,\n';
   await page.locator('input[type=file]').setInputFiles({ name: 'courses.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
   await expect(page.getByText('將匯入')).toBeVisible();

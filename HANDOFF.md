@@ -27,11 +27,11 @@ Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 - **禁止縮放**（開發者 2026-10-13 決定，固定 App 版面）：viewport `maximum-scale=1, user-scalable=no`；`html { touch-action: pan-x pan-y }`；`src/lib/noZoom.ts` 擋 iOS gesture 事件、雙指 touchmove、Ctrl/觸控板縮放與 Ctrl +/-；校園地圖（Leaflet）例外仍可縮放。a11y e2e 關閉 axe `meta-viewport` 規則（取捨：無法放大文字，屬 WCAG 1.4.4 例外決定）。e2e 新增縮放測試
 - **正式網址：https://tku-app.vercel.app**（Vercel `tku-app`，production 部署 `6662fd2` Ready）。已驗證：開啟即導向登入頁、網站可連 Supabase（CSP 正確）、`/api/timetable-import` 正常回 503（伺服器金鑰尚未設定）、Service Worker 已註冊。Supabase Auth：Site URL = `https://tku-app.vercel.app`，Redirect URLs = `https://tku-app.vercel.app/**`、`http://localhost:5173/**`
 - ⚠ GitHub push 未自動觸發第一次部署，這次是從 Vercel「Create Deployment」手動部署 `main`；之後推送若未自動部署，可在 Deployments 頁手動建立
-- **部署設定**：GitHub `bryankccy-glitch/tkuApp`（private）＋ Vercel 專案 `tku-app`（team CampusHub，已連 GitHub 自動部署）。`vercel.json` 固定 framework=vite、`npm ci`、`npm run build`、輸出 `dist`；新增 `.env.production`（只含公開的 Supabase URL 與 publishable key，供正式建置；`.gitignore` 例外放行）。伺服器端 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`OPENAI_API_KEY` 需在 Vercel 後台設定
+- **部署設定**：GitHub `bryankccy-glitch/tkuApp`（private）＋ Vercel 專案 `tku-app`（team CampusHub，已連 GitHub 自動部署）。`vercel.json` 固定 framework=vite、`npm ci`、`npm run build`、輸出 `dist`；新增 `.env.production`（只含公開的 Supabase URL 與 publishable key，供正式建置；`.gitignore` 例外放行）。伺服器端 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY` 需在 Vercel 後台設定
 - `src/data/places.ts` 移除 `@/i18n` 依賴（`PLACE_CATEGORY_LABELS` 移到 `src/lib/labels.ts`），讓 `api/` 函式在 Vercel 的 Node 環境能載入；已用 esbuild 打包後在純 Node ESM 載入 `api/chat.ts`、`api/timetable-import.ts` 驗證
 - **校園探索「我的位置」**：地圖右下角按鈕，按下才請求定位權限（`useMyLocation`，watchPosition、高精準度；每次按都重新定位並置中），地圖上顯示藍點＋誤差圈；離校園 >2 km 會顯示距離；拒絕/逾時/不支援/非 https 有對應說明；位置只在裝置上使用不上傳。`vercel.json` 的 Permissions-Policy 改為 `geolocation=(self)`（原本 `()` 會在正式網站封鎖定位）。e2e `e2e/geolocation.spec.ts` 6 項通過（桌面＋手機）
-- **本機也能跑 API**：`vite-dev-api.ts`（只在 `npm run dev` 生效）把 `/api/chat`、`/api/timetable-import` 交給 `api/` 的 handler 執行，伺服器端金鑰從 `.env.local` 讀（`SUPABASE_SERVICE_ROLE_KEY`、`OPENAI_API_KEY`，不加 `VITE_`）；`SUPABASE_URL`/`SUPABASE_ANON_KEY` 預設沿用 `VITE_` 值。未設金鑰時回 503，App 照常走備援。已驗證：無金鑰 503、未登入 401、格式錯誤 400、App 頁面正常
-- **課表圖片匯入**（取代 CSV 成為主要匯入；CSV 仍可從匯入視窗進入）：`ImageImport.tsx` 縮圖（長邊 2000px JPEG、去 EXIF）→ `POST /api/timetable-import`（Claude Code 依使用者要求撰寫於 `api/`，沿用 Codex 的 `readServerEnv`、`CampusStore` 驗證與 `ai_usage` 限流）→ OpenAI Responses API（圖片＋strict JSON schema、`store: false`）只回傳「每格」內容 → `src/lib/timetableImport.ts` 以程式合併連續節次（同教室）、同課名跨天合併、助教課不當授課教師、教室正規化（`B 217`→`B217`）、第 13–14 節（時間未查核）略過並提示 → 確認畫面可改名／教師、取消勾選、移除時段，標示同名課程（預設不加入）與衝堂，按確認才寫入。需登入；未部署時提示改用 CSV
+- **本機也能跑 API**：`vite-dev-api.ts`（只在 `npm run dev` 生效）把 `/api/chat`、`/api/timetable-import` 交給 `api/` 的 handler 執行，伺服器端金鑰從 `.env.local` 讀（`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY`，不加 `VITE_`）；`SUPABASE_URL`/`SUPABASE_ANON_KEY` 預設沿用 `VITE_` 值。未設金鑰時回 503，App 照常走備援。已驗證：無金鑰 503、未登入 401、格式錯誤 400、App 頁面正常
+- **課表圖片匯入**（取代 CSV 成為主要匯入；CSV 仍可從匯入視窗進入）：`ImageImport.tsx` 縮圖（長邊 2000px JPEG、去 EXIF）→ `POST /api/timetable-import`（Claude Code 依使用者要求撰寫於 `api/`，沿用 Codex 的 `readServerEnv`、`CampusStore` 驗證與 `ai_usage` 限流）→ Gemini `generateContent`（`inlineData` 圖片＋`responseSchema`、`store: false`）只回傳「每格」內容 → `src/lib/timetableImport.ts` 以程式合併連續節次（同教室）、同課名跨天合併、助教課不當授課教師、教室正規化（`B 217`→`B217`）、第 13–14 節（時間未查核）略過並提示 → 確認畫面可改名／教師、取消勾選、移除時段，標示同名課程（預設不加入）與衝堂，按確認才寫入。需登入；未部署時提示改用 CSV
 - **在哪裡上課**：教室代碼後顯示大樓名稱（`roomWithBuilding`，例：`B217 · 商管大樓`），用於每日時間軸與圖片匯入確認畫面
 - 修正 `Sheet`：focus effect 不再因 `onClose` 每次 render 改變而重跑（之前在確認畫面打字會被搶走焦點）
 - **好友課表**（課表頁上方「我的課表｜好友」）：每人 8 碼好友代碼（無易混字元）＋邀請連結 `/schedule?tab=friends&code=XXXX`；送出/接受/拒絕/取消/移除好友；雙方接受後可看對方**相同學期代碼**的週課表（唯讀，不含備註）；「共同空堂」列出週一到週五第 1–12 節兩人都沒課的時段；可重新產生代碼。不提供以 Email/學號搜尋他人
@@ -67,6 +67,7 @@ Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 
 ## Files Changed
 - Codex Gemini：新增 `api/gemini.ts`；刪除 `api/openai.ts`；更新 `api/{chat,store,timetable-import}.ts`、`api/{chat,timetable-import}.test.ts`、`scripts/ingest.ts`、`vite-dev-api.ts`（環境變數清單與註解）、`.env.example`、`api/README.md`、本檔。沒有修改前端或既有 migration。
+- Claude Code（合併 Gemini）：`src/i18n/locales/{zh-TW,en}.ts`、`src/features/profile/AboutPage.tsx`、`src/features/explore/ExplorePage.tsx`、`e2e/main-flows.spec.ts`、`README.md`、`ARCHITECTURE.md`、`.env.production` 註解、本檔。
 - Codex AI backend：新增 `api/chat.ts`、`api/chat-schema.ts`、`api/openai.ts`、`api/store.ts`、`api/sse.ts`、`api/chat.test.ts`、`scripts/ingest.ts`、`supabase/tests/rls_user_isolation.sql`、migration `20261012080231_ai_backend_security.sql`；更新 `api/README.md`、`package.json` 與 lockfile，並加入 API-only i18n alias 型別宣告。
 - 本輪新增：`src/i18n/{t.ts,locales/zh-TW.ts,locales/en.ts,__tests__/locales.test.ts}`、`src/app/LanguageRoot.tsx`、`src/services/reminders.ts`、`src/hooks/useReminderScheduler.ts`、`src/features/profile/ReminderSettings.tsx`、`public/theme-init.js`、`e2e/{a11y,csp,english,reminders}.spec.ts`、`src/services/__tests__/reminders.test.ts`；刪除 `src/i18n/resources.ts`
 - 本輪修改：幾乎所有 `src/features/**` 與 `src/components/**`（文字改 `t()`）、`src/lib/{labels,time,periods,schedule,tasks,csv,hooks}.ts`、`src/data/{places,sources}.ts`（英文關鍵字與說明）、`src/features/ai/localEngine.ts`（重寫，中英文）、`vercel.json`、`index.html`、`src/styles/index.css`
@@ -105,6 +106,7 @@ Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 ## Tests
 - Codex Gemini worktree（2026-10-13）：`npm install` 完成；`npm run lint` ✅、`npm run typecheck` ✅、`npm run test` ✅（21 files / 112 tests；聊天 API 15、圖片 API 9）、`npm run build` ✅。Mock fetch 覆蓋串流文字、function call→工具結果→最終回答、untrusted 文件／禁止 mutation、結構化 JSON／丟掉無效格子、Gemini 429／5xx 與請求中不夾帶 Supabase key/JWT。
 - Codex Gemini：兩支 API 用 esbuild `--bundle --platform=node --format=esm --packages=external` 打包（專案來源被打包，npm dependencies 外部載入），確認輸出不含 `@/`，以純 Node ESM 載入 default handler ✅。暫存 bundle 已清除。
+- Claude Code 審查並合併 `feat/gemini`（2026-10-13）：前端隱私文字改為揭露 Google Gemini（圖片匯入、助理提示、關於頁 p5）；修正 CSV e2e 路徑與探索頁 3px 橫向溢出。`tsc -b`、lint、build ✅；Vitest 21 檔 112 測試 ✅；Playwright 全套 126 測試（123 通過＋修正後重跑 3 項與 rwd/a11y/geolocation 68 項）✅；API 兩支以純 Node ESM 載入 ✅。**尚未用真實 Gemini 金鑰實測**。
 - Codex Gemini 本機 `npm run dev`：真實 HTTP 驗證無金鑰時 `/api/chat` 回 503 SSE、`/api/timetable-import` 回 503 JSON，`/schedule` 預覽回 200 ✅；localhost:5173 預覽已恢復。提交前 staged diff 的 Gitleaks 機密掃描為零候選。
 - Codex Gemini 真實問答／讀圖：**未實測**。原專案 `.env.local` 沒有 `GEMINI_API_KEY` 或 service role；新 worktree 沒有 `.env.local`。沒有將金鑰複製或寫入 Git／交接文件。既有 jsdom Canvas／React Router 測試提示與 build 大 chunk 警告仍存在，測試/建置本身成功。
 執行於 Claude 雲端工作區（Node 22.22）：
@@ -121,7 +123,7 @@ Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 - 好友/市集元件測試：`src/features/friends/__tests__`（4）、`src/features/market/__tests__`（6）、`src/lib/social/__tests__`（4）
 - 好友/市集畫面（雲端建置＋模擬 Supabase 回應）axe WCAG 2.2 AA：好友列表、好友週課表、市集列表、貼文、我的貼文、發文表單，淺/深色 0 violations
 - 合併後 `npm run lint` ✅、`typecheck` ✅、`test` ✅ 18 files / 89 tests（含 Codex API 測試 9 項）、`build` ✅
-- 圖片匯入測試：`src/lib/__tests__/timetableImport.test.ts`（以開發者提供的真實淡江課表截圖逐格轉錄為 fixture：11 門課、節次與時間正確）、`api/timetable-import.test.ts`、`src/features/schedule/__tests__/ImageImport.test.tsx`；以真實截圖上傳＋模擬 API 截圖檢查，axe 0 violations。**尚未用真實 OpenAI 模型辨識**（需部署與 `OPENAI_API_KEY`）
+- 圖片匯入測試：`src/lib/__tests__/timetableImport.test.ts`（以開發者提供的真實淡江課表截圖逐格轉錄為 fixture：11 門課、節次與時間正確）、`api/timetable-import.test.ts`、`src/features/schedule/__tests__/ImageImport.test.tsx`；以真實截圖上傳＋模擬 API 截圖檢查，axe 0 violations。**尚未用真實 Gemini 模型辨識**（需設定 `GEMINI_API_KEY`）
 - 目前 `npm run test` ✅ 21 files / 103 tests、lint ✅、typecheck ✅、build ✅
 - ⚠ 尚未重跑 `npm run test:e2e`（上一輪 118 passed；本輪底部導覽「探索」改名「校園」，e2e 未依名稱尋找該連結）
 - 未執行：自動化 RLS 測試（Codex `supabase/tests/`）；重設密碼流程（雲端工作區無法連 supabase.co；Email 驗證信限制見 Known Issues）
