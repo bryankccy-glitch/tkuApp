@@ -6,7 +6,7 @@ import { loadEnv, type Plugin, type ViteDevServer } from 'vite';
  * 圖片匯入課表 and the AI assistant can be tried locally before deploying.
  *
  * Server-only secrets come from `.env.local` (never `VITE_`-prefixed, never sent to the browser):
- *   SUPABASE_SERVICE_ROLE_KEY=…   OPENAI_API_KEY=…
+ *   SUPABASE_SERVICE_ROLE_KEY=…   GEMINI_API_KEY=…
  * SUPABASE_URL / SUPABASE_ANON_KEY default to the public VITE_ values.
  * Without the secrets the endpoints answer 503 and the app shows its normal fallback.
  */
@@ -45,7 +45,7 @@ export function devApi(): Plugin {
     configureServer(server: ViteDevServer) {
       const env = loadEnv(server.config.mode, server.config.root, '');
       const set = (key: string, value: string | undefined) => { if (value && !process.env[key]) process.env[key] = value; };
-      for (const key of ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY', 'OPENAI_API_KEY', 'OPENAI_MODEL', 'OPENAI_VISION_MODEL', 'OPENAI_EMBEDDING_MODEL', 'AI_RATE_LIMIT_PER_MINUTE']) set(key, env[key]);
+      for (const key of ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY', 'GEMINI_API_KEY', 'GEMINI_MODEL', 'GEMINI_VISION_MODEL', 'GEMINI_EMBEDDING_MODEL', 'AI_RATE_LIMIT_PER_MINUTE']) set(key, env[key]);
       set('SUPABASE_URL', env.VITE_SUPABASE_URL);
       set('SUPABASE_ANON_KEY', env.VITE_SUPABASE_ANON_KEY);
 

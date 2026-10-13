@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { chatRequestSchema, type ChatRequest, type SourceRef } from './chat-schema.js';
-import { answerWithTools, createEmbedding } from './openai.js';
+import { answerWithTools, createEmbedding, GeminiApiError } from './gemini.js';
 import { formatSse, sendSseError, startSse } from './sse.js';
 import { CampusStore, InvalidConversationError, type ServerEnv, type ToolName, type ToolResult } from './store.js';
 
@@ -28,15 +28,17 @@ export function readServerEnv(source: NodeJS.ProcessEnv = process.env): ServerEn
   const supabaseUrl = source.SUPABASE_URL?.trim();
   const supabaseAnonKey = source.SUPABASE_ANON_KEY?.trim();
   const supabaseServiceRoleKey = source.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  const openaiApiKey = source.OPENAI_API_KEY?.trim();
-  if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey || !openaiApiKey) return null;
+  const geminiApiKey = source.GEMINI_API_KEY?.trim();
+  if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey || !geminiApiKey) return null;
+  const geminiModel = source.GEMINI_MODEL?.trim() || 'gemini-3.5-flash-lite';
   return {
     supabaseUrl,
     supabaseAnonKey,
     supabaseServiceRoleKey,
-    openaiApiKey,
-    openaiModel: source.OPENAI_MODEL?.trim() || 'gpt-4o-mini',
-    openaiEmbeddingModel: source.OPENAI_EMBEDDING_MODEL?.trim() || 'text-embedding-3-small',
+    geminiApiKey,
+    geminiModel,
+    geminiVisionModel: source.GEMINI_VISION_MODEL?.trim() || geminiModel,
+    geminiEmbeddingModel: source.GEMINI_EMBEDDING_MODEL?.trim() || 'gemini-embedding-001',
     rateLimitPerMinute: positiveInteger(source.AI_RATE_LIMIT_PER_MINUTE, 10),
   };
 }
@@ -110,8 +112,11 @@ export function createChatHandler(dependencies: Dependencies = defaultDependenci
       const conversationId = await store.getOrCreateConversation(userId, input.conversationId, input.message);
       await store.insertMessage(userId, conversationId, 'user', input.message);
 
-      startSse(response);
-      response.write(formatSse({ type: 'meta', conversationId }));
+      const beginStream = () => {
+        if (response.headersSent) return;
+        startSse(response);
+        response.write(formatSse({ type: 'meta', conversationId }));
+      };
 
       const result = await dependencies.answer({
         env,
@@ -121,18 +126,27 @@ export function createChatHandler(dependencies: Dependencies = defaultDependenci
           timezone: input.timezone,
           now,
         }),
-        onDelta: (text) => response.write(formatSse({ type: 'delta', text })),
+        onStart: beginStream,
+        onDelta: (text) => {
+          beginStream();
+          response.write(formatSse({ type: 'delta', text }));
+        },
       });
 
       await store.insertMessage(userId, conversationId, 'assistant', result.text, result.sources);
+      beginStream();
       response.write(formatSse({ type: 'sources', sources: result.sources }));
       response.end(formatSse({ type: 'done' }));
     } catch (error) {
-      const message = error instanceof InvalidConversationError
+      const quotaExceeded = error instanceof GeminiApiError && error.status === 429;
+      const message = quotaExceeded
+        ? 'AI 服務目前額度已用完，請稍後再試。'
+        : error instanceof InvalidConversationError
         ? error.message
         : 'AI 助理暫時無法回應，請稍後再試。';
       if (!response.headersSent) {
-        sendSseError(response, error instanceof InvalidConversationError ? 400 : 500, message);
+        const status = quotaExceeded ? 429 : error instanceof InvalidConversationError ? 400 : error instanceof GeminiApiError ? 502 : 500;
+        sendSseError(response, status, message);
       } else {
         response.write(formatSse({ type: 'error', message }));
         response.end(formatSse({ type: 'done' }));

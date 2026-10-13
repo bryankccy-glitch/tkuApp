@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { OFFICIAL_SOURCES } from '../src/data/sources.js';
+import { createEmbedding } from '../api/gemini.js';
 
 const CHUNK_SIZE = 650;
 const CHUNK_OVERLAP = 100;
@@ -93,25 +94,12 @@ async function downloadSource(source: Source): Promise<string> {
   return cleanText(mainText);
 }
 
-async function createEmbedding(apiKey: string, model: string, input: string): Promise<number[]> {
-  const response = await fetch('https://api.openai.com/v1/embeddings', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model, input, dimensions: EMBEDDING_DIMENSIONS }),
-  });
-  if (!response.ok) throw new Error(`OpenAI embeddings HTTP ${response.status}: ${(await response.text()).slice(0, 300)}`);
-  const payload = await response.json() as { data?: Array<{ embedding?: number[] }> };
-  const embedding = payload.data?.[0]?.embedding;
-  if (!embedding || embedding.length !== EMBEDDING_DIMENSIONS) throw new Error('Embedding 維度不符，預期 1536。');
-  return embedding;
-}
-
 async function upsertSource(source: Source, text: string, hash: string, client: ReturnType<typeof createClient>, apiKey: string, embeddingModel: string): Promise<void> {
   const chunks = splitChunks(text);
   const vectors: Array<{ chunk_index: number; content: string; embedding: number[] }> = [];
   for (let offset = 0; offset < chunks.length; offset += BATCH_SIZE) {
     const batch = chunks.slice(offset, offset + BATCH_SIZE);
-    const embedded = await Promise.all(batch.map((content) => createEmbedding(apiKey, embeddingModel, content)));
+    const embedded = await Promise.all(batch.map((content) => createEmbedding({ geminiApiKey: apiKey, geminiEmbeddingModel: embeddingModel }, content, 'RETRIEVAL_DOCUMENT')));
     batch.forEach((content, index) => {
       const embedding = embedded[index];
       if (embedding) vectors.push({
@@ -138,7 +126,8 @@ async function ingestOne(source: Source, client: ReturnType<typeof createClient>
   try {
     const text = await downloadSource(source);
     if (text.length < 80) throw new Error('擷取內容太短，跳過以避免以空/不完整內容覆蓋知識庫');
-    const hash = createHash('sha256').update(text).digest('hex');
+    // Different embedding providers/models have incompatible vector spaces, even at the same dimension.
+    const hash = createHash('sha256').update(`gemini:${embeddingModel}:${EMBEDDING_DIMENSIONS}\0${text}`).digest('hex');
     const { data: existing, error } = await client
       .from('knowledge_documents')
       .select('id,content_hash')
@@ -160,8 +149,8 @@ async function main(): Promise<void> {
   const client = createClient(requiredEnv('SUPABASE_URL'), requiredEnv('SUPABASE_SERVICE_ROLE_KEY'), {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
-  const apiKey = requiredEnv('OPENAI_API_KEY');
-  const embeddingModel = process.env.OPENAI_EMBEDDING_MODEL?.trim() || 'text-embedding-3-small';
+  const apiKey = requiredEnv('GEMINI_API_KEY');
+  const embeddingModel = process.env.GEMINI_EMBEDDING_MODEL?.trim() || 'gemini-embedding-001';
   for (const source of OFFICIAL_SOURCES) await ingestOne(source, client, apiKey, embeddingModel);
 }
 

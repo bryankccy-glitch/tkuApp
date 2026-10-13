@@ -1,10 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createChatHandler, readServerEnv } from './chat.js';
 import { chatRequestSchema } from './chat-schema.js';
 import { formatSse, type SseEvent } from './sse.js';
-import { instructionsFor, SYSTEM_INSTRUCTIONS, wrapToolData } from './openai.js';
-import { answerWithTools } from './openai.js';
+import { answerWithTools, createEmbedding, instructionsFor, SYSTEM_INSTRUCTIONS, wrapToolData } from './gemini.js';
 import type { ServerEnv, ToolName, ToolResult } from './store.js';
 
 const validBody = {
@@ -18,11 +17,17 @@ const env: ServerEnv = {
   supabaseUrl: 'https://example.supabase.co',
   supabaseAnonKey: 'anon-test',
   supabaseServiceRoleKey: 'service-test',
-  openaiApiKey: 'openai-test',
-  openaiModel: 'gpt-5-mini',
-  openaiEmbeddingModel: 'text-embedding-3-small',
+  geminiApiKey: 'gemini-test',
+  geminiModel: 'gemini-3.5-flash-lite',
+  geminiVisionModel: 'gemini-3.5-flash-lite',
+  geminiEmbeddingModel: 'gemini-embedding-001',
   rateLimitPerMinute: 10,
 };
+
+afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+
+const modelResponse = (parts: unknown[]) => new Response(JSON.stringify({ candidates: [{ content: { role: 'model', parts } }] }), { status: 200 });
+const streamedText = (texts: string[]) => new Response(texts.map((text) => `data: ${JSON.stringify({ candidates: [{ content: { role: 'model', parts: [{ text }] } }] })}\n\n`).join(''), { headers: { 'Content-Type': 'text/event-stream' } });
 
 function makeResponse() {
   const headers: Record<string, string> = {};
@@ -117,7 +122,7 @@ describe('POST /api/chat', () => {
 
   it('streams meta, deltas, sources and done in contract order, then saves assistant sources', async () => {
     const store = makeStore();
-    const answer = vi.fn(async (options: Parameters<typeof import('./openai.js').answerWithTools>[0]) => {
+    const answer = vi.fn(async (options: Parameters<typeof answerWithTools>[0]) => {
       options.onDelta('請');
       options.onDelta('查官方資料。');
       return { text: '請查官方資料。', sources: [{ title: '淡江大學官方網站', url: 'https://www.tku.edu.tw/', kind: 'official' as const }] };
@@ -135,8 +140,9 @@ describe('POST /api/chat', () => {
 
 describe('AI configuration and prompt injection boundaries', () => {
   it('uses server-side env names and provides safe defaults', () => {
-    expect(readServerEnv({ SUPABASE_URL: env.supabaseUrl, SUPABASE_ANON_KEY: env.supabaseAnonKey, SUPABASE_SERVICE_ROLE_KEY: env.supabaseServiceRoleKey, OPENAI_API_KEY: env.openaiApiKey })).toMatchObject({ openaiModel: 'gpt-4o-mini', openaiEmbeddingModel: 'text-embedding-3-small', rateLimitPerMinute: 10 });
-    expect(readServerEnv({ VITE_OPENAI_API_KEY: 'nope' })).toBeNull();
+    expect(readServerEnv({ SUPABASE_URL: env.supabaseUrl, SUPABASE_ANON_KEY: env.supabaseAnonKey, SUPABASE_SERVICE_ROLE_KEY: env.supabaseServiceRoleKey, GEMINI_API_KEY: env.geminiApiKey })).toMatchObject({ geminiModel: 'gemini-3.5-flash-lite', geminiVisionModel: 'gemini-3.5-flash-lite', geminiEmbeddingModel: 'gemini-embedding-001', rateLimitPerMinute: 10 });
+    expect(readServerEnv({ VITE_GEMINI_API_KEY: 'nope' })).toBeNull();
+    expect(readServerEnv({ SUPABASE_URL: env.supabaseUrl, SUPABASE_ANON_KEY: env.supabaseAnonKey, SUPABASE_SERVICE_ROLE_KEY: env.supabaseServiceRoleKey, OPENAI_API_KEY: 'old-provider' })).toBeNull();
   });
 
   it('marks retrieved document text as untrusted data and never offers mutation tools', () => {
@@ -157,17 +163,12 @@ describe('AI configuration and prompt injection boundaries', () => {
     const fakeFetch = vi.fn(async (_input: string | URL, init?: RequestInit) => {
       if (init) calls.push(init);
       if (calls.length === 1) {
-        return new Response(JSON.stringify({
-          output: [{ type: 'function_call', call_id: 'call-1', name: 'searchUniversityKnowledge', arguments: '{"query":"請假規則"}' }],
-        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return modelResponse([{ functionCall: { id: 'call-1', name: 'searchUniversityKnowledge', args: { query: '請假規則' } }, thoughtSignature: 'opaque-signature' }]);
       }
       if (calls.length === 2) {
-        return new Response(JSON.stringify({ output: [{ type: 'message', content: [{ type: 'output_text', text: 'tool result acknowledged' }] }] }), { status: 200 });
+        return modelResponse([{ text: 'tool result acknowledged' }]);
       }
-      return new Response([
-        'data: {"type":"response.output_text.delta","delta":"查無可靠資料。"}\n\n',
-        'data: {"type":"response.completed"}\n\n',
-      ].join(''), { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
+      return streamedText(['查無可靠資料。']);
     });
     vi.stubGlobal('fetch', fakeFetch);
     try {
@@ -180,12 +181,78 @@ describe('AI configuration and prompt injection boundaries', () => {
       expect(executeTool).toHaveBeenCalledWith('searchUniversityKnowledge', { query: '請假規則' });
       expect(String(calls[1]?.body)).toContain('BEGIN_UNTRUSTED_TOOL_DATA');
       expect(String(calls[1]?.body)).toContain(maliciousDocument);
+      expect(String(calls[1]?.body)).toContain('opaque-signature');
+      expect(String(calls[1]?.body)).toContain('functionResponse');
+      const toolTurn = JSON.parse(String(calls[1]?.body)) as { contents: Array<{ parts: Array<{ functionResponse?: { id?: string } }> }> };
+      expect(toolTurn.contents.at(-1)?.parts[0]?.functionResponse?.id).toBe('call-1');
       expect(String(calls[0]?.body)).toContain('只能依本次工具回傳的資料回答');
+      expect(String(calls[0]?.body)).not.toMatch(/deleteCourse|createTask|updateCourse/);
+      for (const init of calls) {
+        expect(JSON.parse(String(init.body))).toMatchObject({ store: false });
+        expect(new Headers(init.headers).get('x-goog-api-key')).toBe(env.geminiApiKey);
+        for (const secret of [env.geminiApiKey, env.supabaseAnonKey, env.supabaseServiceRoleKey, 'valid-token']) expect(String(init.body)).not.toContain(secret);
+        expect(new Headers(init.headers).has('Authorization')).toBe(false);
+      }
       expect(result.text).toBe('查無可靠資料。');
       expect(result.sources[0]?.kind).toBe('official');
       expect(onDelta).toHaveBeenCalledWith('查無可靠資料。');
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('streams Gemini text chunks through the unchanged chat SSE contract', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(modelResponse([{ text: 'ready' }])).mockResolvedValueOnce(streamedText(['今天', '請查看課表。']));
+    vi.stubGlobal('fetch', fetchMock);
+    const store = makeStore();
+    const { response, chunks } = makeResponse();
+    await createChatHandler({ readEnv: () => env, createStore: () => store, answer: answerWithTools, now: () => new Date() })(mockRequest(), response);
+    const events = chunks.map((chunk) => JSON.parse(chunk.slice(6).trim()) as SseEvent);
+    expect(events.map((event) => event.type)).toEqual(['meta', 'delta', 'delta', 'sources', 'done']);
+    expect(events[1]).toEqual({ type: 'delta', text: '今天' });
+    expect(fetchMock.mock.calls[1]?.[0]).toContain(':streamGenerateContent?alt=sse');
+    expect(String(fetchMock.mock.calls[1]?.[0])).not.toContain(env.geminiApiKey);
+  });
+
+  it.each(['tool-round', 'final-stream'])('returns HTTP 429 before SSE starts when Gemini exhausts quota at %s', async (stage) => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const fetchMock = vi.fn();
+    if (stage === 'final-stream') fetchMock.mockResolvedValueOnce(modelResponse([{ text: 'ready' }]));
+    fetchMock.mockResolvedValueOnce(new Response('sensitive provider quota detail', { status: 429 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { response, chunks } = makeResponse();
+    await createChatHandler({ readEnv: () => env, createStore: () => makeStore(), answer: answerWithTools, now: () => new Date() })(mockRequest(), response);
+    expect(response.statusCode).toBe(429);
+    expect(chunks.join('')).toContain('額度已用完');
+    expect(chunks.join('')).not.toContain('sensitive');
+    expect(chunks.join('')).not.toContain('"type":"meta"');
+  });
+
+  it('returns a friendly upstream failure without exposing Gemini details', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('internal secret detail', { status: 503 })));
+    const { response, chunks } = makeResponse();
+    await createChatHandler({ readEnv: () => env, createStore: () => makeStore(), answer: answerWithTools, now: () => new Date() })(mockRequest(), response);
+    expect(response.statusCode).toBe(502);
+    expect(chunks.join('')).toContain('暫時無法回應');
+    expect(chunks.join('')).not.toContain('secret');
+  });
+
+  it('rejects a model-requested mutation without executing it', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(modelResponse([{ functionCall: { name: 'deleteAllCourses', args: {} } }])));
+    const executeTool = vi.fn();
+    await expect(answerWithTools({ env, request: chatRequestSchema.parse(validBody), executeTool, onDelta: vi.fn() })).rejects.toThrow('不支援的工具');
+    expect(executeTool).not.toHaveBeenCalled();
+  });
+
+  it('requests a normalized 1536-dimensional Gemini embedding without sending Supabase credentials', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ embedding: { values: Array.from({ length: 1536 }, () => 1) } })));
+    vi.stubGlobal('fetch', fetchMock);
+    const embedding = await createEmbedding(env, '請假規則');
+    expect(embedding).toHaveLength(1536);
+    expect(Math.hypot(...embedding)).toBeCloseTo(1);
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({ outputDimensionality: 1536, taskType: 'RETRIEVAL_QUERY' });
+    expect(String(fetchMock.mock.calls[0]?.[1]?.body)).not.toContain(env.supabaseServiceRoleKey);
+    expect(String(fetchMock.mock.calls[0]?.[1]?.body)).not.toContain(env.geminiApiKey);
   });
 });

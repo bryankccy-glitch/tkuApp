@@ -1,13 +1,13 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-12 22:15（Asia/Taipei, UTC+8）
+2026-10-13（Asia/Taipei, UTC+8）
 
 ## Updated By
-Claude Code（合併 Codex `feat/ai-backend`）
+Codex（`feat/gemini`：AI provider 遷移）
 
 ## Current Status
-前端 MVP 可用，Supabase 專案 `tku-campus-os` 已上線（註冊/登入/RLS 已以真實帳號驗證）。新增**好友課表**與**二手市集**（資料表已套用並以真實帳號驗證）。Codex 的 AI 後端（`feat/ai-backend`）已合併進 `main`；其 migration `20261012080231_ai_backend_security.sql` **尚未套用到線上資料庫**，`/api/chat` 尚未部署（需 Vercel 伺服器端環境變數）。
+前端 MVP 可用，Supabase 專案 `tku-campus-os` 已上線（註冊/登入/RLS 已以真實帳號驗證）。新增**好友課表**與**二手市集**（資料表已套用並以真實帳號驗證）。原 AI 後端已合併進 `main`；本輪 `feat/gemini` 將聊天、圖片課表辨識與 embedding 改用 Google Gemini，尚未合併／部署。migration `20261012080231_ai_backend_security.sql` **尚未套用到線上資料庫**；本輪不改資料庫 schema。
 
 ## Completed
 - 專案骨架：Vite 6 + React 18 + TS strict + Tailwind 3 + React Router 6 + TanStack Query 5 + RHF + Zod + PWA
@@ -20,6 +20,9 @@ Claude Code（合併 Codex `feat/ai-backend`）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **Codex — Gemini 遷移（2026-10-13）**：新增 `api/gemini.ts`、移除 `api/openai.ts`；直接使用官方 REST API，預設 `gemini-3.5-flash-lite`（模型 ID 依 Google 官方文件確認）。保留唯讀 function calling、工具資料 `UNTRUSTED_TOOL_DATA` 標記、語系 system instructions、sources 與 `meta/delta/sources/error/done` SSE 合約；保留 function call ID 與 thought signature。SSE 在上游請求成功後才開始，Gemini HTTP 429 可回前端 HTTP 429／中文友善訊息，5xx 不回傳上游細節。
+- **Codex — Gemini 圖片與 RAG**：課表圖片用 `inlineData`、`responseMimeType=application/json`＋`responseSchema`，沿用 `VISION_PROMPT`／`cellSchema`，丟掉個別無效格子，回應／狀態碼相容；API 不保存圖片。Embedding 使用 `gemini-embedding-001`，明確要求 1536 維並正規化，query/document 使用對應 retrieval task type。匯入改用共用 embedding 函式，content hash 納入 provider/model/維度，確保舊 OpenAI vectors 重新建立。沒有新增 SDK／修改 `package.json` 或 lockfile；沒有修改 `src/**`。
+- **Codex — 設定**：伺服器 key 改為 `GEMINI_API_KEY`；可選 `GEMINI_MODEL`、`GEMINI_VISION_MODEL`（預設同聊天模型）、`GEMINI_EMBEDDING_MODEL`；`vite-dev-api.ts` 的清單與 `.env.example`／`api/README.md` 已同步。聊天／圖片生成請求明確設定 Google 官方支援的 `store: false` 關閉請求紀錄；私人資料仍用使用者 JWT/RLS，service role 的用途不變；未執行線上匯入或資料庫修改。
 - **禁止縮放**（開發者 2026-10-13 決定，固定 App 版面）：viewport `maximum-scale=1, user-scalable=no`；`html { touch-action: pan-x pan-y }`；`src/lib/noZoom.ts` 擋 iOS gesture 事件、雙指 touchmove、Ctrl/觸控板縮放與 Ctrl +/-；校園地圖（Leaflet）例外仍可縮放。a11y e2e 關閉 axe `meta-viewport` 規則（取捨：無法放大文字，屬 WCAG 1.4.4 例外決定）。e2e 新增縮放測試
 - **正式網址：https://tku-app.vercel.app**（Vercel `tku-app`，production 部署 `6662fd2` Ready）。已驗證：開啟即導向登入頁、網站可連 Supabase（CSP 正確）、`/api/timetable-import` 正常回 503（伺服器金鑰尚未設定）、Service Worker 已註冊。Supabase Auth：Site URL = `https://tku-app.vercel.app`，Redirect URLs = `https://tku-app.vercel.app/**`、`http://localhost:5173/**`
 - ⚠ GitHub push 未自動觸發第一次部署，這次是從 Vercel「Create Deployment」手動部署 `main`；之後推送若未自動部署，可在 Deployments 頁手動建立
@@ -62,6 +65,7 @@ Claude Code（合併 Codex `feat/ai-backend`）
 - 新增 React Testing Library 元件測試與 Playwright E2E
 
 ## Files Changed
+- Codex Gemini：新增 `api/gemini.ts`；刪除 `api/openai.ts`；更新 `api/{chat,store,timetable-import}.ts`、`api/{chat,timetable-import}.test.ts`、`scripts/ingest.ts`、`vite-dev-api.ts`（環境變數清單與註解）、`.env.example`、`api/README.md`、本檔。沒有修改前端或既有 migration。
 - Codex AI backend：新增 `api/chat.ts`、`api/chat-schema.ts`、`api/openai.ts`、`api/store.ts`、`api/sse.ts`、`api/chat.test.ts`、`scripts/ingest.ts`、`supabase/tests/rls_user_isolation.sql`、migration `20261012080231_ai_backend_security.sql`；更新 `api/README.md`、`package.json` 與 lockfile，並加入 API-only i18n alias 型別宣告。
 - 本輪新增：`src/i18n/{t.ts,locales/zh-TW.ts,locales/en.ts,__tests__/locales.test.ts}`、`src/app/LanguageRoot.tsx`、`src/services/reminders.ts`、`src/hooks/useReminderScheduler.ts`、`src/features/profile/ReminderSettings.tsx`、`public/theme-init.js`、`e2e/{a11y,csp,english,reminders}.spec.ts`、`src/services/__tests__/reminders.test.ts`；刪除 `src/i18n/resources.ts`
 - 本輪修改：幾乎所有 `src/features/**` 與 `src/components/**`（文字改 `t()`）、`src/lib/{labels,time,periods,schedule,tasks,csv,hooks}.ts`、`src/data/{places,sources}.ts`（英文關鍵字與說明）、`src/features/ai/localEngine.ts`（重寫，中英文）、`vercel.json`、`index.html`、`src/styles/index.css`
@@ -98,6 +102,10 @@ Claude Code（合併 Codex `feat/ai-backend`）
 - 其餘見 ARCHITECTURE.md
 
 ## Tests
+- Codex Gemini worktree（2026-10-13）：`npm install` 完成；`npm run lint` ✅、`npm run typecheck` ✅、`npm run test` ✅（21 files / 112 tests；聊天 API 15、圖片 API 9）、`npm run build` ✅。Mock fetch 覆蓋串流文字、function call→工具結果→最終回答、untrusted 文件／禁止 mutation、結構化 JSON／丟掉無效格子、Gemini 429／5xx 與請求中不夾帶 Supabase key/JWT。
+- Codex Gemini：兩支 API 用 esbuild `--bundle --platform=node --format=esm --packages=external` 打包（專案來源被打包，npm dependencies 外部載入），確認輸出不含 `@/`，以純 Node ESM 載入 default handler ✅。暫存 bundle 已清除。
+- Codex Gemini 本機 `npm run dev`：真實 HTTP 驗證無金鑰時 `/api/chat` 回 503 SSE、`/api/timetable-import` 回 503 JSON，`/schedule` 預覽回 200 ✅；localhost:5173 預覽已恢復。提交前 staged diff 的 Gitleaks 機密掃描為零候選。
+- Codex Gemini 真實問答／讀圖：**未實測**。原專案 `.env.local` 沒有 `GEMINI_API_KEY` 或 service role；新 worktree 沒有 `.env.local`。沒有將金鑰複製或寫入 Git／交接文件。既有 jsdom Canvas／React Router 測試提示與 build 大 chunk 警告仍存在，測試/建置本身成功。
 執行於 Claude 雲端工作區（Node 22.22）：
 - `npm run lint` ✅
 - `npm run typecheck` ✅
@@ -129,17 +137,19 @@ Claude Code（合併 Codex `feat/ai-backend`）
 - npm audit 有建置工具鏈警告，尚未處理
 
 ## Next Steps
+- **Claude Code**：前端圖片匯入隱私提示改成「圖片會傳給 Google Gemini 辨識」；`ARCHITECTURE.md` 的 AI provider 文案與 `AGENTS.md` 的目前 Codex 分支可同步更新（本輪遵守範圍未修改）。
+- **開發者**：合併 `feat/gemini` 後，設定伺服器端 Gemini/Supabase 環境變數，再登入實測真實問答與圖片課表辨識。執行 `npm run ingest` 重建 Gemini vectors，不能沿用舊 OpenAI vectors；免費額度以 Google 專案總用量計算。
 - **Codex**：`api/timetable-import.ts` 由 Claude Code 新增（使用者要求），之後可由 Codex 維護。`feat/ai-backend` 已合併進 `main`；之後請從最新 `main` 開新分支。可補：好友/市集的 pgTAP RLS 測試（`supabase/tests/`）、市集檢舉的管理端 API
 - **Claude Code（main）**：市集照片上傳（Supabase Storage）、好友邀請通知；重跑 e2e 並新增好友/市集 e2e（需模擬 Supabase）
 - **Claude Code（main）**：活動管理後台 UI（需 Codex 的 admin API）、Capacitor 打包 iOS/Android（待開發者決定）
 - **開發者**：決定 Email 驗證策略（關閉或自訂 SMTP）；部署後在 Supabase Auth 設定 Site URL 與 Redirect URLs；建立 GitHub repo；Vercel 環境變數填 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`（publishable key）
-- **開發者**：在 Supabase SQL Editor 套用 `supabase/migrations/20261012080231_ai_backend_security.sql`；在 Vercel 設定 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`OPENAI_API_KEY`（以及可選模型/限流變數），再驗證線上 `/api/chat` 與執行 RLS SQL。
+- **開發者**：在 Supabase SQL Editor 套用 `supabase/migrations/20261012080231_ai_backend_security.sql`；在 Vercel 設定 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY`（以及可選 Gemini 模型/限流變數），再驗證線上 `/api/chat` 與執行 RLS SQL。
 
 ## Git Status
-- Branch：`main`
+- Branch：`feat/gemini`；基底本地 `main` `ace44fc`（包含 `origin/main` 之外兩個前端／部署文件提交；已 fetch 確認）。原工作目錄維持 `main`。
 - Commits：… → `feat(auth): redesigned login with guest mode` → `feat(profile): account card with sign out…` → `docs: record live Supabase auth and RLS verification` → `feat: friend timetable sharing and second-hand market` → merge `feat/ai-backend`（Codex：AI chat backend、ingest hardening、handoff）→ `feat(ai): send UI language to /api/chat`
-- Worktree：`../tkuApp-codex`（`feat/ai-backend`，已合併；git 顯示 prunable）
-- 尚未設定 remote
+- Worktree：`../tkuApp-codex`（`feat/gemini`）；舊 `feat/ai-backend` 確認乾淨且已合併後移除，可從 main 內的歷史恢復。
+- Remote：`origin`（GitHub `bryankccy-glitch/tkuApp`）；本輪不合併 main。
 
 ## Important Notes
 - 不可要求或儲存淡江校務系統帳密；不可爬取受限制校務資料

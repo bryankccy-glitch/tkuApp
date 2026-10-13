@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { z } from 'zod';
 import { readServerEnv } from './chat.js';
 import { CampusStore, type ServerEnv } from './store.js';
+import { geminiFetch, GeminiApiError, type GeminiResponse } from './gemini.js';
 
 /**
  * POST /api/timetable-import
@@ -36,47 +37,41 @@ export const VISION_PROMPT = `你會看到一張淡江大學的學生課表截�
 - 如果圖片不是課表，isTimetable 填 false、cells 給空陣列。`;
 
 const JSON_SCHEMA = {
-  type: 'object',
-  additionalProperties: false,
+  type: 'OBJECT',
   required: ['isTimetable', 'cells'],
   properties: {
-    isTimetable: { type: 'boolean' },
+    isTimetable: { type: 'BOOLEAN' },
     cells: {
-      type: 'array',
+      type: 'ARRAY',
       items: {
-        type: 'object',
-        additionalProperties: false,
+        type: 'OBJECT',
         required: ['weekday', 'period', 'group', 'course', 'teacher', 'room'],
         properties: {
-          weekday: { type: 'integer' },
-          period: { type: 'integer' },
-          group: { type: 'string' },
-          course: { type: 'string' },
-          teacher: { type: 'string' },
-          room: { type: 'string' },
+          weekday: { type: 'INTEGER' },
+          period: { type: 'INTEGER' },
+          group: { type: 'STRING' },
+          course: { type: 'STRING' },
+          teacher: { type: 'STRING' },
+          room: { type: 'STRING' },
         },
       },
     },
   },
 } as const;
 
-/** Calls the OpenAI Responses API with the image and a strict JSON schema. */
+/** Sends inline image data to Gemini with structured JSON output; nothing is saved. */
 export async function readTimetable(env: ServerEnv, image: string, model: string): Promise<ModelOutput> {
-  const res = await fetch('https://api.openai.com/v1/responses', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${env.openaiApiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model,
-      store: false,
-      input: [{ role: 'user', content: [{ type: 'input_text', text: VISION_PROMPT }, { type: 'input_image', image_url: image, detail: 'high' }] }],
-      text: { format: { type: 'json_schema', name: 'tku_timetable', strict: true, schema: JSON_SCHEMA } },
-    }),
+  const match = image.match(/^data:(image\/(?:jpeg|png|webp));base64,(.+)$/);
+  if (!match?.[1] || !match[2]) throw new Error('圖片格式不正確。');
+  const res = await geminiFetch(env.geminiApiKey, model, 'generateContent', {
+    store: false,
+    systemInstruction: { parts: [{ text: VISION_PROMPT }] },
+    contents: [{ role: 'user', parts: [{ inlineData: { mimeType: match[1], data: match[2] } }] }],
+    generationConfig: { responseMimeType: 'application/json', responseSchema: JSON_SCHEMA },
   });
-  if (!res.ok) throw new Error(`OpenAI API ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  const payload = await res.json() as { output_text?: string; output?: { type: string; content?: { type: string; text?: string }[] }[] };
-  const text = payload.output_text
-    ?? payload.output?.flatMap((o) => o.content ?? []).find((c) => c.type === 'output_text')?.text;
-  if (!text) throw new Error('OpenAI 回傳內容為空');
+  const payload = await res.json() as GeminiResponse;
+  const text = payload.candidates?.[0]?.content?.parts.filter((part) => !part.thought).map((part) => part.text ?? '').join('');
+  if (!text) throw new Error('Gemini 回傳內容為空。');
   // Drop individually malformed cells instead of failing the whole import.
   const raw = JSON.parse(text) as { isTimetable?: unknown; cells?: unknown[] };
   const cells = (Array.isArray(raw.cells) ? raw.cells : []).flatMap((c) => {
@@ -99,7 +94,7 @@ const defaults: Dependencies = {
   readEnv: readServerEnv,
   authenticate: (env, token) => new CampusStore(env, token, noEmbed).authenticate(),
   checkRateLimit: (env, token, userId, now) => new CampusStore(env, token, noEmbed).recordAndCheckRateLimit(userId, now),
-  read: (env, image) => readTimetable(env, image, process.env.OPENAI_VISION_MODEL?.trim() || env.openaiModel),
+  read: (env, image) => readTimetable(env, image, env.geminiVisionModel),
   now: () => new Date(),
 };
 
@@ -142,6 +137,9 @@ export function createTimetableImportHandler(deps: Dependencies = defaults) {
       return json(response, 200, { cells: out.cells });
     } catch (error) {
       console.error('[api/timetable-import]', error instanceof Error ? error.message : error);
+      if (error instanceof GeminiApiError && error.status === 429) {
+        return json(response, 429, { error: 'AI 服務目前額度已用完，請稍後再試。' });
+      }
       return json(response, 502, { error: '圖片辨識暫時無法使用，請稍後再試或改用 CSV 匯入。' });
     }
   };

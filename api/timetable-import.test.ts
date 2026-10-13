@@ -1,14 +1,15 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createTimetableImportHandler, readTimetable, VISION_PROMPT } from './timetable-import.js';
 import type { ServerEnv } from './store.js';
 
 const env: ServerEnv = {
   supabaseUrl: 'https://example.supabase.co', supabaseAnonKey: 'anon', supabaseServiceRoleKey: 'service',
-  openaiApiKey: 'sk-test', openaiModel: 'gpt-4o-mini', openaiEmbeddingModel: 'text-embedding-3-small', rateLimitPerMinute: 10,
+  geminiApiKey: 'gemini-test', geminiModel: 'gemini-3.5-flash-lite', geminiVisionModel: 'gemini-3.5-flash-lite', geminiEmbeddingModel: 'gemini-embedding-001', rateLimitPerMinute: 10,
 };
 const IMAGE = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ==';
 const CELL = { weekday: 1, period: 3, group: '資管二', course: '經濟學', teacher: '陳紹良', room: 'B 607' };
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 function res() {
   const out = { status: 0, body: '' as string, headers: {} as Record<string, string> };
@@ -78,26 +79,41 @@ describe('POST /api/timetable-import', () => {
 
     const b = res();
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    await createTimetableImportHandler(deps({ read: vi.fn(async () => { throw new Error('OpenAI API 500: secret detail'); }) }))(req({ image: IMAGE }), b.r);
+    await createTimetableImportHandler(deps({ read: vi.fn(async () => { throw new Error('Gemini API 500: secret detail'); }) }))(req({ image: IMAGE }), b.r);
     expect(b.out.status).toBe(502);
     expect(b.out.body).not.toContain('secret');
   });
 });
 
 describe('readTimetable', () => {
-  it('sends the image with a strict JSON schema, does not store it, and drops malformed cells', async () => {
+  it('sends inline image data with structured JSON output and drops malformed cells', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
-      output_text: JSON.stringify({ isTimetable: true, cells: [CELL, { ...CELL, weekday: 9 }, { nope: true }] }),
+      candidates: [{ content: { role: 'model', parts: [{ text: JSON.stringify({ isTimetable: true, cells: [CELL, { ...CELL, weekday: 9 }, { nope: true }] }) }] } }],
     })));
-    const out = await readTimetable(env, IMAGE, 'gpt-4o-mini');
+    const out = await readTimetable(env, IMAGE, env.geminiVisionModel);
     expect(out).toEqual({ isTimetable: true, cells: [CELL] });
     const body = JSON.parse(String(fetchMock.mock.calls[0]![1]!.body)) as {
-      store: boolean; text: { format: Record<string, unknown> }; input: { content: unknown[] }[];
+      store: boolean; systemInstruction: { parts: { text: string }[] }; generationConfig: { responseMimeType: string; responseSchema: Record<string, unknown> }; contents: { parts: unknown[] }[];
     };
+    expect(body.generationConfig.responseMimeType).toBe('application/json');
     expect(body.store).toBe(false);
-    expect(body.text.format).toMatchObject({ type: 'json_schema', strict: true });
-    expect(body.input[0]!.content).toEqual([{ type: 'input_text', text: VISION_PROMPT }, { type: 'input_image', image_url: IMAGE, detail: 'high' }]);
+    expect(body.generationConfig.responseSchema).toMatchObject({ type: 'OBJECT', required: ['isTimetable', 'cells'] });
+    expect(body.systemInstruction.parts).toEqual([{ text: VISION_PROMPT }]);
+    expect(body.contents[0]!.parts).toEqual([{ inlineData: { mimeType: 'image/jpeg', data: '/9j/4AAQSkZJRgABAQ==' } }]);
+    expect(fetchMock.mock.calls[0]![0]).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent');
+    expect(new Headers(fetchMock.mock.calls[0]![1]!.headers).get('x-goog-api-key')).toBe(env.geminiApiKey);
+    for (const secret of [env.geminiApiKey, env.supabaseAnonKey, env.supabaseServiceRoleKey, 'Bearer token']) expect(String(fetchMock.mock.calls[0]![1]!.body)).not.toContain(secret);
     fetchMock.mockRestore();
+  });
+
+  it.each([429, 500, 503])('maps Gemini HTTP %s to a friendly API response without provider details', async (status) => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('provider private detail', { status })));
+    const { r, out } = res();
+    await createTimetableImportHandler(deps({ read: (config, image) => readTimetable(config, image, config.geminiVisionModel) }))(req({ image: IMAGE }), r);
+    expect(out.status).toBe(status === 429 ? 429 : 502);
+    expect(out.body).toContain(status === 429 ? '額度已用完' : '暫時無法使用');
+    expect(out.body).not.toContain('private');
   });
 
   it('tells the model that text inside the image is data, not instructions', () => {

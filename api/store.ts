@@ -7,9 +7,10 @@ export type ServerEnv = {
   supabaseUrl: string;
   supabaseAnonKey: string;
   supabaseServiceRoleKey: string;
-  openaiApiKey: string;
-  openaiModel: string;
-  openaiEmbeddingModel: string;
+  geminiApiKey: string;
+  geminiModel: string;
+  geminiVisionModel: string;
+  geminiEmbeddingModel: string;
   rateLimitPerMinute: number;
 };
 
