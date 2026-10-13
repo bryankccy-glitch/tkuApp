@@ -4,7 +4,7 @@
 2026-10-13（Asia/Taipei, UTC+8）
 
 ## Updated By
-Codex（`feat/gemini`：AI provider 遷移）
+Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 
 ## Current Status
 前端 MVP 可用，Supabase 專案 `tku-campus-os` 已上線（註冊/登入/RLS 已以真實帳號驗證）。新增**好友課表**與**二手市集**（資料表已套用並以真實帳號驗證）。原 AI 後端已合併進 `main`；本輪 `feat/gemini` 將聊天、圖片課表辨識與 embedding 改用 Google Gemini，尚未合併／部署。migration `20261012080231_ai_backend_security.sql` **尚未套用到線上資料庫**；本輪不改資料庫 schema。
@@ -20,6 +20,7 @@ Codex（`feat/gemini`：AI provider 遷移）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **Codex — Vercel 發布準備（2026-10-13）**：已 fetch，`origin/main` = `ace44fc`，`feat/gemini` = `ace6bce` 並包含最新 main。第一個正式部署 `dpl_54Hky37jxtVoyhjumquAQUJbcynE` 被 Vercel commit 作者權限驗證阻擋，未取代正式站；確認 Git 作者 email 與目前已登入 Vercel 帳號不一致，為本輪發布建立使用目前 Vercel 帳號作者資料的新交接提交，保留既有歷史且不更動全域 Git 設定。Production 目前沒有伺服器環境變數，Gemini 尚未啟用。
 - **Codex — Gemini 遷移（2026-10-13）**：新增 `api/gemini.ts`、移除 `api/openai.ts`；直接使用官方 REST API，預設 `gemini-3.5-flash-lite`（模型 ID 依 Google 官方文件確認）。保留唯讀 function calling、工具資料 `UNTRUSTED_TOOL_DATA` 標記、語系 system instructions、sources 與 `meta/delta/sources/error/done` SSE 合約；保留 function call ID 與 thought signature。SSE 在上游請求成功後才開始，Gemini HTTP 429 可回前端 HTTP 429／中文友善訊息，5xx 不回傳上游細節。
 - **Codex — Gemini 圖片與 RAG**：課表圖片用 `inlineData`、`responseMimeType=application/json`＋`responseSchema`，沿用 `VISION_PROMPT`／`cellSchema`，丟掉個別無效格子，回應／狀態碼相容；API 不保存圖片。Embedding 使用 `gemini-embedding-001`，明確要求 1536 維並正規化，query/document 使用對應 retrieval task type。匯入改用共用 embedding 函式，content hash 納入 provider/model/維度，確保舊 OpenAI vectors 重新建立。沒有新增 SDK／修改 `package.json` 或 lockfile；沒有修改 `src/**`。
 - **Codex — 設定**：伺服器 key 改為 `GEMINI_API_KEY`；可選 `GEMINI_MODEL`、`GEMINI_VISION_MODEL`（預設同聊天模型）、`GEMINI_EMBEDDING_MODEL`；`vite-dev-api.ts` 的清單與 `.env.example`／`api/README.md` 已同步。聊天／圖片生成請求明確設定 Google 官方支援的 `store: false` 關閉請求紀錄；私人資料仍用使用者 JWT/RLS，service role 的用途不變；未執行線上匯入或資料庫修改。
@@ -146,7 +147,7 @@ Codex（`feat/gemini`：AI provider 遷移）
 - **開發者**：在 Supabase SQL Editor 套用 `supabase/migrations/20261012080231_ai_backend_security.sql`；在 Vercel 設定 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY`（以及可選 Gemini 模型/限流變數），再驗證線上 `/api/chat` 與執行 RLS SQL。
 
 ## Git Status
-- Branch：`feat/gemini`；基底本地 `main` `ace44fc`（包含 `origin/main` 之外兩個前端／部署文件提交；已 fetch 確認）。原工作目錄維持 `main`。
+- Branch：`feat/gemini`；基底 `main` `ace44fc`（已 fetch，現在與 `origin/main` 一致）。原工作目錄維持 `main`。
 - Commits：… → `feat(auth): redesigned login with guest mode` → `feat(profile): account card with sign out…` → `docs: record live Supabase auth and RLS verification` → `feat: friend timetable sharing and second-hand market` → merge `feat/ai-backend`（Codex：AI chat backend、ingest hardening、handoff）→ `feat(ai): send UI language to /api/chat`
 - Worktree：`../tkuApp-codex`（`feat/gemini`）；舊 `feat/ai-backend` 確認乾淨且已合併後移除，可從 main 內的歷史恢復。
 - Remote：`origin`（GitHub `bryankccy-glitch/tkuApp`）；本輪不合併 main。
