@@ -114,3 +114,11 @@
 }
 @keyframes skeleton-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; background: rgb(var(--c-sunken)); } }
+
+/* While the on-screen keyboard is open (see useKeyboardInset), the bottom nav steps aside. */
+html[data-kb='open'] .bottom-nav { display: none; }
+
+/* iOS zooms into any focused field under 16px; keep fields at 16px on touch screens. */
+@media (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']), textarea, select { font-size: 16px; }
+}

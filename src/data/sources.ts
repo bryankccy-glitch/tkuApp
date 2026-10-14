@@ -1,5 +1,6 @@
 /**
- * 已查核存在的官方公開資源（2026-10-12 經搜尋確認網址存在）。
+ * 已查核存在的官方公開資源（2026-10-12 經搜尋確認網址存在；tku-sso、tku-sis 於 2026-10-14 開啟頁面確認）。
+ * 校務行政／學務系統只提供官方連結，App 不代登入、不要求或保存校務系統帳密。
  * 內容本身尚未擷取進知識庫；AI 助理只會引用標題與連結，不會編造內文。
  */
 export interface OfficialSource {
@@ -100,8 +101,28 @@ export const OFFICIAL_SOURCES: OfficialSource[] = [
     titleEn: 'Tamkang University Library',
     kind: 'service',
   },
+  {
+    id: 'tku-sso',
+    title: '校務行政系統',
+    publisher: '單一登入 · 淡江大學資訊處',
+    url: 'https://sso.tku.edu.tw/NEAI/loginrwd.jsp?myurl=',
+    keywords: ['校務行政', '行政系統', '單一登入', 'SSO', '學號登入', '校務系統'],
+    keywordsEn: ['admin system', 'single sign-on', 'sso', 'student portal'],
+    titleEn: 'University admin systems (single sign-on)',
+    kind: 'service',
+  },
+  {
+    id: 'tku-sis',
+    title: '學務系統',
+    publisher: '淡江大學',
+    url: 'https://www.sis.tku.edu.tw/',
+    keywords: ['學務系統', '請假系統', '獎學金', '助學金', '社團', '學雜費減免', '操行'],
+    keywordsEn: ['student affairs system', 'leave request', 'scholarship', 'clubs', 'tuition reduction'],
+    titleEn: 'Student Affairs System (leave, scholarships, clubs)',
+    kind: 'service',
+  },
 ];
 
-export const QUICK_SERVICES = ['tku-home', 'library', 'handbook-114', 'leave-rules', 'space-rental', 'tkutimes']
+export const QUICK_SERVICES = ['tku-sso', 'tku-sis', 'tku-home', 'library', 'handbook-114', 'leave-rules', 'space-rental', 'tkutimes']
   .map((id) => OFFICIAL_SOURCES.find((s) => s.id === id)!)
   .filter(Boolean);

@@ -272,7 +272,7 @@ const zh = {
     "eventsNotConnected": "活動由管理後台維護，連線雲端資料庫後才會顯示。每則活動都會附上來源、日期與官方連結。",
     "eventsEmpty": "近期沒有已發布的活動。",
     "services": "常用校園服務",
-    "servicesNote": "連結皆指向淡江大學官方網站，2026-10-12 查核。",
+    "servicesNote": "連結皆指向淡江大學官方網站（2026-10-14 查核）。登入在學校網站進行，本 App 不會取得你的帳號密碼。",
     "todayClasses": "今日課表",
     "weekView": "週課表",
     "noClassesToday": "今天沒有排課。"

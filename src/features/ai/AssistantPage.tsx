@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useKeyboardInset } from '@/hooks/useKeyboardInset';
 import { useSearchParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { ArrowUp, Check, Copy, ExternalLink, FileText, RotateCcw, Square, Trash2, UserRound, MapPin } from 'lucide-react';
@@ -115,9 +116,25 @@ export default function AssistantPage() {
     }
   }, [params, send, setParams]);
 
+  const keyboard = useKeyboardInset();
+  const composerRef = useRef<HTMLDivElement>(null);
+  const [composerH, setComposerH] = useState(120);
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: 'end' });
+    const el = composerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => setComposerH(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Follow new messages, but never scroll on first open (an empty chat shouldn't move the page).
+  useEffect(() => {
+    if (messages.length) endRef.current?.scrollIntoView({ block: 'end' });
   }, [messages]);
+  // When the keyboard opens, keep the latest message in view above the composer.
+  useEffect(() => {
+    if (keyboard && messages.length) endRef.current?.scrollIntoView({ block: 'end' });
+  }, [keyboard, messages.length]);
 
   useEffect(() => {
     const el = inputRef.current;
@@ -139,7 +156,7 @@ export default function AssistantPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-3xl flex-col px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]">
+    <div className="mx-auto flex w-full max-w-3xl flex-col px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]">
       <header className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-h1 text-ink">{t('ai.title')}</h1>
@@ -170,10 +187,17 @@ export default function AssistantPage() {
             {messages.map((m, i) => <Message key={m.id} m={m} last={i === messages.length - 1} busy={busy} onRetry={retry} />)}
           </div>
         )}
-        <div ref={endRef} />
+        <div ref={endRef} style={{ scrollMarginBottom: composerH + (keyboard || 64) }} />
       </div>
+      {/* Space for the fixed composer so the last message is never hidden under it. */}
+      <div aria-hidden style={{ height: composerH }} />
 
-      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-4 bg-gradient-to-t from-canvas via-canvas to-canvas/0 px-4 pb-3 pt-4">
+      {/* Fixed to the visible viewport: above the bottom nav normally, right above the keyboard while typing. */}
+      <div
+        ref={composerRef}
+        className="fixed left-1/2 z-30 w-full max-w-app -translate-x-1/2 bg-gradient-to-t from-canvas via-canvas to-canvas/0 px-4 pb-3 pt-4"
+        style={{ bottom: keyboard ? keyboard : 'calc(4rem + env(safe-area-inset-bottom))' }}
+      >
         <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex items-end gap-2 rounded-lg border border-line bg-surface p-2 shadow-lift focus-within:border-link">
           <label htmlFor="chat-input" className="sr-only">{t('ai.inputLabel')}</label>
           <textarea

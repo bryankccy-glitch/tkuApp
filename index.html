@@ -59,6 +59,8 @@
       .splash-tag { position: absolute; bottom: calc(28px + env(safe-area-inset-bottom)); left: 0; right: 0; margin: 0; font-size: 11px; letter-spacing: 0.16em; opacity: 0.55;
         animation: splash-fade 400ms 260ms both; }
       .splash--static .splash-sub, .splash--static .splash-bar, .splash--static .splash-tag { animation: none; }
+      .splash-en, html[lang='en'] .splash-zh { display: none; }
+      html[lang='en'] .splash-en { display: inline; }
       @keyframes splash-fade { from { opacity: 0; } }
       @keyframes splash-slide { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
       @media (prefers-reduced-motion: reduce) {
@@ -74,7 +76,7 @@
     <div id="boot" class="splash" role="status" aria-label="TKU Campus OS 載入中">
       <img class="splash-logo" src="/brand/logo-256.png" width="112" height="112" alt="" />
       <p class="splash-title">TKU Campus OS</p>
-      <p class="splash-sub">淡江智慧校園</p>
+      <p class="splash-sub"><span class="splash-zh">淡江智慧校園</span><span class="splash-en">Tamkang Smart Campus</span></p>
       <div class="splash-bar" aria-hidden="true"><span></span></div>
       <p class="splash-tag">One Campus. One OS.</p>
     </div>

@@ -272,7 +272,7 @@ const en = {
     "eventsNotConnected": "Events are maintained by admins and appear once the cloud database is connected. Each event shows its source, date and official link.",
     "eventsEmpty": "No upcoming events.",
     "services": "Campus services",
-    "servicesNote": "All links go to official Tamkang University sites, checked 2026-10-12.",
+    "servicesNote": "All links go to official Tamkang University sites (checked 2026-10-14). You sign in on the university’s site; this app never sees your password.",
     "todayClasses": "Today’s classes",
     "weekView": "Week view",
     "noClassesToday": "No classes today."
