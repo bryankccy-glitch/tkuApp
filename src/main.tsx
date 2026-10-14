@@ -13,8 +13,16 @@ import './i18n';
 import { seedPreviewDemo } from './lib/data/previewDemo';
 import { disablePageZoom } from './lib/noZoom';
 import { holdSplash } from './lib/splash';
+import { reloadForNewVersion } from './app/RouteError';
 
 disablePageZoom();
+
+// After a deploy, an open/cached app may ask for page code that no longer exists: reload once to get the new version.
+window.addEventListener('vite:preloadError', (e) => {
+  if (reloadForNewVersion()) e.preventDefault();
+});
+// Loaded fine this time: allow one automatic reload again for the next deploy.
+window.addEventListener('load', () => setTimeout(() => { try { sessionStorage.removeItem('tku.chunkReload'); } catch { /* ignore */ } }, 10_000));
 
 if (import.meta.env.VITE_PREVIEW_DEMO === '1') {
   seedPreviewDemo();

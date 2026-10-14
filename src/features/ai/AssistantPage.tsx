@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { useKeyboardInset } from '@/hooks/useKeyboardInset';
+import { useVisualViewport } from '@/hooks/useVisualViewport';
 import { useSearchParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { ArrowUp, Check, Copy, ExternalLink, FileText, RotateCcw, Square, Trash2, UserRound, MapPin } from 'lucide-react';
@@ -103,7 +103,6 @@ export default function AssistantPage() {
   const [params, setParams] = useSearchParams();
   const [text, setText] = useState('');
   const [confirmClear, setConfirmClear] = useState(false);
-  const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const handled = useRef(false);
 
@@ -116,25 +115,30 @@ export default function AssistantPage() {
     }
   }, [params, send, setParams]);
 
-  const keyboard = useKeyboardInset();
-  const composerRef = useRef<HTMLDivElement>(null);
-  const [composerH, setComposerH] = useState(120);
+  // Chat-app layout: a fixed layer sized to the visible screen. Header stays on top, messages scroll
+  // in between, the composer sits on the bottom nav — or right on the keyboard while typing.
+  const viewport = useVisualViewport();
+  const [typing, setTyping] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const el = composerRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(() => setComposerH(el.offsetHeight));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+    if (typing) document.documentElement.dataset.kb = 'open';
+    else delete document.documentElement.dataset.kb;
+    return () => { delete document.documentElement.dataset.kb; };
+  }, [typing]);
+  // iOS may still scroll the page when the field gets focus; the layer follows the visible area,
+  // so put the page itself back to the top to avoid a stray offset after the keyboard closes.
+  useEffect(() => {
+    if (!typing) window.scrollTo(0, 0);
+  }, [typing]);
 
-  // Follow new messages, but never scroll on first open (an empty chat shouldn't move the page).
+  const scrollToEnd = () => {
+    const el = listRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  };
+  // Follow new messages and keep the latest in view when the visible area shrinks (keyboard).
   useEffect(() => {
-    if (messages.length) endRef.current?.scrollIntoView({ block: 'end' });
-  }, [messages]);
-  // When the keyboard opens, keep the latest message in view above the composer.
-  useEffect(() => {
-    if (keyboard && messages.length) endRef.current?.scrollIntoView({ block: 'end' });
-  }, [keyboard, messages.length]);
+    if (messages.length) scrollToEnd();
+  }, [messages, viewport?.height]);
 
   useEffect(() => {
     const el = inputRef.current;
@@ -156,11 +160,14 @@ export default function AssistantPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]">
-      <header className="flex items-start justify-between gap-3">
+    <div
+      className="fixed left-1/2 z-20 flex w-full max-w-app -translate-x-1/2 flex-col bg-canvas"
+      style={{ top: viewport?.top ?? 0, height: viewport?.height ?? '100dvh' }}
+    >
+      <header className="flex shrink-0 items-start justify-between gap-3 border-b border-line/60 px-4 pb-3 pt-[calc(1rem+env(safe-area-inset-top))]">
         <div>
-          <h1 className="text-h1 text-ink">{t('ai.title')}</h1>
-          <p className="mt-1 text-caption text-muted">
+          <h1 className="text-h2 text-ink">{t('ai.title')}</h1>
+          <p className={cn('mt-0.5 text-caption text-muted', typing && 'hidden')}>
             {mode === 'cloud' ? t('ai.cloudHint') : t('ai.localHint')}
           </p>
         </div>
@@ -171,7 +178,7 @@ export default function AssistantPage() {
         )}
       </header>
 
-      <div className="flex-1 py-6" aria-live="polite">
+      <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5" aria-live="polite">
         {messages.length === 0 ? (
           <div className="flex flex-col items-start">
             <p className="text-h3 text-ink">{t('ai.emptyTitle')}</p>
@@ -187,17 +194,10 @@ export default function AssistantPage() {
             {messages.map((m, i) => <Message key={m.id} m={m} last={i === messages.length - 1} busy={busy} onRetry={retry} />)}
           </div>
         )}
-        <div ref={endRef} style={{ scrollMarginBottom: composerH + (keyboard || 64) }} />
       </div>
-      {/* Space for the fixed composer so the last message is never hidden under it. */}
-      <div aria-hidden style={{ height: composerH }} />
 
-      {/* Fixed to the visible viewport: above the bottom nav normally, right above the keyboard while typing. */}
-      <div
-        ref={composerRef}
-        className="fixed left-1/2 z-30 w-full max-w-app -translate-x-1/2 bg-gradient-to-t from-canvas via-canvas to-canvas/0 px-4 pb-3 pt-4"
-        style={{ bottom: keyboard ? keyboard : 'calc(4rem + env(safe-area-inset-bottom))' }}
-      >
+      {/* Composer: on top of the bottom nav normally; the nav hides while typing so it sits on the keyboard. */}
+      <div className={cn('shrink-0 border-t border-line/60 bg-canvas px-3 pt-2', typing ? 'pb-2' : 'pb-[calc(5.25rem+env(safe-area-inset-bottom))]')}>
         <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex items-end gap-2 rounded-lg border border-line bg-surface p-2 shadow-lift focus-within:border-link">
           <label htmlFor="chat-input" className="sr-only">{t('ai.inputLabel')}</label>
           <textarea
@@ -208,19 +208,21 @@ export default function AssistantPage() {
             maxLength={1000}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={onKey}
+            onFocus={() => setTyping(true)}
+            onBlur={() => setTyping(false)}
             placeholder={t('ai.placeholder')}
             enterKeyHint="send"
             className="max-h-36 min-h-[2.5rem] flex-1 resize-none bg-transparent px-2 py-2 text-body text-ink placeholder:text-muted focus:outline-none"
           />
           {busy ? (
-            <button type="button" onClick={stop} aria-label={t('ai.stop')} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-ink text-canvas"><Square className="h-4 w-4" /></button>
+            <button type="button" onPointerDown={(e) => e.preventDefault()} onClick={stop} aria-label={t('ai.stop')} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-ink text-canvas"><Square className="h-4 w-4" /></button>
           ) : (
-            <button type="submit" aria-label={t('ai.send')} disabled={!text.trim()} className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-heritage text-white transition-opacity disabled:opacity-35')}>
+            <button type="submit" onPointerDown={(e) => e.preventDefault()} aria-label={t('ai.send')} disabled={!text.trim()} className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-heritage text-white transition-opacity disabled:opacity-35')}>
               <ArrowUp className="h-5 w-5" />
             </button>
           )}
         </form>
-        <p className="mt-1.5 text-center text-[11px] text-muted">{t('ai.disclaimer')}</p>
+        {!typing && <p className="mt-1 text-center text-[11px] text-muted">{t('ai.disclaimer')}</p>}
       </div>
 
       <ConfirmSheet open={confirmClear} onClose={() => setConfirmClear(false)} title={t('ai.clearTitle')} message={t('ai.clearBody')} confirmLabel={t('ai.clearConfirm')} onConfirm={() => { clear(); setConfirmClear(false); }} />

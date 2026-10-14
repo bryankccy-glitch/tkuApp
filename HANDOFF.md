@@ -20,6 +20,7 @@ Claude Code（main）；前一輪 Codex（`codex/schedule-session-labels`）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **AI 助理改成通訊軟體版面＋部署後舊版錯誤 — Claude Code（2026-10-14）**：使用者錄影比對 Instagram 私訊：要「標題固定、訊息在中間捲動、輸入列直接貼在鍵盤上」；我們的版本在 Safari 打字時整頁上下跳、底部導覽夾在輸入列與鍵盤中間（iOS 此時是縮小版面而非捲動，前一版用高度差判斷鍵盤因此失效）。改為：AI 助理整頁是固定圖層，大小跟著 `useVisualViewport`（可見區域 top／height），header 固定、訊息區 `overflow-y-auto`、輸入列在底部；輸入框聚焦時（不再靠高度猜鍵盤）隱藏底部導覽與說明文字，輸入列貼齊鍵盤；按送出／停止不會讓輸入框失焦（鍵盤不收起）；離開輸入時頁面捲回頂端。移除 `useKeyboardInset`。另：錄影中出現「Unexpected Application Error: 'text/html' is not a valid JavaScript MIME type」——部署後舊版頁面要載入已不存在的程式檔，Vercel 改寫規則把它回成 index.html。修正：`vercel.json` 改寫排除 `/assets/`（缺檔回 404）、`vite:preloadError` 與路由 `errorElement`（`src/app/RouteError.tsx`）偵測舊版程式檔錯誤時自動重新整理一次（sessionStorage 防無限重整），其他錯誤顯示友善錯誤頁與「重新載入」，不再出現 React Router 開發者錯誤頁。
 - **AI 助理打字跳動＋常用校園服務 — Claude Code（2026-10-14）**：使用者回報 iPhone 上 AI 助理打字時整個畫面跳出來。原因：iOS 鍵盤不縮小版面而是捲動頁面，sticky 輸入列與固定底部導覽跟著跳；且輸入框 15px，iOS 會對小於 16px 的欄位自動放大。修正：新增 `useKeyboardInset`（VisualViewport）算出鍵盤高度，輸入列改為 `fixed` 並貼在鍵盤正上方（平常在底部導覽上方），鍵盤開啟時 `<html data-kb="open">` 隱藏底部導覽；訊息區下方保留與輸入列等高的空間；空對話開啟時不再自動捲動；觸控裝置上所有輸入欄位 16px。常用校園服務新增「校務行政系統」（淡江單一登入 SSO `https://sso.tku.edu.tw/NEAI/loginrwd.jsp`）與「學務系統」（`https://www.sis.tku.edu.tw/`，請假／獎助學金／社團等），2026-10-14 開啟頁面確認存在；只放官方連結，不代登入、不取得帳密，說明文字已註明。啟動畫面副標依語系顯示中／英文。⚠ Codex：`scripts/ingest.ts` 會讀 `OFFICIAL_SOURCES`，新加的兩筆是登入入口頁，內容很少（應會因過短被略過），若不需要可在匯入端排除 `kind: 'service'` 的登入頁。
 - **啟動畫面圖層與 AI 助理頁頂 — Claude Code（2026-10-14）**：使用者回報 (1) iPhone 上 AI 校園助理標題頂到狀態列；(2) 載入時「圖層沒用好、卡一個色塊」。修正：AI 助理頁與重設密碼頁頂部補 `env(safe-area-inset-top)`（其他頁原本就有）。啟動畫面改為 index.html 中獨立的 `#boot` 圖層（不再放在 `#root` 內被 React 直接換掉），由 `src/lib/splash.ts` 以 hold/release 控制：初次渲染與 `BootScreen`（確認登入、學期載入、lazy 頁面）期間保持顯示，最後一個 hold 釋放後等畫面繪出再淡出 320ms，底下的頁面已經畫好，不會閃空白或半成品；之後若再需要全螢幕載入才由 React 畫同樣外觀。manifest `background_color` 由米白改為淡江紅，避免系統啟動畫面先閃一塊米白；新增 iOS 啟動圖 `public/splash/{light,dark}-*.png`（10 種 iPhone 尺寸 × 淺／深色，`design/brand/make-ios-splash.py` 產生，Logo 與標題位置與網頁 splash 對齊，iOS 只會下載符合的那一張，未加入 Service Worker 預快取）。splash 移除放射光暈並讓 Logo／標題靜止，以免與 iOS 啟動圖交接時跳動。首頁骨架改為與真實卡片同形狀（卡片內文字條）並加柔和 shimmer（`.skeleton`，減少動態時靜止）。
 - **首頁不再空白等待 — Claude Code（2026-10-14）**：使用者回報 iPhone 開首頁時會先卡一下空白畫面（雲端模式讀取課表／作業／個人資料時整頁只放延遲淡入的載入圖示）。改為 Hero（淡江大橋場景＋天氣）與快捷操作立即顯示，問候語先不帶暱稱、摘要以淡色條佔位；下方用與真實區塊同尺寸的骨架（`DashboardSkeleton`）佔位，資料到了直接替換不跳版。錯誤處理不變。
@@ -74,6 +75,7 @@ Claude Code（main）；前一輪 Codex（`codex/schedule-session-labels`）
 - 新增 React Testing Library 元件測試與 Playwright E2E
 
 ## Files Changed
+- Claude Code 通訊版面／舊版錯誤：`src/hooks/useVisualViewport.ts`（新）＋測試、刪除 `src/hooks/useKeyboardInset.ts`＋測試、`src/features/ai/AssistantPage.tsx`、`src/app/RouteError.tsx`（新）、`src/app/router.tsx`、`src/main.tsx`、`vercel.json`、兩語系 `common.{updatedTitle,updatedBody,errorTitle,errorBody}`、`src/styles/index.css` 註解、本檔。
 - Claude Code AI 助理鍵盤／校園服務：`src/hooks/useKeyboardInset.ts`（新）＋測試、`src/features/ai/AssistantPage.tsx`、`src/components/layout/AppShell.tsx`（`bottom-nav` class）、`src/styles/index.css`、`src/data/sources.ts`、兩語系 `servicesNote`、`index.html`（splash 副標中英）、本檔。
 - Claude Code 啟動圖層：`index.html`、`src/lib/splash.ts`（新）、`src/lib/__tests__/splash.test.ts`（新）、`src/components/brand/Logo.tsx`、`src/main.tsx`、`vite.config.ts`（background_color）、`public/splash/*`（新）、`design/brand/make-ios-splash.py`（新）、`src/features/ai/AssistantPage.tsx`、`src/features/auth/ResetPasswordPage.tsx`、`src/features/dashboard/DashboardPage.tsx`、`src/styles/index.css`、本檔。
 - Claude Code 首頁骨架：`src/features/dashboard/{DashboardPage,Hero}.tsx`、本檔。
@@ -117,6 +119,7 @@ Claude Code（main）；前一輪 Codex（`codex/schedule-session-labels`）
 - 其餘見 ARCHITECTURE.md
 
 ## Tests
+- Claude Code 通訊版面／舊版錯誤（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 25 files／124 tests ✅、Playwright 全套 132 passed ✅。iPhone 13 尺寸截圖：空對話、多則對話、聚焦輸入框並把視窗縮到 500px 模擬鍵盤（標題留在上方、訊息區捲動、輸入列在最下方、導覽隱藏）。**真實 iOS 鍵盤與舊版自動重整仍待實機確認**。
 - Claude Code AI 助理鍵盤／校園服務（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 25 files／124 tests ✅（新增 useKeyboardInset 1 項）、Playwright 全套 132 passed ✅（第一次跑英文介面 /tasks?add=1 因讀到 splash 中文副標失敗，splash 副標改為依語系顯示後重跑全過）。iPhone 尺寸截圖確認輸入列在底部導覽上方、對話不被遮住、服務卡片排版正常。**瀏覽器模擬無法開出螢幕鍵盤，鍵盤情境尚待使用者實機確認**。
 - Claude Code 啟動圖層（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 24 files／123 tests ✅（新增 splash hold/release 2 項）、Playwright 全套 132 passed ✅。另以雲端模式建置＋模擬 Supabase（延遲 900ms）在 iPhone 13 尺寸逐 250ms 截圖，確認 splash → 淡出到已繪好的首頁（Hero＋骨架）→ 資料到位，AI 助理頁同樣無空白幀。瀏覽器模擬沒有安全區域與 iOS 啟動圖，**這兩項尚待使用者在實機確認**；iOS 啟動圖需重新「加入主畫面」才會套用。
 - Claude Code 首頁骨架（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 23 files／121 tests ✅、Playwright 全套 132 passed ✅。本機模式資料是同步讀取，骨架只在雲端模式出現；**尚未在實機截圖確認骨架畫面**。

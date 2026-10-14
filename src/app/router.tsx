@@ -5,6 +5,7 @@ import { useAuth } from './AuthProvider';
 import { SemesterProvider } from './SemesterProvider';
 import { BootScreen } from '@/components/brand/Logo';
 import { EmptyState } from '@/components/ui/misc';
+import { RouteError } from './RouteError';
 import { t } from '@/i18n/t';
 import DashboardPage from '@/features/dashboard/DashboardPage';
 
@@ -40,9 +41,10 @@ function NotFound() {
 const createRouter = import.meta.env.VITE_HASH_ROUTER === '1' ? createHashRouter : createBrowserRouter;
 
 export const router = createRouter([
-  { path: '/login', element: <LoginPage /> },
-  { path: '/reset-password', element: <ResetPasswordPage /> },
+  { path: '/login', element: <LoginPage />, errorElement: <RouteError /> },
+  { path: '/reset-password', element: <ResetPasswordPage />, errorElement: <RouteError /> },
   {
+    errorElement: <RouteError />,
     element: (
       <RequireAuth>
         <Outlet />

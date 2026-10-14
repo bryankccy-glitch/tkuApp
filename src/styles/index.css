@@ -115,7 +115,7 @@
 @keyframes skeleton-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; background: rgb(var(--c-sunken)); } }
 
-/* While the on-screen keyboard is open (see useKeyboardInset), the bottom nav steps aside. */
+/* While typing in the AI chat (AssistantPage sets data-kb), the bottom nav steps aside for the keyboard. */
 html[data-kb='open'] .bottom-nav { display: none; }
 
 /* iOS zooms into any focused field under 16px; keep fields at 16px on touch screens. */
