@@ -20,6 +20,7 @@ Claude Code（main）；前一輪 Codex（`codex/schedule-session-labels`）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **iOS 主畫面 App 底部浮起 — Claude Code（2026-10-14）**：使用者截圖量測：底部導覽（含 34pt 底部安全區）下方還有約 59pt 深色條＝狀態列高度，判斷是 iOS（主畫面模式）把版面算得比螢幕矮一個狀態列，`bottom: 0` 的元素因此浮起。新增 `src/lib/iosViewportGap.ts`：只在主畫面模式、沒有輸入框聚焦（鍵盤會正常縮版面）時，以 `screen.height - innerHeight`（限 0–90px）算出缺口寫入 `--ios-gap`；底部導覽改 `bottom: calc(-1 * var(--ios-gap))` 貼到真正底部，AI 助理圖層高度加上缺口。瀏覽器／正常情況為 0，行為不變。**尚待實機確認**（瀏覽器無法模擬此 iOS 行為）。
 - **捲動卡頓與底部色差 — Claude Code（2026-10-14）**：使用者回報 iPhone 主畫面 App 上下滑動卡卡、底部導覽下方有一條較深的色帶。卡頓主因：`noZoom.ts` 在 document 掛了非 passive 的 `touchmove`（為擋雙指縮放），讓每次捲動都要等主執行緒；已移除（雙指縮放已由 `html { touch-action: pan-x pan-y }` 擋住，iOS 由 gesture 事件擋住，縮放 e2e 仍通過）。AI 助理頁開啟時鎖住整頁捲動，只捲訊息區。色差：部分 iOS 主畫面版本頁面底部高於實體螢幕底部，底部導覽下方露出頁面底色；導覽改為不透明 `bg-surface` 並用 box-shadow 把同色往下延伸 120px。**尚待實機確認**。
 - **AI 助理改成通訊軟體版面＋部署後舊版錯誤 — Claude Code（2026-10-14）**：使用者錄影比對 Instagram 私訊：要「標題固定、訊息在中間捲動、輸入列直接貼在鍵盤上」；我們的版本在 Safari 打字時整頁上下跳、底部導覽夾在輸入列與鍵盤中間（iOS 此時是縮小版面而非捲動，前一版用高度差判斷鍵盤因此失效）。改為：AI 助理整頁是固定圖層，大小跟著 `useVisualViewport`（可見區域 top／height），header 固定、訊息區 `overflow-y-auto`、輸入列在底部；輸入框聚焦時（不再靠高度猜鍵盤）隱藏底部導覽與說明文字，輸入列貼齊鍵盤；按送出／停止不會讓輸入框失焦（鍵盤不收起）；離開輸入時頁面捲回頂端。移除 `useKeyboardInset`。另：錄影中出現「Unexpected Application Error: 'text/html' is not a valid JavaScript MIME type」——部署後舊版頁面要載入已不存在的程式檔，Vercel 改寫規則把它回成 index.html。修正：`vercel.json` 改寫排除 `/assets/`（缺檔回 404）、`vite:preloadError` 與路由 `errorElement`（`src/app/RouteError.tsx`）偵測舊版程式檔錯誤時自動重新整理一次（sessionStorage 防無限重整），其他錯誤顯示友善錯誤頁與「重新載入」，不再出現 React Router 開發者錯誤頁。
 - **AI 助理打字跳動＋常用校園服務 — Claude Code（2026-10-14）**：使用者回報 iPhone 上 AI 助理打字時整個畫面跳出來。原因：iOS 鍵盤不縮小版面而是捲動頁面，sticky 輸入列與固定底部導覽跟著跳；且輸入框 15px，iOS 會對小於 16px 的欄位自動放大。修正：新增 `useKeyboardInset`（VisualViewport）算出鍵盤高度，輸入列改為 `fixed` 並貼在鍵盤正上方（平常在底部導覽上方），鍵盤開啟時 `<html data-kb="open">` 隱藏底部導覽；訊息區下方保留與輸入列等高的空間；空對話開啟時不再自動捲動；觸控裝置上所有輸入欄位 16px。常用校園服務新增「校務行政系統」（淡江單一登入 SSO `https://sso.tku.edu.tw/NEAI/loginrwd.jsp`）與「學務系統」（`https://www.sis.tku.edu.tw/`，請假／獎助學金／社團等），2026-10-14 開啟頁面確認存在；只放官方連結，不代登入、不取得帳密，說明文字已註明。啟動畫面副標依語系顯示中／英文。⚠ Codex：`scripts/ingest.ts` 會讀 `OFFICIAL_SOURCES`，新加的兩筆是登入入口頁，內容很少（應會因過短被略過），若不需要可在匯入端排除 `kind: 'service'` 的登入頁。
@@ -76,6 +77,7 @@ Claude Code（main）；前一輪 Codex（`codex/schedule-session-labels`）
 - 新增 React Testing Library 元件測試與 Playwright E2E
 
 ## Files Changed
+- Claude Code iOS 底部缺口：`src/lib/iosViewportGap.ts`（新）＋測試、`src/main.tsx`、`src/styles/index.css`、`src/components/layout/AppShell.tsx`、`src/features/ai/AssistantPage.tsx`、本檔。
 - Claude Code 捲動／色差：`src/lib/noZoom.ts`、`src/components/layout/AppShell.tsx`、`src/styles/index.css`、`src/features/ai/AssistantPage.tsx`、本檔。
 - Claude Code 通訊版面／舊版錯誤：`src/hooks/useVisualViewport.ts`（新）＋測試、刪除 `src/hooks/useKeyboardInset.ts`＋測試、`src/features/ai/AssistantPage.tsx`、`src/app/RouteError.tsx`（新）、`src/app/router.tsx`、`src/main.tsx`、`vercel.json`、兩語系 `common.{updatedTitle,updatedBody,errorTitle,errorBody}`、`src/styles/index.css` 註解、本檔。
 - Claude Code AI 助理鍵盤／校園服務：`src/hooks/useKeyboardInset.ts`（新）＋測試、`src/features/ai/AssistantPage.tsx`、`src/components/layout/AppShell.tsx`（`bottom-nav` class）、`src/styles/index.css`、`src/data/sources.ts`、兩語系 `servicesNote`、`index.html`（splash 副標中英）、本檔。
@@ -121,6 +123,7 @@ Claude Code（main）；前一輪 Codex（`codex/schedule-session-labels`）
 - 其餘見 ARCHITECTURE.md
 
 ## Tests
+- Claude Code iOS 底部缺口（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 26 files／127 tests ✅（新增缺口量測 3 項）、Playwright 全套 132 passed ✅。
 - Claude Code 捲動／色差（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 25 files／124 tests ✅、Playwright 全套 132 passed ✅（含禁止縮放測試）。
 - Claude Code 通訊版面／舊版錯誤（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 25 files／124 tests ✅、Playwright 全套 132 passed ✅。iPhone 13 尺寸截圖：空對話、多則對話、聚焦輸入框並把視窗縮到 500px 模擬鍵盤（標題留在上方、訊息區捲動、輸入列在最下方、導覽隱藏）。**真實 iOS 鍵盤與舊版自動重整仍待實機確認**。
 - Claude Code AI 助理鍵盤／校園服務（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 25 files／124 tests ✅（新增 useKeyboardInset 1 項）、Playwright 全套 132 passed ✅（第一次跑英文介面 /tasks?add=1 因讀到 splash 中文副標失敗，splash 副標改為依語系顯示後重跑全過）。iPhone 尺寸截圖確認輸入列在底部導覽上方、對話不被遮住、服務卡片排版正常。**瀏覽器模擬無法開出螢幕鍵盤，鍵盤情境尚待使用者實機確認**。
@@ -164,6 +167,7 @@ Claude Code（main）；前一輪 Codex（`codex/schedule-session-labels`）
 - npm audit 有建置工具鏈警告，尚未處理
 
 ## Next Steps
+- **Codex（api，使用者截圖 2026-10-14）**：正式站問「明天第一堂課在哪裡？」回「目前無法產生回答，請稍後再試。」——此句是 `api/gemini.ts` 在已呼叫工具（有 sources）但最後串流沒有任何文字時的備援。推測：最後一次 `streamGenerateContent` 沒帶 `tools`，但對話內含 functionCall／functionResponse，模型仍想呼叫工具而回空（或回傳只有 thought）。建議：(1) 第一輪 `generateContent` 若已有文字且無 function call，直接用該文字回應，不再多打一次串流；(2) 最後串流請求帶同樣 `tools` 並設 `toolConfig.functionCallingConfig.mode = 'NONE'`；(3) 記錄 `finishReason`（不含內容）方便查 Vercel logs。Claude Code 因裝置連線中斷未能查看 Vercel 執行紀錄。
 - **開發者／Claude Code**：行事曆分支已依使用者授權合併並正式部署。私人行程 migration 已套用，勿重複建立表；真人登入後驗證雲端 CRUD，重新上傳截圖核對教師／助教，再由使用者確認加入。舊課程中已合併的正課／助教資料不會自動重建，需核對原圖。單日完整小時格已撤回，不要實作。後續可加私人行程提醒／.ics／可信校曆。誤建 `AGEMINI_API_KEY` 可由開發者自行刪除，保留正確 `GEMINI_API_KEY`。
 - **Claude Code**：前端圖片匯入隱私提示改成「圖片會傳給 Google Gemini 辨識」；`ARCHITECTURE.md` 的 AI provider 文案與 `AGENTS.md` 的目前 Codex 分支可同步更新（本輪遵守範圍未修改）。
 - **開發者**：合併 `feat/gemini` 後，設定伺服器端 Gemini/Supabase 環境變數，再登入實測真實問答與圖片課表辨識。執行 `npm run ingest` 重建 Gemini vectors，不能沿用舊 OpenAI vectors；免費額度以 Google 專案總用量計算。

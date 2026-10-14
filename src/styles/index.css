@@ -125,4 +125,4 @@ html[data-kb='open'] .bottom-nav { display: none; }
 
 /* The nav's color continues past the bottom edge: on some iOS home-screen versions the page ends above
    the physical bottom, which left a darker strip under the nav. */
-.bottom-nav { box-shadow: 0 120px 0 0 rgb(var(--c-surface)); }
+.bottom-nav { bottom: calc(-1 * var(--ios-gap, 0px)); box-shadow: 0 120px 0 0 rgb(var(--c-surface)); }

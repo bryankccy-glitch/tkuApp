@@ -169,7 +169,7 @@ export default function AssistantPage() {
   return (
     <div
       className="fixed left-1/2 z-20 flex w-full max-w-app -translate-x-1/2 flex-col bg-canvas"
-      style={{ top: viewport?.top ?? 0, height: viewport?.height ?? '100dvh' }}
+      style={{ top: viewport?.top ?? 0, height: viewport ? `calc(${viewport.height}px + var(--ios-gap, 0px))` : '100dvh' }}
     >
       <header className="flex shrink-0 items-start justify-between gap-3 border-b border-line/60 px-4 pb-3 pt-[calc(1rem+env(safe-area-inset-top))]">
         <div>

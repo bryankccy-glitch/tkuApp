@@ -10,7 +10,7 @@ function BottomNav() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   return (
-    <nav aria-label={t('nav.main')} className="bottom-nav safe-bottom fixed bottom-0 left-1/2 z-40 w-full max-w-app -translate-x-1/2 border-t border-line bg-surface">
+    <nav aria-label={t('nav.main')} className="bottom-nav safe-bottom fixed left-1/2 z-40 w-full max-w-app -translate-x-1/2 border-t border-line bg-surface">
       <ul className="grid h-16 grid-cols-5">
         {PRIMARY_NAV.map((item) => {
           const Icon = item.icon;
