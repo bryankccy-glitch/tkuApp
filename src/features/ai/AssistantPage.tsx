@@ -130,6 +130,13 @@ export default function AssistantPage() {
   useEffect(() => {
     if (!typing) window.scrollTo(0, 0);
   }, [typing]);
+  // The chat scrolls inside its own list; the page behind it must not scroll or bounce.
+  useEffect(() => {
+    const root = document.documentElement;
+    const prev = root.style.overflow;
+    root.style.overflow = 'hidden';
+    return () => { root.style.overflow = prev; };
+  }, []);
 
   const scrollToEnd = () => {
     const el = listRef.current;
@@ -178,7 +185,7 @@ export default function AssistantPage() {
         )}
       </header>
 
-      <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5" aria-live="polite">
+      <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 [-webkit-overflow-scrolling:touch]" aria-live="polite">
         {messages.length === 0 ? (
           <div className="flex flex-col items-start">
             <p className="text-h3 text-ink">{t('ai.emptyTitle')}</p>

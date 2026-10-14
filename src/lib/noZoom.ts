@@ -10,8 +10,8 @@ export function disablePageZoom() {
   const stop = (e: Event) => { if (!inMap(e.target)) e.preventDefault(); };
   // iOS Safari pinch gestures.
   for (const type of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(type, stop, { passive: false });
-  // Two-finger pinch on other mobile browsers.
-  document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) stop(e); }, { passive: false });
+  // Other mobile browsers: pinch is already off via `touch-action: pan-x pan-y` on <html> (see index.css).
+  // No non-passive touchmove listener here — it would put every scroll on the main thread and make it stutter.
   // Trackpad pinch / ctrl + mouse wheel on desktop.
   document.addEventListener('wheel', (e) => { if (e.ctrlKey) stop(e); }, { passive: false });
   // Keyboard zoom (Ctrl/⌘ + + / - / 0).
