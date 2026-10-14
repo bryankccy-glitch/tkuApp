@@ -62,5 +62,5 @@ WCAG 2.2 AA 目標：可見 focus ring、跳到主要內容連結、表單 label
 - Favicon：`public/icons/favicon-32.png`、`favicon-48.png`
 - 介面用：`public/brand/logo-128/256/512.png`（透明圓角），由 `LogoMark` / `Wordmark` / `LoadingMark` 使用
 - 標誌為白底磁磚，深淺色模式共用同一版本；小尺寸（≤32px）細節會糊化，未來可考慮另做簡化版圖示
-- Splash Screen：`index.html` 內的啟動畫面（React 掛載後自動被取代），支援深色與減少動態。
+- Splash Screen：`index.html` 內的啟動畫面（Logo、字標、進度條），支援深色與減少動態。React 端的全螢幕載入用 `BootScreen`（同一組 `.splash*` 樣式，無縫銜接）；頁內載入用 `LoadingMark`（Logo＋旋轉環，`compact` 用於小區塊）。
 ⚠ 自訂字級已註冊於 tailwind-merge；新增色彩 token 不需註冊。

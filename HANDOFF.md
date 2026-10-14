@@ -4,7 +4,7 @@
 2026-10-14（Asia/Taipei, UTC+8）
 
 ## Updated By
-Codex（`codex/schedule-session-labels`：已獲使用者授權前端修改）
+Claude Code（`claude/loading-screen`，基於 main `48ded3f`）；前一輪 Codex（`codex/schedule-session-labels`）
 
 ## Current Status
 月／年學生行事曆、私人行程 CRUD／每週重複，以及正課／助教分組與括號教師標示已依使用者明確授權 fast-forward 合併 main 並正式部署；原單日時間軸保留，完整小時格需求已由使用者撤回。私人行程 migration 已套用線上並通過 RLS 隔離測試。正式站月／年檢視、現有課程教師標示及未登入聊天／圖片 API HTTP 401 已實測。既有 `20261012080231_ai_backend_security.sql` 仍待套用；本輪未修改程式、資料庫或金鑰。
@@ -20,6 +20,7 @@ Codex（`codex/schedule-session-labels`：已獲使用者授權前端修改）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **載入畫面重新設計 — Claude Code（2026-10-14，分支 `claude/loading-screen`，尚未合併／部署）**：使用者要求美化載入中畫面。(1) 啟動畫面（`index.html` splash）加上 TKU Campus OS 字標、「淡江智慧校園」、白色細進度條，標語移到底部；淺色為淡江紅漸層＋頂部柔光，深色為 #141414＋紅色光暈；進場動畫與 reduced-motion 靜態版。(2) 新增 `BootScreen`（`src/components/brand/Logo.tsx`）沿用同一組 `.splash*` 樣式且不重播進場動畫，用於最外層 Suspense、確認登入狀態、學期載入，原本「紅色 splash → 白底小 logo → 頁面」的跳閃改成無縫銜接。(3) 頁內 `LoadingMark` 改成 Logo 外圈淡江紅旋轉環、垂直置中（`min-h-[55vh]`），延遲 160ms 淡入避免快速載入時閃一下；新增 `compact`（留言區、圖片匯入辨識中）。未改文字字典、資料或 API。
 - **部署設定 — Codex（2026-10-14）**：使用者明確要求「合併部署」，main 從 `4c02535` fast-forward 至 `ee9ad7b` 並一般推送，未 force push／覆寫未提交修改。正式部署 `dpl_8piEZCNNWaeVvgXkkUJJPcERtEwA` 已 READY，alias `https://tku-app.vercel.app`；瀏覽器實測月檢視、12 個月份年檢視、現有課程括號教師標示，沒有新增／刪除使用者行程或課程。PWA 第一次重新整理仍為舊快取，第二次載入已更新。未帶 token 的 POST `/api/chat` 回 401 SSE（登入資訊無效），`/api/timetable-import` 回 401 JSON（請先登入），不是 Vercel 保護頁。重新執行 lint、typecheck、Vitest 23 files／121 tests、build、Playwright 132 tests 全通過；兩個 feature commits 的 Gitleaks 掃描未發現洩漏。Vercel npm ci 仍報 34 個依賴漏洞（含 2 critical），本次未升級。伺服器變數 `GEMINI_API_KEY`、`SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY` 沿用既有設定，未讀取值；本段文件提交不改程式。
 - **Codex — Feature 發布驗證（2026-10-14）**：程式提交 `477991f` 已一般推送至 GitHub `codex/schedule-session-labels`，遠端 SHA 與本機一致，main 未改動。Vercel Preview `https://tku-bez9qvkdl-campus-hub5.vercel.app`（`dpl_mup9p8zzdRZyfq8pAmWadttUdmtt`）已 READY；透過瀏覽器實際進入登入頁、訪客課表並切換月／年，確認 42 日月格與 12 個月份可見。未登入的 CLI API 驗證收到 Vercel Deployment Protection 的 401，不能視為應用程式 JWT 驗證結果；正式站 API 的 401 為先前已完成的實測。新版真人雲端行程 CRUD 與課表最終加入仍待使用者確認。發布前 lint、typecheck、23 files／121 tests、build 全通過；完整 E2E 132 tests 通過，staged 機密掃描未發現洩漏。本段後續僅文件提交，不改已部署程式。
 - **Codex — 行事曆與助教（2026-10-14）**：保留單日／週課表，新增月／年切換、12 月份縮圖、前後期／今天、課表／作業考試／私人行程篩選與每日議程。課程只顯示於所選學期起訖日期內，不捏造校曆。私人行程支援打工排班、約會約定、讀書自習、社團活動與其他；可指定日期、分鐘起訖、地點、備註、每週重複／截止日期、編輯／刪除。時間使用 Asia/Taipei，支援跨日與跨年。圖片匯入依課名與原圖教師分組，不跨正課／助教或不同教師合併；助教存成「課名（助教）」，正課顯示「課名（教師姓名）」，缺漏教師不推測。既有真實截圖 fixture 的 11 個課名分成 16 個授課項目。尚未在新版確認加入使用者的真實課表，不宣稱完整真實匯入已成功。
@@ -70,6 +71,7 @@ Codex（`codex/schedule-session-labels`：已獲使用者授權前端修改）
 - 新增 React Testing Library 元件測試與 Playwright E2E
 
 ## Files Changed
+- Claude Code 載入畫面：`index.html`（splash 樣式與結構）、`src/components/brand/Logo.tsx`（`BootScreen`、`LoadingMark`）、`src/main.tsx`、`src/app/router.tsx`、`src/app/SemesterProvider.tsx`、`src/styles/index.css`（`.loading-in`）、`src/features/market/MarketPostPage.tsx`、`src/features/schedule/ImageImport.tsx`、`docs/DESIGN_SYSTEM.md`、本檔。
 - Codex 行事曆：新增 `src/features/schedule/{StudentCalendar,CalendarEventForm}.tsx`、`src/lib/{studentCalendar,courseTitle}.ts`、對應單元／元件測試、`e2e/student-calendar.spec.ts`、migration `20261013123046_private_calendar_events.sql`、`supabase/tests/rls_calendar_events.sql`；修改 SchedulePage／DayTimeline／WeekGrid、ImageImport 測試、types／hooks／timetableImport、DataRepository／LocalRepository／SupabaseRepository、兩語系、截圖 fixture 測試與 CSV E2E 提示、本檔及 CHANGELOG。未改 package.json、lockfile 或 api。
 - Codex Gemini：新增 `api/gemini.ts`；刪除 `api/openai.ts`；更新 `api/{chat,store,timetable-import}.ts`、`api/{chat,timetable-import}.test.ts`、`scripts/ingest.ts`、`vite-dev-api.ts`（環境變數清單與註解）、`.env.example`、`api/README.md`、本檔。沒有修改前端或既有 migration。
 - Claude Code（合併 Gemini）：`src/i18n/locales/{zh-TW,en}.ts`、`src/features/profile/AboutPage.tsx`、`src/features/explore/ExplorePage.tsx`、`e2e/main-flows.spec.ts`、`README.md`、`ARCHITECTURE.md`、`.env.production` 註解、本檔。
@@ -109,6 +111,7 @@ Codex（`codex/schedule-session-labels`：已獲使用者授權前端修改）
 - 其餘見 ARCHITECTURE.md
 
 ## Tests
+- Claude Code 載入畫面（2026-10-14，雲端工作區）：`tsc -b` ✅、lint ✅、build ✅、Vitest 23 files／121 tests ✅、Playwright 全套 132 passed ✅（含淺深色 axe、無水平捲動、CSP）。以手機尺寸截圖人工檢查 splash 淺／深色與頁內載入（延遲 lazy chunk 重現）。尚未在實機或正式站確認。
 - Codex 行事曆：上一輪完整驗證 lint、typecheck、Vitest（23 files／121 tests）、build 全過；`npx playwright test --workers=2` 全套 132 passed，含桌面／手機的月年切換、私人行程儲存與 reload、淺深色 axe，以及既有主要流程回歸。初次測試的日期條件／斷言已修正；手機表單初始化競態改用 useLayoutEffect，重跑 6 項与全套通過。線上 `supabase/tests/rls_calendar_events.sql` 已實際執行通過，第一次 MCP requestState 逾期後重新執行成功；不是以模擬測試冒充線上驗證。本機保留一筆清楚標示「非真實排班」的 localhost 測試行程，未寫入使用者雲端行程。尚未實測新版雲端登入 CRUD 與圖片確認加入；私人行程通知／.ics 尚未實作。既有 jsdom Canvas、React Router、build chunk 與 npm audit 警告仍保留。
 - Codex Gemini worktree（2026-10-13）：`npm install` 完成；`npm run lint` ✅、`npm run typecheck` ✅、`npm run test` ✅（21 files / 112 tests；聊天 API 15、圖片 API 9）、`npm run build` ✅。Mock fetch 覆蓋串流文字、function call→工具結果→最終回答、untrusted 文件／禁止 mutation、結構化 JSON／丟掉無效格子、Gemini 429／5xx 與請求中不夾帶 Supabase key/JWT。
 - Codex Gemini：兩支 API 用 esbuild `--bundle --platform=node --format=esm --packages=external` 打包（專案來源被打包，npm dependencies 外部載入），確認輸出不含 `@/`，以純 Node ESM 載入 default handler ✅。暫存 bundle 已清除。

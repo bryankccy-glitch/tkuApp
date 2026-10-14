@@ -95,7 +95,7 @@ function PostDetail({ userId }: { userId: string }) {
 
       <section aria-labelledby="comments-title" className="mt-6">
         <h2 id="comments-title" className="mb-3 text-h3 text-ink">{t('market.comments', { count: comments.data?.length ?? 0 })}</h2>
-        {comments.isLoading ? <LoadingMark /> : comments.error ? <ErrorNotice error={comments.error} onRetry={() => comments.refetch()} /> : (
+        {comments.isLoading ? <LoadingMark compact /> : comments.error ? <ErrorNotice error={comments.error} onRetry={() => comments.refetch()} /> : (
           (comments.data ?? []).length === 0 ? (
             <p className="rounded-sm bg-sunken px-4 py-4 text-caption text-muted">{p.kind === 'sell' ? t('market.noCommentsSell') : t('market.noCommentsWant')}</p>
           ) : (

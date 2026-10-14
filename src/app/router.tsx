@@ -3,7 +3,7 @@ import { createBrowserRouter, createHashRouter, Link, Navigate, Outlet } from 'r
 import { AppShell, Page } from '@/components/layout/AppShell';
 import { useAuth } from './AuthProvider';
 import { SemesterProvider } from './SemesterProvider';
-import { LoadingMark } from '@/components/brand/Logo';
+import { BootScreen } from '@/components/brand/Logo';
 import { EmptyState } from '@/components/ui/misc';
 import { t } from '@/i18n/t';
 import DashboardPage from '@/features/dashboard/DashboardPage';
@@ -23,7 +23,7 @@ const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage')
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { loading, repo } = useAuth();
-  if (loading) return <LoadingMark label={t('common.checkingSignIn')} />;
+  if (loading) return <BootScreen label={t('common.checkingSignIn')} />;
   if (!repo) return <Navigate to="/login" replace />;
   return <SemesterProvider>{children}</SemesterProvider>;
 }

@@ -18,13 +18,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
     <title>TKU Campus OS 淡江智慧校園</title>
     <style>
-      .splash { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-        background: linear-gradient(180deg, #B3262D 0%, #8E1C22 100%); color: #FFFFFF; font-family: Inter, 'Noto Sans TC', system-ui, sans-serif; }
-      [data-theme='dark'] .splash { background: #171717; }
-      .splash-tag { margin: 18px 0 0; font-size: 13px; opacity: 0.7; letter-spacing: 0.04em; }
-      .splash-logo { width: 128px; height: 128px; border-radius: 28px; box-shadow: 0 12px 40px -12px rgb(0 0 0 / 0.45); animation: splash-in 420ms cubic-bezier(.2,.8,.2,1) both; }
-      @keyframes splash-in { from { transform: scale(.92); opacity: 0; } to { transform: none; opacity: 1; } }
-      @media (prefers-reduced-motion: reduce) { .splash-logo { animation: none; } }
+      /* Boot splash — also reused by <BootScreen> in src/components/brand/Logo.tsx. */
+      .splash { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: env(safe-area-inset-top) 24px env(safe-area-inset-bottom); color: #FFFFFF; text-align: center;
+        font-family: Inter, 'Noto Sans TC', system-ui, sans-serif; -webkit-user-select: none; user-select: none;
+        background: radial-gradient(120% 55% at 50% 0%, rgb(255 255 255 / 0.14) 0%, rgb(255 255 255 / 0) 60%), linear-gradient(180deg, #B3262D 0%, #7F1A1F 100%); }
+      [data-theme='dark'] .splash { background: radial-gradient(90% 50% at 50% 35%, rgb(179 38 45 / 0.28) 0%, rgb(179 38 45 / 0) 70%), #141414; }
+      .splash-logo { width: 112px; height: 112px; border-radius: 26px; box-shadow: 0 18px 48px -14px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(255 255 255 / 0.12);
+        animation: splash-in 520ms cubic-bezier(.2,.8,.2,1) both; }
+      .splash-title { margin: 22px 0 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; animation: splash-up 520ms 80ms cubic-bezier(.2,.8,.2,1) both; }
+      .splash-sub { margin: 4px 0 0; font-size: 13px; font-weight: 500; letter-spacing: 0.24em; opacity: 0.78; animation: splash-up 520ms 140ms cubic-bezier(.2,.8,.2,1) both; }
+      .splash-bar { position: relative; overflow: hidden; width: 120px; height: 3px; margin-top: 28px; border-radius: 999px; background: rgb(255 255 255 / 0.2);
+        animation: splash-fade 400ms 300ms both; }
+      .splash-bar > span { position: absolute; inset: 0 auto 0 0; width: 40%; border-radius: inherit; background: #FFFFFF; animation: splash-slide 1.15s ease-in-out infinite; }
+      .splash-tag { position: absolute; bottom: calc(28px + env(safe-area-inset-bottom)); left: 0; right: 0; margin: 0; font-size: 11px; letter-spacing: 0.16em; opacity: 0.55; }
+      .splash--static .splash-logo, .splash--static .splash-title, .splash--static .splash-sub, .splash--static .splash-bar { animation: none; }
+      .splash--static .splash-bar > span { animation: splash-slide 1.15s ease-in-out infinite; }
+      @keyframes splash-in { from { transform: scale(.9); opacity: 0; } to { transform: none; opacity: 1; } }
+      @keyframes splash-up { from { transform: translateY(8px); opacity: 0; } to { transform: none; } }
+      @keyframes splash-fade { from { opacity: 0; } }
+      @keyframes splash-slide { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+      @media (prefers-reduced-motion: reduce) {
+        .splash-logo, .splash-title, .splash-sub, .splash-bar, .splash-bar > span, .splash--static .splash-bar > span { animation: none; }
+        .splash-bar > span { width: 100%; opacity: 0.5; }
+      }
     </style>
     <script src="/theme-init.js"></script>
   </head>
@@ -32,7 +49,10 @@
     <!-- Splash: shown until React mounts and replaces #root's content. -->
     <div id="root">
       <div class="splash" role="status" aria-label="TKU Campus OS 載入中">
-        <img class="splash-logo" src="/brand/logo-256.png" width="128" height="128" alt="" />
+        <img class="splash-logo" src="/brand/logo-256.png" width="112" height="112" alt="" />
+        <p class="splash-title">TKU Campus OS</p>
+        <p class="splash-sub">淡江智慧校園</p>
+        <div class="splash-bar" aria-hidden="true"><span></span></div>
         <p class="splash-tag">One Campus. One OS.</p>
       </div>
     </div>

@@ -100,3 +100,8 @@
 .me-dot > span { position: absolute; inset: 4px; border-radius: 9999px; background: #2F6FED; border: 3px solid #fff; box-shadow: 0 1px 4px rgb(0 0 0 / 0.35); }
 @keyframes me-pulse { from { transform: scale(0.6); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .me-dot::before { animation: none; opacity: 0.6; } }
+
+/* In-page loading fades in after a beat, so quick loads don't flash a spinner. */
+.loading-in { animation: loading-in 240ms 160ms ease-out both; }
+@keyframes loading-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .loading-in { animation: none; } }

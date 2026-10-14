@@ -34,20 +34,41 @@ export function Wordmark({ className }: { className?: string }) {
   );
 }
 
-/** Loading mark: the logo breathes gently (static under reduced motion). */
-export function LoadingMark({ label = t('common.loading') }: { label?: string }) {
+/**
+ * Full-screen boot screen. Uses the same `.splash*` styles as the HTML splash in index.html,
+ * so the hand-off from the static splash to React is seamless (no flash, no second entrance).
+ */
+export function BootScreen({ label = t('common.loading') }: { label?: string }) {
   return (
-    <div role="status" className="flex flex-col items-center gap-3 py-10 text-muted">
-      <img
-        src={src(128)}
-        srcSet={`${src(128)} 1x, ${src(256)} 2x`}
-        alt=""
-        width={48}
-        height={48}
-        className="h-12 w-12 rounded-[22%] motion-safe:animate-[breathe_1.6s_ease-in-out_infinite]"
-      />
-      <span className="text-caption">{label}</span>
-      <style>{`@keyframes breathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.94);opacity:.75}}`}</style>
+    <div className="splash splash--static" role="status" aria-label={label}>
+      <img className="splash-logo" src={src(256)} width={112} height={112} alt="" />
+      <p className="splash-title">TKU Campus OS</p>
+      <p className="splash-sub">{t('brand.subtitle')}</p>
+      <div className="splash-bar" aria-hidden="true"><span /></div>
+      <p className="splash-tag">One Campus. One OS.</p>
+    </div>
+  );
+}
+
+/**
+ * In-page loading: logo inside a spinning brand-red ring. Fades in after a short delay so
+ * fast loads don't flash; static under reduced motion. `compact` for small sections (sheets, comments).
+ */
+export function LoadingMark({ label = t('common.loading'), compact = false }: { label?: string; compact?: boolean }) {
+  return (
+    <div role="status" className={cn('loading-in flex flex-col', compact ? 'min-h-[180px]' : 'min-h-[55vh]', 'items-center justify-center gap-3.5 py-10 text-muted')}>
+      <div className="relative h-16 w-16">
+        <span aria-hidden="true" className="absolute inset-0 rounded-full border-[3px] border-primary/15 border-t-primary motion-safe:animate-spin [animation-duration:900ms]" />
+        <img
+          src={src(128)}
+          srcSet={`${src(128)} 1x, ${src(256)} 2x`}
+          alt=""
+          width={40}
+          height={40}
+          className="absolute inset-3 h-10 w-10 rounded-[22%] shadow-[0_2px_8px_-2px_rgb(0_0_0/0.25)]"
+        />
+      </div>
+      <span className="text-caption font-medium tracking-wide">{label}</span>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useSemesters } from '@/lib/hooks';
 import type { Semester } from '@/lib/types';
-import { LoadingMark } from '@/components/brand/Logo';
+import { BootScreen } from '@/components/brand/Logo';
 import { ErrorNotice } from '@/components/ui/misc';
 
 const KEY = 'tku.semester';
@@ -38,7 +38,7 @@ export function SemesterProvider({ children }: { children: ReactNode }) {
 
   const semester = semesters.find((s) => s.id === id) ?? semesters[0] ?? null;
   // Pages depend on the active semester; render them only once it is known to avoid empty-state flicker.
-  if (isLoading) return <LoadingMark />;
+  if (isLoading) return <BootScreen />;
   if (error) return <div className="p-6"><ErrorNotice error={error} onRetry={refetch} /></div>;
   return <SemesterCtx.Provider value={{ semester, semesters, setSemesterId, loading: isLoading }}>{children}</SemesterCtx.Provider>;
 }

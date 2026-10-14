@@ -130,7 +130,7 @@ export function ImageImport({ open, onClose, existing, onImport, importing, onUs
         </div>
       ) : step === 'reading' ? (
         <div className="py-6" aria-live="polite">
-          <LoadingMark label={t('imageImport.reading')} />
+          <LoadingMark compact label={t('imageImport.reading')} />
           <p className="mt-2 text-center text-caption text-muted">{t('imageImport.readingHint')}</p>
         </div>
       ) : step === 'pick' ? (
