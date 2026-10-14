@@ -36,7 +36,8 @@ function applyOverride(scene: SceneState, raw: string | null): SceneState {
   return { ...next, kind };
 }
 
-export function Hero({ name, summary }: { name: string; summary: HeroSummary }) {
+/** `name` / `summary` are undefined while the user's data is still loading: the scene and weather show right away. */
+export function Hero({ name, summary }: { name?: string; summary?: HeroSummary }) {
   const { t, i18n } = useTranslation();
   const [params] = useSearchParams();
   const { weather, loading, stale, error, online } = useCampusWeather();
@@ -47,7 +48,7 @@ export function Hero({ name, summary }: { name: string; summary: HeroSummary }) 
   const date = new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', weekday: 'long', timeZone: 'Asia/Taipei' }).format(tod.now);
   const timeFmt = (iso: string) => new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei' }).format(new Date(iso));
 
-  const summaryText = [
+  const summaryText = summary && [
     summary.total === 0
       ? t('hero.summary.none')
       : summary.remaining === 0
@@ -71,10 +72,14 @@ export function Hero({ name, summary }: { name: string; summary: HeroSummary }) 
           </div>
           <p className="mt-4 text-caption text-white/85">{date}</p>
           <h1 id="hero-greeting" className="mt-1 text-[1.625rem] font-bold leading-tight tracking-tight">
-            {t('greeting.withName', { greeting: t(`greeting.${g}.title`), name })}
+            {name ? t('greeting.withName', { greeting: t(`greeting.${g}.title`), name }) : t(`greeting.${g}.title`)}
           </h1>
           <p className="mt-1 text-body text-white/90">{t(`greeting.${g}.line`)}</p>
-          <p className="mt-2 text-caption text-white/80">{summaryText}</p>
+          {summaryText !== undefined ? (
+            <p className="mt-2 text-caption text-white/80">{summaryText}</p>
+          ) : (
+            <span aria-hidden className="mt-3 block h-3 w-40 rounded-full bg-white/20 motion-safe:animate-pulse" />
+          )}
         </div>
 
         <div className="w-[7.5rem] shrink-0 text-right" aria-live="polite">

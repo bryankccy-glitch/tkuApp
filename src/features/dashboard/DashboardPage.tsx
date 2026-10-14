@@ -11,7 +11,6 @@ import { TaskSummary } from './TaskSummary';
 import { CampusInfo } from './CampusInfo';
 import { DayTimeline } from '@/features/schedule/DayTimeline';
 import { ErrorNotice } from '@/components/ui/misc';
-import { LoadingMark } from '@/components/brand/Logo';
 import { t } from '@/i18n/t';
 
 export default function DashboardPage() {
@@ -21,7 +20,18 @@ export default function DashboardPage() {
   const courses = useCourses(semester?.id);
   const tasks = useTasks();
 
-  if (courses.isLoading || tasks.isLoading || profile.isLoading) return <LoadingMark />;
+  // Show the hero (scene + weather) immediately; only the personal sections wait for data.
+  if (courses.isLoading || tasks.isLoading || profile.isLoading) {
+    return (
+      <>
+        <Hero name={profile.data?.displayName} />
+        <QuickActions />
+        <Page className="pt-5">
+          <DashboardSkeleton />
+        </Page>
+      </>
+    );
+  }
   if (courses.error || tasks.error) return <Page><ErrorNotice error={courses.error ?? tasks.error} onRetry={() => { courses.refetch(); tasks.refetch(); }} /></Page>;
 
   const courseList = courses.data ?? [];
@@ -58,5 +68,24 @@ export default function DashboardPage() {
         </div>
       </Page>
     </>
+  );
+}
+
+/** Placeholder blocks shaped like the real sections, so the page doesn't jump when data arrives. */
+function DashboardSkeleton() {
+  const block = 'rounded-lg bg-sunken motion-safe:animate-pulse';
+  return (
+    <div role="status" aria-label={t('common.loading')} className="grid gap-6">
+      <div className={`${block} h-[116px]`} />
+      <div className="grid gap-3">
+        <div className="h-5 w-28 rounded-full bg-sunken motion-safe:animate-pulse" />
+        <div className={`${block} h-[68px]`} />
+        <div className={`${block} h-[68px]`} />
+      </div>
+      <div className="grid gap-3">
+        <div className="h-5 w-24 rounded-full bg-sunken motion-safe:animate-pulse" />
+        <div className={`${block} h-[96px]`} />
+      </div>
+    </div>
   );
 }
