@@ -1,5 +1,7 @@
 import { cn } from '@/lib/cn';
+import { useLayoutEffect, useState } from 'react';
 import { t } from '@/i18n/t';
+import { holdSplash, splashShowing } from '@/lib/splash';
 
 const base = import.meta.env.BASE_URL;
 const src = (size: 128 | 256 | 512) => `${base}brand/logo-${size}.png`;
@@ -35,10 +37,14 @@ export function Wordmark({ className }: { className?: string }) {
 }
 
 /**
- * Full-screen boot screen. Uses the same `.splash*` styles as the HTML splash in index.html,
- * so the hand-off from the static splash to React is seamless (no flash, no second entrance).
+ * Full-screen loading. While the HTML boot splash is still up it just keeps it up (renders nothing),
+ * so the splash fades out only once the real screen is ready. If the splash is already gone, it
+ * renders the same look in React.
  */
 export function BootScreen({ label = t('common.loading') }: { label?: string }) {
+  const [overlay] = useState(splashShowing);
+  useLayoutEffect(() => (overlay ? holdSplash() : undefined), [overlay]);
+  if (overlay) return null;
   return (
     <div className="splash splash--static" role="status" aria-label={label}>
       <img className="splash-logo" src={src(256)} width={112} height={112} alt="" />

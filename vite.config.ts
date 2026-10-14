@@ -22,7 +22,7 @@ export default defineConfig({
         description: '淡江學生的課表、待辦、校園探索與 AI 校園助理。學生自主開發，非淡江大學官方 App。',
         lang: 'zh-Hant-TW',
         theme_color: '#B3262D',
-        background_color: '#FAF9F7',
+        background_color: '#B3262D', // matches the boot splash, so the system launch screen doesn't flash off-white
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',

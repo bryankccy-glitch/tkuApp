@@ -139,7 +139,7 @@ export default function AssistantPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-3xl flex-col px-4 pt-5">
+    <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-3xl flex-col px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]">
       <header className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-h1 text-ink">{t('ai.title')}</h1>

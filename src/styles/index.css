@@ -105,3 +105,12 @@
 .loading-in { animation: loading-in 240ms 160ms ease-out both; }
 @keyframes loading-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .loading-in { animation: none; } }
+
+/* Skeleton placeholder with a soft shimmer (static under reduced motion). */
+.skeleton {
+  background: linear-gradient(90deg, rgb(var(--c-sunken)) 0%, rgb(var(--c-sunken)) 35%, rgb(var(--c-line)) 50%, rgb(var(--c-sunken)) 65%, rgb(var(--c-sunken)) 100%);
+  background-size: 300% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; background: rgb(var(--c-sunken)); } }

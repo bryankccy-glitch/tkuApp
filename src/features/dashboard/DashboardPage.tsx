@@ -71,20 +71,31 @@ export default function DashboardPage() {
   );
 }
 
-/** Placeholder blocks shaped like the real sections, so the page doesn't jump when data arrives. */
+/** Placeholders shaped like the real sections (card → lines inside), so nothing jumps when data arrives. */
 function DashboardSkeleton() {
-  const block = 'rounded-lg bg-sunken motion-safe:animate-pulse';
+  const line = (w: string, h = 'h-3') => <span className={`skeleton block ${h} ${w} rounded-full`} />;
   return (
     <div role="status" aria-label={t('common.loading')} className="grid gap-6">
-      <div className={`${block} h-[116px]`} />
-      <div className="grid gap-3">
-        <div className="h-5 w-28 rounded-full bg-sunken motion-safe:animate-pulse" />
-        <div className={`${block} h-[68px]`} />
-        <div className={`${block} h-[68px]`} />
+      {/* 下一堂課 */}
+      <div className="rounded-lg bg-surface p-5 shadow-lift">
+        {line('w-16')}
+        <div className="mt-3">{line('w-44', 'h-5')}</div>
+        <div className="mt-3 flex gap-3">{line('w-20')}{line('w-24')}</div>
       </div>
+      {/* 今日課表 */}
       <div className="grid gap-3">
-        <div className="h-5 w-24 rounded-full bg-sunken motion-safe:animate-pulse" />
-        <div className={`${block} h-[96px]`} />
+        <div className="flex items-center justify-between">{line('w-24', 'h-4')}{line('w-12')}</div>
+        {[0, 1].map((i) => (
+          <div key={i} className="flex items-center gap-3 rounded-lg bg-surface p-4 shadow-lift">
+            <span className="skeleton h-10 w-1 rounded-full" />
+            <div className="grid flex-1 gap-2">{line(i ? 'w-28' : 'w-36', 'h-4')}{line('w-24')}</div>
+          </div>
+        ))}
+      </div>
+      {/* 作業 */}
+      <div className="grid gap-3">
+        {line('w-20', 'h-4')}
+        <div className="grid gap-2.5 rounded-lg bg-surface p-4 shadow-lift">{line('w-3/4', 'h-4')}{line('w-1/2')}</div>
       </div>
     </div>
   );
