@@ -53,7 +53,7 @@ test('CSV import adds courses', async ({ page }) => {
   await page.locator('input[type=file]').setInputFiles({ name: 'courses.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
   await expect(page.getByText('將匯入')).toBeVisible();
   await page.getByRole('button', { name: '匯入 1 門課' }).click();
-  await expect(page.getByText('已匯入 1 門課')).toBeVisible();
+  await expect(page.getByText('已匯入 1 個課程項目')).toBeVisible();
 });
 
 test('campus explorer finds the building for a room code', async ({ page }) => {

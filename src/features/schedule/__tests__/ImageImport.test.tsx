@@ -52,7 +52,7 @@ describe('ImageImport', () => {
     await pick(user);
 
     expect(recognize).toHaveBeenCalledWith('jwt', 'data:image/jpeg;base64,AAAA');
-    expect(await screen.findByText('讀到 3 門課')).toBeInTheDocument();
+    expect(await screen.findByText('讀到 3 個課程項目（正課與助教課分開）')).toBeInTheDocument();
     expect(screen.getByText('課表裡已經有同名課程，預設不加入。')).toBeInTheDocument();
     expect(screen.getByText(/和「經濟學」時間衝突/)).toBeInTheDocument();
     expect(screen.getByText(/10:10–12:00 · B217/)).toBeInTheDocument(); // periods 3–4 merged
@@ -60,7 +60,7 @@ describe('ImageImport', () => {
     const nameField = screen.getByDisplayValue('網路與通訊');
     await user.clear(nameField);
     await user.type(nameField, '網路與通訊實務');
-    await user.click(screen.getByRole('button', { name: '加入 2 門課' }));
+    await user.click(screen.getByRole('button', { name: '加入 2 個課程項目' }));
 
     expect(onImport).toHaveBeenCalledTimes(1);
     const list = (onImport.mock.calls[0] as unknown as [{ name: string; instructor?: string; slots: unknown[] }[]])[0];

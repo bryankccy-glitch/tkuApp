@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-14 — Codex：前端需求調整
+- 使用者授權 Codex 另開前端分支，正課／助教標示與月／年学生行事曆改由 Codex 實作，不再僅列為 Claude Code 待辦。
+- 使用者先提出、後撤回單日完整小時格；未發布该版面，保留原單日時間軸，HANDOFF 舊待辦已更新。
+
 ## 2026-10-12 — Claude Code
 - 首次建立專案：Design System、Dashboard、課表、作業考試、校園探索、活動、AI 助理 UI（本機引擎）、個人中心、Supabase schema 與 RLS。
 

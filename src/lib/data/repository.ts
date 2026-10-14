@@ -1,4 +1,4 @@
-import type { Course, Profile, Semester, Task } from '../types';
+import type { CalendarEvent, Course, Profile, Semester, Task } from '../types';
 import type { SocialApi } from '../social/types';
 
 export type CourseInput = Omit<Course, 'id' | 'createdAt' | 'updatedAt' | 'slots'> & {
@@ -7,6 +7,7 @@ export type CourseInput = Omit<Course, 'id' | 'createdAt' | 'updatedAt' | 'slots
 };
 export type TaskInput = Omit<Task, 'id' | 'createdAt' | 'updatedAt'> & { id?: string };
 export type SemesterInput = Omit<Semester, 'id'> & { id?: string };
+export type CalendarEventInput = Omit<CalendarEvent, 'id' | 'createdAt' | 'updatedAt'> & { id?: string };
 
 export interface ExportBundle {
   exportedAt: string;
@@ -16,6 +17,7 @@ export interface ExportBundle {
   semesters: Semester[];
   courses: Course[];
   tasks: Task[];
+  calendarEvents: CalendarEvent[];
 }
 
 /** Storage-agnostic data access. Implemented by LocalRepository and SupabaseRepository. */
@@ -36,6 +38,10 @@ export interface DataRepository {
   listTasks(): Promise<Task[]>;
   upsertTask(t: TaskInput): Promise<Task>;
   deleteTask(id: string): Promise<void>;
+
+  listCalendarEvents(): Promise<CalendarEvent[]>;
+  upsertCalendarEvent(event: CalendarEventInput): Promise<CalendarEvent>;
+  deleteCalendarEvent(id: string): Promise<void>;
 
   exportAll(): Promise<ExportBundle>;
   /** Removes every personal record owned by the current user. */

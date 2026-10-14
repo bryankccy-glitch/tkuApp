@@ -35,6 +35,21 @@ export interface Course {
   updatedAt: string;
 }
 
+export const CALENDAR_KINDS = ['work', 'appointment', 'study', 'club', 'personal'] as const;
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  kind: (typeof CALENDAR_KINDS)[number];
+  startsAt: string;
+  endsAt: string;
+  location: string;
+  notes: string;
+  repeat: 'none' | 'weekly';
+  repeatUntil?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const TASK_KINDS = ['homework', 'report', 'quiz', 'midterm', 'final', 'personal'] as const;
 export type TaskKind = (typeof TASK_KINDS)[number];
 export const TASK_PRIORITIES = ['low', 'medium', 'high'] as const;

@@ -25,8 +25,9 @@ import { useFriends } from '@/lib/social/hooks';
 import { LoadingMark } from '@/components/brand/Logo';
 import { cn } from '@/lib/cn';
 import { t } from '@/i18n/t';
+import { StudentCalendar } from './StudentCalendar';
 
-type View = 'day' | 'week';
+type View = 'day' | 'week' | 'month' | 'year';
 type Tab = 'mine' | 'friends';
 
 export default function SchedulePage() {
@@ -117,7 +118,11 @@ export default function SchedulePage() {
         <LoadingMark />
       ) : error ? (
         <ErrorNotice error={error} onRetry={refetch} />
-      ) : courses.length === 0 ? (
+      ) : (
+      <>
+        <Segmented<View> label={t('schedule.view')} className="mb-4 [&>button]:flex-1 [&>button]:justify-center" value={view} onChange={setView}
+          options={[{ value: 'day', label: t('schedule.day') }, { value: 'week', label: t('schedule.week') }, { value: 'month', label: t('calendar.month') }, { value: 'year', label: t('calendar.year') }]} />
+      {view === 'month' || view === 'year' ? <StudentCalendar mode={view} onModeChange={setView} courses={courses} semester={semester ?? undefined} /> : courses.length === 0 ? (
         <EmptyState
           title={t('schedule.emptyTitle')}
           body={t('schedule.emptyBody')}
@@ -125,13 +130,6 @@ export default function SchedulePage() {
         />
       ) : (
         <>
-          <Segmented<View>
-            label={t('schedule.view')}
-            className="mb-4 w-fit"
-            value={view}
-            onChange={setView}
-            options={[{ value: 'day', label: t('schedule.day') }, { value: 'week', label: t('schedule.week') }]}
-          />
           {view === 'week' ? (
             <WeekGrid courses={courses} today={today} conflictSlotIds={conflictIds} />
           ) : (
@@ -164,6 +162,8 @@ export default function SchedulePage() {
             </div>
           )}
         </>
+      )}
+      </>
       )}
       </>
       )}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import i18n from '@/i18n';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth, useRepo } from '@/app/AuthProvider';
-import type { CourseInput, SemesterInput, TaskInput } from './data/repository';
+import type { CalendarEventInput, CourseInput, SemesterInput, TaskInput } from './data/repository';
 import type { Profile } from './types';
 
 const keys = {
@@ -94,6 +94,23 @@ export function useTaskMutations() {
   return {
     save: useMutation({ mutationFn: (t: TaskInput) => repo.upsertTask(t), onSuccess: invalidate }),
     remove: useMutation({ mutationFn: (id: string) => repo.deleteTask(id), onSuccess: invalidate }),
+  };
+}
+
+export function useCalendarEvents() {
+  const repo = useRepo();
+  const user = useUserKey();
+  return useQuery({ queryKey: [user, 'calendarEvents'], queryFn: () => repo.listCalendarEvents() });
+}
+
+export function useCalendarEventMutations() {
+  const repo = useRepo();
+  const client = useQueryClient();
+  const user = useUserKey();
+  const invalidate = () => client.invalidateQueries({ queryKey: [user, 'calendarEvents'] });
+  return {
+    save: useMutation({ mutationFn: (event: CalendarEventInput) => repo.upsertCalendarEvent(event), onSuccess: invalidate }),
+    remove: useMutation({ mutationFn: (id: string) => repo.deleteCalendarEvent(id), onSuccess: invalidate }),
   };
 }
 

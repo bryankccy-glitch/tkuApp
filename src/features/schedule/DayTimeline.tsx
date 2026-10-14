@@ -7,6 +7,7 @@ import { formatPeriods, timesToPeriods } from '@/lib/periods';
 import { roomWithBuilding } from '@/data/places';
 import { cn } from '@/lib/cn';
 import { t } from '@/i18n/t';
+import { courseTitle } from '@/lib/courseTitle';
 
 function Row({ to, children, className }: { to?: string; children: ReactNode; className?: string }) {
   if (to) return <Link to={to} className={className}>{children}</Link>;
@@ -46,7 +47,7 @@ export function DayTimeline({ items, now, readOnly }: { items: Occurrence[]; now
               <span className={cn('w-1 shrink-0', style.bar)} aria-hidden />
               <span className="min-w-0 flex-1 px-3 py-2.5">
                 <span className="flex items-center justify-between gap-2">
-                  <span className={cn('truncate text-body font-semibold', style.text)}>{course.name}</span>
+                  <span className={cn('line-clamp-2 break-words text-body font-semibold', style.text)}>{courseTitle(course)}</span>
                   {now && <span className={cn('shrink-0 text-[11px] font-semibold', st === 'ongoing' ? 'text-heritage' : 'text-muted')}>{t(STATUS_LABEL[st])}</span>}
                 </span>
                 <span className="tabular mt-0.5 block truncate text-caption text-muted">

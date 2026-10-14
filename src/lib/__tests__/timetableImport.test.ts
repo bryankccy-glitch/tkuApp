@@ -39,18 +39,21 @@ const summary = (r: ReturnType<typeof cellsToCourses>) =>
   Object.fromEntries(r.courses.map((x) => [x.name, { instructor: x.instructor, slots: x.slots.map((s) => `${s.weekday} ${s.startTime}-${s.endTime} ${s.room}`) }]));
 
 describe('cellsToCourses (淡江 timetable screenshot)', () => {
-  it('turns the sample timetable into 11 courses with merged, correctly timed slots', () => {
+  it('keeps the 11 course names as 16 separate lecture / TA entries with correctly timed slots', () => {
     const r = cellsToCourses(SAMPLE);
-    expect(r.courses).toHaveLength(11);
+    expect(r.courses).toHaveLength(16);
     expect(r.skipped).toEqual([]);
     const s = summary(r);
     // Same course across days, rooms and a TA session; lecturer chosen over 助教.
-    expect(s['程式設計與資料結構']).toEqual({ instructor: '鄭元成', slots: ['1 11:10-12:00 B217', '4 15:10-16:00 B130', '5 10:10-12:00 B217'] });
-    // A TA period right after the lecture in the same room joins the block.
-    expect(s['網路與通訊']).toEqual({ instructor: '鄭培宇', slots: ['3 10:10-13:00 B217'] });
-    expect(s['資訊安全實務基礎']).toEqual({ instructor: '鄭培宇', slots: ['1 15:10-18:00 B217'] });
-    expect(s['經濟學']).toEqual({ instructor: '陳紹良', slots: ['3 08:10-09:00 B118', '4 08:10-10:00 B607'] });
-    expect(s['作業系統']).toEqual({ instructor: '魏世杰', slots: ['3 09:10-10:00 B118', '3 15:10-17:00 B110'] });
+    expect(s['程式設計與資料結構']).toEqual({ instructor: '鄭元成', slots: ['4 15:10-16:00 B130', '5 10:10-12:00 B217'] });
+    expect(s['程式設計與資料結構（助教）']).toEqual({ instructor: '助教', slots: ['1 11:10-12:00 B217'] });
+    expect(s['網路與通訊']).toEqual({ instructor: '鄭培宇', slots: ['3 10:10-12:00 B217'] });
+    expect(s['網路與通訊（助教）']).toEqual({ instructor: '助教', slots: ['3 12:10-13:00 B217'] });
+    expect(s['資訊安全實務基礎']).toEqual({ instructor: '鄭培宇', slots: ['1 15:10-17:00 B217'] });
+    expect(s['資訊安全實務基礎（助教）']).toEqual({ instructor: '助教', slots: ['1 17:10-18:00 B217'] });
+    expect(s['經濟學']).toEqual({ instructor: '陳紹良', slots: ['4 08:10-10:00 B607'] });
+    expect(s['經濟學（助教）']).toEqual({ instructor: '助教', slots: ['3 08:10-09:00 B118'] });
+    expect(s['作業系統']).toEqual({ instructor: '魏世杰', slots: ['3 15:10-17:00 B110'] });
     expect(s['男、女生體育- 高爾夫球興趣班']).toEqual({ instructor: '蕭淑芬', slots: ['2 14:10-16:00 '] });
     expect(s['英文（二）']).toEqual({ instructor: '李金安', slots: ['5 08:10-10:00 SG314'] }); // display name keeps full-width brackets
     expect(r.courses.find((x) => x.name === '投資學')?.group).toBe('國企系經管二');
@@ -74,8 +77,14 @@ describe('cellsToCourses (淡江 timetable screenshot)', () => {
     expect(r.courses[0]!.name).toBe('英文（二）');
   });
 
-  it('a course taught only by a TA has no instructor', () => {
-    expect(cellsToCourses([c(1, 1, '', '實習', '助　教', 'B 1')]).courses[0]!.instructor).toBe('');
+  it('preserves TA labels instead of dropping them', () => {
+    expect(cellsToCourses([c(1, 1, '', '實習', '助　教', 'B 1')]).courses[0]).toMatchObject({ name: '實習（助教）', instructor: '助教' });
+  });
+
+  it('does not merge different named teachers or unknown teachers into one lecturer', () => {
+    const result = cellsToCourses([c(1, 1, '', '專題', '老師甲', 'B1'), c(1, 2, '', '專題', '老師乙', 'B1'), c(1, 3, '', '專題', '', 'B1')]);
+    expect(result.courses).toHaveLength(3);
+    expect(result.courses.map((course) => course.instructor)).toEqual(['老師甲', '老師乙', '']);
   });
 });
 

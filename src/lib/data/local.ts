@@ -1,7 +1,7 @@
 import { uid } from '../id';
 import i18n from '@/i18n';
-import type { Course, Profile, Semester, Task } from '../types';
-import type { CourseInput, DataRepository, ExportBundle, SemesterInput, TaskInput } from './repository';
+import type { CalendarEvent, Course, Profile, Semester, Task } from '../types';
+import type { CalendarEventInput, CourseInput, DataRepository, ExportBundle, SemesterInput, TaskInput } from './repository';
 import type { SocialApi } from '../social/types';
 import { inferSemester } from './semesters';
 
@@ -16,10 +16,11 @@ interface Store {
   semesters: Semester[];
   courses: Course[];
   tasks: Task[];
+  calendarEvents: CalendarEvent[];
 }
 
 function emptyStore(): Store {
-  return { profile: null, semesters: [], courses: [], tasks: [] };
+  return { profile: null, semesters: [], courses: [], tasks: [], calendarEvents: [] };
 }
 
 export class LocalRepository implements DataRepository {
@@ -133,6 +134,22 @@ export class LocalRepository implements DataRepository {
   async deleteTask(id: string) {
     const s = this.read();
     this.write({ ...s, tasks: s.tasks.filter((t) => t.id !== id) });
+  }
+
+  async listCalendarEvents() { return [...this.read().calendarEvents]; }
+
+  async upsertCalendarEvent(input: CalendarEventInput): Promise<CalendarEvent> {
+    const store = this.read();
+    const previous = store.calendarEvents.find((event) => event.id === input.id);
+    const now = new Date().toISOString();
+    const event: CalendarEvent = { ...input, id: previous?.id ?? input.id ?? uid(), createdAt: previous?.createdAt ?? now, updatedAt: now };
+    this.write({ ...store, calendarEvents: previous ? store.calendarEvents.map((item) => item.id === event.id ? event : item) : [...store.calendarEvents, event] });
+    return event;
+  }
+
+  async deleteCalendarEvent(id: string) {
+    const store = this.read();
+    this.write({ ...store, calendarEvents: store.calendarEvents.filter((event) => event.id !== id) });
   }
 
   async exportAll(): Promise<ExportBundle> {

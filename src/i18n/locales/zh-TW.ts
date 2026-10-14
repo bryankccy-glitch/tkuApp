@@ -1,5 +1,19 @@
 // Generated from the translation store; edit keys here directly is fine.
 const zh = {
+  "calendar": {
+    "title": "學生行事曆", "month": "月", "year": "年", "previous": "上一期", "next": "下一期", "today": "今天",
+    "monthHeading": "{{year}} 年 {{month}} 月", "monthName": "{{month}} 月", "itemCount": "{{count}} 個行程", "dayLabel": "{{date}}，{{count}} 個行程",
+    "addEvent": "新增行程", "editEvent": "編輯行程", "eventTitle": "行程名稱", "titleRequired": "請輸入 1–120 字的行程名稱",
+    "kind": "行程類型", "startDate": "開始日期", "startTime": "開始時間", "endDate": "結束日期", "endTime": "結束時間",
+    "location": "地點", "notes": "備註", "repeat": "重複", "once": "不重複", "weekly": "每週", "repeatUntil": "重複截止日期（可不填）",
+    "invalidRange": "請填寫有效日期時間，結束必須晚於開始；每週行程不得超過 7 天。", "invalidRepeat": "截止日期不可早於開始日期。",
+    "privateHint": "行程只供本人查看，不會分享給好友；訪客模式只存在此裝置。時間皆為臺灣時間。",
+    "seriesHint": "編輯與刪除會套用到整個每週重複行程。", "scopeHint": "整合所選學期課表、作業考試與私人行程；課程只在該學期起訖日期內顯示。",
+    "filters": "行程來源篩選", "emptyDay": "這天沒有行程，可以安排自己的時間。", "saved": "行程已儲存", "saveFailed": "行程無法儲存，請稍後再試。",
+    "deleteEvent": "刪除行程", "deleteHint": "刪除後無法復原；每週行程會刪除整個系列。", "deleted": "行程已刪除",
+    "sources": { "course": "課表", "task": "作業／考試", "personal": "私人行程" },
+    "kinds": { "work": "打工／排班", "appointment": "約會／約定", "study": "讀書／自習", "club": "社團／活動", "personal": "其他私人行程" }
+  },
   "greeting": {
     "morning": {
       "title": "早安",
@@ -328,7 +342,7 @@ const zh = {
     "pickDay": "選擇星期",
     "dayCount": "{{day}}，{{count}} 堂課",
     "noClassesOn": "{{day}}沒有課",
-    "imported": "已匯入 {{count}} 門課",
+    "imported": "已匯入 {{count}} 個課程項目",
     "importFailed": "匯入失敗"
   },
   "course": {
@@ -912,7 +926,7 @@ const zh = {
     "reading": "正在辨識課表…",
     "readingHint": "大約需要 10–30 秒",
     "reviewHint": "請逐一確認 AI 讀到的課程，可以修改名稱、取消勾選或移除時段。",
-    "found": "讀到 {{count}} 門課",
+    "found": "讀到 {{count}} 個課程項目（正課與助教課分開）",
     "skipped": "有 {{count}} 格位在第 13–14 節，這兩節的時間尚未查核，沒有自動加入，請手動新增。",
     "includeName": "加入 {{name}}",
     "courseName": "課程名稱",
@@ -921,7 +935,7 @@ const zh = {
     "duplicate": "課表裡已經有同名課程，預設不加入。",
     "clash": "和「{{name}}」時間衝突",
     "again": "重新選圖",
-    "addN": "加入 {{count}} 門課",
+    "addN": "加入 {{count}} 個課程項目",
     "groupNote": "開課班級：{{group}}",
     "err": {
       "unavailable": "圖片辨識需要在部署後的網站使用（伺服器尚未設定）。你可以先改用 CSV 匯入。",

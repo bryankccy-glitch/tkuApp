@@ -1,5 +1,19 @@
 // Generated from the translation store; edit keys here directly is fine.
 const en = {
+  "calendar": {
+    "title": "Student calendar", "month": "Month", "year": "Year", "previous": "Previous period", "next": "Next period", "today": "Today",
+    "monthHeading": "{{year}} / {{month}}", "monthName": "Month {{month}}", "itemCount": "{{count}} events", "dayLabel": "{{date}}, {{count}} events",
+    "addEvent": "Add event", "editEvent": "Edit event", "eventTitle": "Event title", "titleRequired": "Enter a title of 1 to 120 characters",
+    "kind": "Event type", "startDate": "Start date", "startTime": "Start time", "endDate": "End date", "endTime": "End time",
+    "location": "Location", "notes": "Notes", "repeat": "Repeat", "once": "Does not repeat", "weekly": "Weekly", "repeatUntil": "Repeat until (optional)",
+    "invalidRange": "Use valid dates and times with end after start. Weekly events cannot span more than 7 days.", "invalidRepeat": "The last date cannot be before the start date.",
+    "privateHint": "Only you can view your events; friends cannot see them. Guest data stays on this device. All times use Taiwan time.",
+    "seriesHint": "Editing or deleting affects the entire weekly series.", "scopeHint": "Combines the selected semester's classes, assignments, exams and private events. Classes only appear within that semester's dates.",
+    "filters": "Filter event sources", "emptyDay": "Nothing scheduled. Plan some time for yourself.", "saved": "Event saved", "saveFailed": "Unable to save this event. Please try again later.",
+    "deleteEvent": "Delete event", "deleteHint": "This cannot be undone. A weekly event deletes the entire series.", "deleted": "Event deleted",
+    "sources": { "course": "Classes", "task": "Assignments / exams", "personal": "Private events" },
+    "kinds": { "work": "Work / shifts", "appointment": "Dates / appointments", "study": "Study", "club": "Clubs / activities", "personal": "Other private events" }
+  },
   "greeting": {
     "morning": {
       "title": "Good morning",
@@ -328,7 +342,7 @@ const en = {
     "pickDay": "Choose a day",
     "dayCount": "{{day}}, {{count}} classes",
     "noClassesOn": "No classes on {{day}}",
-    "imported": "Imported {{count}} courses",
+    "imported": "Imported {{count}} course entries",
     "importFailed": "Import failed"
   },
   "course": {
@@ -912,7 +926,7 @@ const en = {
     "reading": "Reading your timetable…",
     "readingHint": "Takes about 10–30 seconds",
     "reviewHint": "Check each course the AI found — rename, untick or remove time slots as needed.",
-    "found": "Found {{count}} courses",
+    "found": "Found {{count}} course entries (lectures and TA sessions separated)",
     "skipped": "{{count}} cells are in periods 13–14, whose times aren’t verified yet, so they weren’t added. Add them manually.",
     "includeName": "Add {{name}}",
     "courseName": "Course name",
@@ -921,7 +935,7 @@ const en = {
     "duplicate": "A course with this name is already in your timetable, so it’s unticked.",
     "clash": "Clashes with “{{name}}”",
     "again": "Choose another image",
-    "addN": "Add {{count}} courses",
+    "addN": "Add {{count}} course entries",
     "groupNote": "Offered by: {{group}}",
     "err": {
       "unavailable": "Image import works on the deployed site (the server isn’t set up here). Use CSV import for now.",

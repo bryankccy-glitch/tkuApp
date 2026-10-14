@@ -8,6 +8,7 @@ import { TKU_PERIODS } from '@/lib/periods';
 import { toMinutes } from '@/lib/time';
 import { cn } from '@/lib/cn';
 import { t } from '@/i18n/t';
+import { courseTitle } from '@/lib/courseTitle';
 
 const PX_PER_MIN = 0.95;
 
@@ -63,10 +64,10 @@ export function WeekGrid({ courses, today, conflictSlotIds, readOnly }: { course
                   to={readOnly ? undefined : `/schedule/course/${course.id}`}
                   className={cn('absolute inset-x-0.5 overflow-hidden rounded-[5px] py-1 pl-1.5 pr-0.5 transition-[filter] active:brightness-95', st.tint, conflict && 'ring-2 ring-inset ring-danger')}
                   style={{ top: top + 1, height: h - 2 }}
-                  aria-label={`${WEEKDAY_LABELS[d]} ${slot.startTime}–${slot.endTime} ${course.name} ${slot.room}${conflict ? t('week.conflict') : ''}`}
+                  aria-label={`${WEEKDAY_LABELS[d]} ${slot.startTime}–${slot.endTime} ${courseTitle(course)} ${slot.room}${conflict ? t('week.conflict') : ''}`}
                 >
                   <span className={cn('absolute inset-y-0 left-0 w-[3px]', st.bar)} aria-hidden />
-                  <span className={cn('line-clamp-3 break-all text-[11px] font-semibold leading-[1.25]', st.text)}>{course.name}</span>
+                  <span className={cn('line-clamp-3 break-all text-[11px] font-semibold leading-[1.25]', st.text)}>{courseTitle(course)}</span>
                   <span className="tabular mt-0.5 block truncate text-[10px] text-muted">{slot.room}</span>
                 </Block>
               );

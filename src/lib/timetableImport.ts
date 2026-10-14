@@ -54,7 +54,7 @@ function cleanText(s: string, max: number) {
   return s.replace(/[\s\u3000]+/g, ' ').trim().slice(0, max);
 }
 
-/** Merge per-cell readings into courses with contiguous, same-room time slots. */
+/** Merge only cells with the same course and teacher; TA sessions stay separate. */
 export function cellsToCourses(cells: ImportCell[]): ImportResult {
   const skipped: ImportCell[] = [];
   const valid: (ImportCell & { roomN: string })[] = [];
@@ -72,7 +72,8 @@ export function cellsToCourses(cells: ImportCell[]): ImportResult {
 
   const byCourse = new Map<string, typeof valid>();
   for (const c of valid) {
-    const k = courseKey(c.course);
+    const teacher = isTa(c.teacher) ? '助教' : c.teacher;
+    const k = `${courseKey(c.course)}::${teacher || '__unknown_teacher__'}`;
     byCourse.set(k, [...(byCourse.get(k) ?? []), c]);
   }
 
@@ -90,12 +91,13 @@ export function cellsToCourses(cells: ImportCell[]): ImportResult {
         slots.push({ weekday: c.weekday as Weekday, fromPeriod: c.period, toPeriod: c.period, startTime: p.start, endTime: p.end, room: c.roomN });
       }
     }
-    // The lecturer is the most frequent non-TA teacher; TA-only courses get no instructor.
-    const counts = new Map<string, number>();
-    for (const c of list) if (c.teacher && !isTa(c.teacher)) counts.set(c.teacher, (counts.get(c.teacher) ?? 0) + 1);
-    const instructor = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? '';
+    const ta = isTa(list[0]!.teacher);
+    const instructor = ta ? '助教' : list[0]!.teacher;
     const group = list.find((c) => c.group)?.group ?? '';
-    courses.push({ key, name: list[0]!.course, instructor, group, slots });
+    // The name suffix keeps TA entries distinguishable in existing repositories,
+    // exports and friends' read-only schedules without a database migration.
+    const name = ta ? `${list[0]!.course}（助教）`.slice(0, 80) : list[0]!.course;
+    courses.push({ key, name, instructor, group, slots });
   }
   courses.sort((a, b) => a.slots[0]!.weekday - b.slots[0]!.weekday || a.slots[0]!.fromPeriod - b.slots[0]!.fromPeriod);
   return { courses, skipped };

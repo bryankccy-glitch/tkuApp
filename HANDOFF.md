@@ -1,13 +1,13 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-13（Asia/Taipei, UTC+8）
+2026-10-14（Asia/Taipei, UTC+8）
 
 ## Updated By
-Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
+Codex（`codex/schedule-session-labels`：已獲使用者授權前端修改）
 
 ## Current Status
-前端 MVP 可用，Supabase 專案 `tku-campus-os` 已上線（註冊/登入/RLS 已以真實帳號驗證）。新增**好友課表**與**二手市集**（資料表已套用並以真實帳號驗證）。Gemini 版本已合併 `main`、推送與正式部署；真實課表圖片辨識成功，尚未確認加入（待前端保留助教／正課逐時段標示）。migration `20261012080231_ai_backend_security.sql` **尚未套用到線上資料庫**；本輪不改資料庫 schema。
+Gemini 整合版已合併並部署 main（`4c02535`），未登入聊天／图片 API 已實測 401。新前端 feature 分支已完成月／年學生行事曆、私人行程 CRUD／每週重複，以及正課／助教分組與括號教師標示；原單日時間軸保留，完整小時格需求已由使用者撤回。私人行程 migration 已套用線上並通過 RLS 隔離測試。新功能採獨立分支發布 Vercel Preview，尚未合併 main。既有 `20261012080231_ai_backend_security.sql` 仍待套用；未修改既有 migration、api 或金鑰。
 
 ## Completed
 - 專案骨架：Vite 6 + React 18 + TS strict + Tailwind 3 + React Router 6 + TanStack Query 5 + RHF + Zod + PWA
@@ -20,6 +20,8 @@ Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **Codex — 行事曆與助教（2026-10-14）**：保留單日／週課表，新增月／年切換、12 月份縮圖、前後期／今天、課表／作業考試／私人行程篩選與每日議程。課程只顯示於所選學期起訖日期內，不捏造校曆。私人行程支援打工排班、約會約定、讀書自習、社團活動與其他；可指定日期、分鐘起訖、地點、備註、每週重複／截止日期、編輯／刪除。時間使用 Asia/Taipei，支援跨日與跨年。圖片匯入依課名與原圖教師分組，不跨正課／助教或不同教師合併；助教存成「課名（助教）」，正課顯示「課名（教師姓名）」，缺漏教師不推測。既有真實截圖 fixture 的 11 個課名分成 16 個授課項目。尚未在新版確認加入使用者的真實課表，不宣稱完整真實匯入已成功。
+- **Codex — 資料與測試**：全部資料經 DataRepository；本機舊儲存相容，私人行程納入 export／deleteAllData。Supabase 使用現有使用者 JWT，calendar_events 只允許本人 CRUD，不共享給好友。新增 migration `20261013123046_private_calendar_events.sql` 已於 2026-10-13 套用 `tku-campus-os`，SQL RLS 測試通過（本人 CRUD、他人讀改刪被擋、不可偽造／轉移 user_id、anon 不可讀／新增；全部臨時資料與帳號 rollback）。Security advisor 沒有新增此表的問題，既有 RPC／service-only 表及洩漏密碼防護未開啟的提示仍存在。無新增套件。GitHub 發布只推 feature 分支，不 force push、不合併或直接推 main。
 - **Codex — Vercel 發布準備（2026-10-13）**：已 fetch，`origin/main` = `ace44fc`，`feat/gemini` = `ace6bce` 並包含最新 main。第一個正式部署 `dpl_54Hky37jxtVoyhjumquAQUJbcynE` 被 Vercel commit 作者權限驗證阻擋，未取代正式站；確認 Git 作者 email 與目前已登入 Vercel 帳號不一致，為本輪發布建立使用目前 Vercel 帳號作者資料的新交接提交，保留既有歷史且不更動全域 Git 設定。Production 目前沒有伺服器環境變數，Gemini 尚未啟用。
 - **Codex — Gemini 遷移（2026-10-13）**：新增 `api/gemini.ts`、移除 `api/openai.ts`；直接使用官方 REST API，預設 `gemini-3.5-flash-lite`（模型 ID 依 Google 官方文件確認）。保留唯讀 function calling、工具資料 `UNTRUSTED_TOOL_DATA` 標記、語系 system instructions、sources 與 `meta/delta/sources/error/done` SSE 合約；保留 function call ID 與 thought signature。SSE 在上游請求成功後才開始，Gemini HTTP 429 可回前端 HTTP 429／中文友善訊息，5xx 不回傳上游細節。
 - **Codex — Gemini 圖片與 RAG**：課表圖片用 `inlineData`、`responseMimeType=application/json`＋`responseSchema`，沿用 `VISION_PROMPT`／`cellSchema`，丟掉個別無效格子，回應／狀態碼相容；API 不保存圖片。Embedding 使用 `gemini-embedding-001`，明確要求 1536 維並正規化，query/document 使用對應 retrieval task type。匯入改用共用 embedding 函式，content hash 納入 provider/model/維度，確保舊 OpenAI vectors 重新建立。沒有新增 SDK／修改 `package.json` 或 lockfile；沒有修改 `src/**`。
@@ -66,6 +68,7 @@ Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 - 新增 React Testing Library 元件測試與 Playwright E2E
 
 ## Files Changed
+- Codex 行事曆：新增 `src/features/schedule/{StudentCalendar,CalendarEventForm}.tsx`、`src/lib/{studentCalendar,courseTitle}.ts`、對應單元／元件測試、`e2e/student-calendar.spec.ts`、migration `20261013123046_private_calendar_events.sql`、`supabase/tests/rls_calendar_events.sql`；修改 SchedulePage／DayTimeline／WeekGrid、ImageImport 測試、types／hooks／timetableImport、DataRepository／LocalRepository／SupabaseRepository、兩語系、截圖 fixture 測試與 CSV E2E 提示、本檔及 CHANGELOG。未改 package.json、lockfile 或 api。
 - Codex Gemini：新增 `api/gemini.ts`；刪除 `api/openai.ts`；更新 `api/{chat,store,timetable-import}.ts`、`api/{chat,timetable-import}.test.ts`、`scripts/ingest.ts`、`vite-dev-api.ts`（環境變數清單與註解）、`.env.example`、`api/README.md`、本檔。沒有修改前端或既有 migration。
 - Claude Code（合併 Gemini）：`src/i18n/locales/{zh-TW,en}.ts`、`src/features/profile/AboutPage.tsx`、`src/features/explore/ExplorePage.tsx`、`e2e/main-flows.spec.ts`、`README.md`、`ARCHITECTURE.md`、`.env.production` 註解、本檔。
 - Codex AI backend：新增 `api/chat.ts`、`api/chat-schema.ts`、`api/openai.ts`、`api/store.ts`、`api/sse.ts`、`api/chat.test.ts`、`scripts/ingest.ts`、`supabase/tests/rls_user_isolation.sql`、migration `20261012080231_ai_backend_security.sql`；更新 `api/README.md`、`package.json` 與 lockfile，並加入 API-only i18n alias 型別宣告。
@@ -104,6 +107,7 @@ Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 - 其餘見 ARCHITECTURE.md
 
 ## Tests
+- Codex 行事曆：上一輪完整驗證 lint、typecheck、Vitest（23 files／121 tests）、build 全過；`npx playwright test --workers=2` 全套 132 passed，含桌面／手機的月年切換、私人行程儲存與 reload、淺深色 axe，以及既有主要流程回歸。初次測試的日期條件／斷言已修正；手機表單初始化競態改用 useLayoutEffect，重跑 6 項与全套通過。線上 `supabase/tests/rls_calendar_events.sql` 已實際執行通過，第一次 MCP requestState 逾期後重新執行成功；不是以模擬測試冒充線上驗證。本機保留一筆清楚標示「非真實排班」的 localhost 測試行程，未寫入使用者雲端行程。尚未實測新版雲端登入 CRUD 與圖片確認加入；私人行程通知／.ics 尚未實作。既有 jsdom Canvas、React Router、build chunk 與 npm audit 警告仍保留。
 - Codex Gemini worktree（2026-10-13）：`npm install` 完成；`npm run lint` ✅、`npm run typecheck` ✅、`npm run test` ✅（21 files / 112 tests；聊天 API 15、圖片 API 9）、`npm run build` ✅。Mock fetch 覆蓋串流文字、function call→工具結果→最終回答、untrusted 文件／禁止 mutation、結構化 JSON／丟掉無效格子、Gemini 429／5xx 與請求中不夾帶 Supabase key/JWT。
 - Codex Gemini：兩支 API 用 esbuild `--bundle --platform=node --format=esm --packages=external` 打包（專案來源被打包，npm dependencies 外部載入），確認輸出不含 `@/`，以純 Node ESM 載入 default handler ✅。暫存 bundle 已清除。
 - Claude Code 審查並合併 `feat/gemini`（2026-10-13）：前端隱私文字改為揭露 Google Gemini（圖片匯入、助理提示、關於頁 p5）；修正 CSV e2e 路徑與探索頁 3px 橫向溢出。`tsc -b`、lint、build ✅；Vitest 21 檔 112 測試 ✅；Playwright 全套 126 測試（123 通過＋修正後重跑 3 項與 rwd/a11y/geolocation 68 項）✅；API 兩支以純 Node ESM 載入 ✅。**尚未用真實 Gemini 金鑰實測**。
@@ -140,7 +144,7 @@ Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 - npm audit 有建置工具鏈警告，尚未處理
 
 ## Next Steps
-- **Claude Code — 開發者新增需求（2026-10-13）**：圖片課表匯入需保留每格 teacher 的正課／助教屬性，顯示「課名（助教）」或「課名（圖片所列教師姓名）」；同教室的連續節次也不能跨不同授課者／正課助教類型合併。目前 `cellsToCourses` 只按課名分組並取最常見非助教教師，且 `DraftSlot`／`ScheduleSlot` 沒有逐時段教師欄位，因此確認畫面已失去此區分；不得把助教時段標成正課教師。單日課表改為早到晚每小時固定一列，空堂仍顯示，有課才放課程卡，課程位置仍須依真實分鐘起訖（例如 08:10），不要把學校節次時間改成整點。顯示起訖範圍由開發者確認。Codex 已保留真實辨識確認畫面，未加入該份課表；實作後再重新驗證辨識、分類及儲存。可刪除誤建且不使用的 `AGEMINI_API_KEY`（由開發者自行操作），保留正確 `GEMINI_API_KEY`。
+- **開發者／Claude Code**：審查新前端分支並決定合併 main；合併前勿把 Preview 當正式版。私人行程 migration 已套用，勿重复建立表；真人登入後驗證雲端 CRUD，重新上傳截圖核對教師／助教，再由使用者確認加入。單日完整小時格已撤回，不要實作。後續可加私人行程提醒／.ics／可信校曆。誤建 `AGEMINI_API_KEY` 可由開發者自行刪除，保留正確 `GEMINI_API_KEY`。
 - **Claude Code**：前端圖片匯入隱私提示改成「圖片會傳給 Google Gemini 辨識」；`ARCHITECTURE.md` 的 AI provider 文案與 `AGENTS.md` 的目前 Codex 分支可同步更新（本輪遵守範圍未修改）。
 - **開發者**：合併 `feat/gemini` 後，設定伺服器端 Gemini/Supabase 環境變數，再登入實測真實問答與圖片課表辨識。執行 `npm run ingest` 重建 Gemini vectors，不能沿用舊 OpenAI vectors；免費額度以 Google 專案總用量計算。
 - **Codex**：`api/timetable-import.ts` 由 Claude Code 新增（使用者要求），之後可由 Codex 維護。`feat/ai-backend` 已合併進 `main`；之後請從最新 `main` 開新分支。可補：好友/市集的 pgTAP RLS 測試（`supabase/tests/`）、市集檢舉的管理端 API
@@ -150,9 +154,9 @@ Codex（`feat/gemini`：AI provider 遷移／Vercel 發布）
 - **開發者**：在 Supabase SQL Editor 套用 `supabase/migrations/20261012080231_ai_backend_security.sql`；在 Vercel 設定 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY`（以及可選 Gemini 模型/限流變數），再驗證線上 `/api/chat` 與執行 RLS SQL。
 
 ## Git Status
-- Branch：`feat/gemini`；基底 `main` `ace44fc`（已 fetch，現在與 `origin/main` 一致）。原工作目錄維持 `main`。
+- Branch：`codex/schedule-session-labels`；基底 main／origin/main `4c02535`，發布前已查核遠端。原工作目錄維持 main。
 - Commits：… → `feat(auth): redesigned login with guest mode` → `feat(profile): account card with sign out…` → `docs: record live Supabase auth and RLS verification` → `feat: friend timetable sharing and second-hand market` → merge `feat/ai-backend`（Codex：AI chat backend、ingest hardening、handoff）→ `feat(ai): send UI language to /api/chat`
-- Worktree：`../tkuApp-codex`（`feat/gemini`）；舊 `feat/ai-backend` 確認乾淨且已合併後移除，可從 main 內的歷史恢復。
+- Worktree：`../tkuApp-codex`（`codex/schedule-session-labels`）；只在此處修改新前端。
 - Remote：`origin`（GitHub `bryankccy-glitch/tkuApp`）；本輪不合併 main。
 
 ## Important Notes

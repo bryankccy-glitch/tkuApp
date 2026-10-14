@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import i18n from '@/i18n';
-import type { Course, CourseColor, Profile, Semester, Task, TaskKind, TaskPriority, Weekday } from '../types';
-import type { CourseInput, DataRepository, ExportBundle, SemesterInput, TaskInput } from './repository';
+import type { CalendarEvent, Course, CourseColor, Profile, Semester, Task, TaskKind, TaskPriority, Weekday } from '../types';
+import type { CalendarEventInput, CourseInput, DataRepository, ExportBundle, SemesterInput, TaskInput } from './repository';
 import { inferSemester } from './semesters';
 import { SupabaseSocial } from '../social/supabaseSocial';
 
@@ -17,6 +17,16 @@ interface TaskRow {
 }
 
 const hhmm = (t: string) => t.slice(0, 5);
+interface CalendarRow {
+  id: string; title: string; kind: CalendarEvent['kind']; starts_at: string; ends_at: string;
+  location: string; notes: string; repeat: CalendarEvent['repeat']; repeat_until: string | null;
+  created_at: string; updated_at: string;
+}
+function mapCalendarEvent(row: CalendarRow): CalendarEvent {
+  return { id: row.id, title: row.title, kind: row.kind, startsAt: row.starts_at, endsAt: row.ends_at,
+    location: row.location, notes: row.notes, repeat: row.repeat, repeatUntil: row.repeat_until ?? undefined,
+    createdAt: row.created_at, updatedAt: row.updated_at };
+}
 
 function mapCourse(r: CourseRow): Course {
   return {
@@ -149,10 +159,28 @@ export class SupabaseRepository implements DataRepository {
     ok(await this.db.from('tasks').delete().eq('id', id));
   }
 
+  async listCalendarEvents(): Promise<CalendarEvent[]> {
+    const rows = check<CalendarRow[]>(await this.db.from('calendar_events').select('*').eq('user_id', this.userId).order('starts_at'));
+    return rows.map(mapCalendarEvent);
+  }
+
+  async upsertCalendarEvent(event: CalendarEventInput): Promise<CalendarEvent> {
+    const row = check<CalendarRow>(await this.db.from('calendar_events').upsert({
+      id: event.id, user_id: this.userId, title: event.title, kind: event.kind, starts_at: event.startsAt, ends_at: event.endsAt,
+      location: event.location, notes: event.notes, repeat: event.repeat, repeat_until: event.repeatUntil ?? null,
+    }).select('*').single());
+    return mapCalendarEvent(row);
+  }
+
+  async deleteCalendarEvent(id: string) {
+    ok(await this.db.from('calendar_events').delete().eq('id', id).eq('user_id', this.userId));
+  }
+
   async exportAll(): Promise<ExportBundle> {
     const [profile, semesters, tasks] = await Promise.all([this.getProfile(), this.listSemesters(), this.listTasks()]);
     const courses = (await Promise.all(semesters.map((s) => this.listCourses(s.id)))).flat();
-    return { exportedAt: new Date().toISOString(), app: 'tku-campus-os', version: 1, profile, semesters, courses, tasks };
+    const calendarEvents = await this.listCalendarEvents();
+    return { exportedAt: new Date().toISOString(), app: 'tku-campus-os', version: 1, profile, semesters, courses, tasks, calendarEvents };
   }
 
   /** Deletes the auth account; FK cascades remove every personal row. */
