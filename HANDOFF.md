@@ -7,7 +7,7 @@
 Codex（`codex/schedule-session-labels`：已獲使用者授權前端修改）
 
 ## Current Status
-Gemini 整合版已合併並部署 main（`4c02535`），未登入聊天／图片 API 已實測 401。新前端 feature 分支已完成月／年學生行事曆、私人行程 CRUD／每週重複，以及正課／助教分組與括號教師標示；原單日時間軸保留，完整小時格需求已由使用者撤回。私人行程 migration 已套用線上並通過 RLS 隔離測試。新功能採獨立分支發布 Vercel Preview，尚未合併 main。既有 `20261012080231_ai_backend_security.sql` 仍待套用；未修改既有 migration、api 或金鑰。
+月／年學生行事曆、私人行程 CRUD／每週重複，以及正課／助教分組與括號教師標示已依使用者明確授權 fast-forward 合併 main 並正式部署；原單日時間軸保留，完整小時格需求已由使用者撤回。私人行程 migration 已套用線上並通過 RLS 隔離測試。正式站月／年檢視、現有課程教師標示及未登入聊天／圖片 API HTTP 401 已實測。既有 `20261012080231_ai_backend_security.sql` 仍待套用；本輪未修改程式、資料庫或金鑰。
 
 ## Completed
 - 專案骨架：Vite 6 + React 18 + TS strict + Tailwind 3 + React Router 6 + TanStack Query 5 + RHF + Zod + PWA
@@ -20,6 +20,7 @@ Gemini 整合版已合併並部署 main（`4c02535`），未登入聊天／图�
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **部署設定 — Codex（2026-10-14）**：使用者明確要求「合併部署」，main 從 `4c02535` fast-forward 至 `ee9ad7b` 並一般推送，未 force push／覆寫未提交修改。正式部署 `dpl_8piEZCNNWaeVvgXkkUJJPcERtEwA` 已 READY，alias `https://tku-app.vercel.app`；瀏覽器實測月檢視、12 個月份年檢視、現有課程括號教師標示，沒有新增／刪除使用者行程或課程。PWA 第一次重新整理仍為舊快取，第二次載入已更新。未帶 token 的 POST `/api/chat` 回 401 SSE（登入資訊無效），`/api/timetable-import` 回 401 JSON（請先登入），不是 Vercel 保護頁。重新執行 lint、typecheck、Vitest 23 files／121 tests、build、Playwright 132 tests 全通過；兩個 feature commits 的 Gitleaks 掃描未發現洩漏。Vercel npm ci 仍報 34 個依賴漏洞（含 2 critical），本次未升級。伺服器變數 `GEMINI_API_KEY`、`SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY` 沿用既有設定，未讀取值；本段文件提交不改程式。
 - **Codex — Feature 發布驗證（2026-10-14）**：程式提交 `477991f` 已一般推送至 GitHub `codex/schedule-session-labels`，遠端 SHA 與本機一致，main 未改動。Vercel Preview `https://tku-bez9qvkdl-campus-hub5.vercel.app`（`dpl_mup9p8zzdRZyfq8pAmWadttUdmtt`）已 READY；透過瀏覽器實際進入登入頁、訪客課表並切換月／年，確認 42 日月格與 12 個月份可見。未登入的 CLI API 驗證收到 Vercel Deployment Protection 的 401，不能視為應用程式 JWT 驗證結果；正式站 API 的 401 為先前已完成的實測。新版真人雲端行程 CRUD 與課表最終加入仍待使用者確認。發布前 lint、typecheck、23 files／121 tests、build 全通過；完整 E2E 132 tests 通過，staged 機密掃描未發現洩漏。本段後續僅文件提交，不改已部署程式。
 - **Codex — 行事曆與助教（2026-10-14）**：保留單日／週課表，新增月／年切換、12 月份縮圖、前後期／今天、課表／作業考試／私人行程篩選與每日議程。課程只顯示於所選學期起訖日期內，不捏造校曆。私人行程支援打工排班、約會約定、讀書自習、社團活動與其他；可指定日期、分鐘起訖、地點、備註、每週重複／截止日期、編輯／刪除。時間使用 Asia/Taipei，支援跨日與跨年。圖片匯入依課名與原圖教師分組，不跨正課／助教或不同教師合併；助教存成「課名（助教）」，正課顯示「課名（教師姓名）」，缺漏教師不推測。既有真實截圖 fixture 的 11 個課名分成 16 個授課項目。尚未在新版確認加入使用者的真實課表，不宣稱完整真實匯入已成功。
 - **Codex — 資料與測試**：全部資料經 DataRepository；本機舊儲存相容，私人行程納入 export／deleteAllData。Supabase 使用現有使用者 JWT，calendar_events 只允許本人 CRUD，不共享給好友。新增 migration `20261013123046_private_calendar_events.sql` 已於 2026-10-13 套用 `tku-campus-os`，SQL RLS 測試通過（本人 CRUD、他人讀改刪被擋、不可偽造／轉移 user_id、anon 不可讀／新增；全部臨時資料與帳號 rollback）。Security advisor 沒有新增此表的問題，既有 RPC／service-only 表及洩漏密碼防護未開啟的提示仍存在。無新增套件。GitHub 發布只推 feature 分支，不 force push、不合併或直接推 main。
@@ -145,7 +146,7 @@ Gemini 整合版已合併並部署 main（`4c02535`），未登入聊天／图�
 - npm audit 有建置工具鏈警告，尚未處理
 
 ## Next Steps
-- **開發者／Claude Code**：審查新前端分支並決定合併 main；合併前勿把 Preview 當正式版。私人行程 migration 已套用，勿重复建立表；真人登入後驗證雲端 CRUD，重新上傳截圖核對教師／助教，再由使用者確認加入。單日完整小時格已撤回，不要實作。後續可加私人行程提醒／.ics／可信校曆。誤建 `AGEMINI_API_KEY` 可由開發者自行刪除，保留正確 `GEMINI_API_KEY`。
+- **開發者／Claude Code**：行事曆分支已依使用者授權合併並正式部署。私人行程 migration 已套用，勿重複建立表；真人登入後驗證雲端 CRUD，重新上傳截圖核對教師／助教，再由使用者確認加入。舊課程中已合併的正課／助教資料不會自動重建，需核對原圖。單日完整小時格已撤回，不要實作。後續可加私人行程提醒／.ics／可信校曆。誤建 `AGEMINI_API_KEY` 可由開發者自行刪除，保留正確 `GEMINI_API_KEY`。
 - **Claude Code**：前端圖片匯入隱私提示改成「圖片會傳給 Google Gemini 辨識」；`ARCHITECTURE.md` 的 AI provider 文案與 `AGENTS.md` 的目前 Codex 分支可同步更新（本輪遵守範圍未修改）。
 - **開發者**：合併 `feat/gemini` 後，設定伺服器端 Gemini/Supabase 環境變數，再登入實測真實問答與圖片課表辨識。執行 `npm run ingest` 重建 Gemini vectors，不能沿用舊 OpenAI vectors；免費額度以 Google 專案總用量計算。
 - **Codex**：`api/timetable-import.ts` 由 Claude Code 新增（使用者要求），之後可由 Codex 維護。`feat/ai-backend` 已合併進 `main`；之後請從最新 `main` 開新分支。可補：好友/市集的 pgTAP RLS 測試（`supabase/tests/`）、市集檢舉的管理端 API
@@ -158,7 +159,7 @@ Gemini 整合版已合併並部署 main（`4c02535`），未登入聊天／图�
 - Branch：`codex/schedule-session-labels`；基底 main／origin/main `4c02535`，發布前已查核遠端。原工作目錄維持 main。
 - Commits：… → `feat(auth): redesigned login with guest mode` → `feat(profile): account card with sign out…` → `docs: record live Supabase auth and RLS verification` → `feat: friend timetable sharing and second-hand market` → merge `feat/ai-backend`（Codex：AI chat backend、ingest hardening、handoff）→ `feat(ai): send UI language to /api/chat`
 - Worktree：`../tkuApp-codex`（`codex/schedule-session-labels`）；只在此處修改新前端。
-- Remote：`origin`（GitHub `bryankccy-glitch/tkuApp`）；本輪不合併 main。
+- Remote：`origin`（GitHub `bryankccy-glitch/tkuApp`）；2026-10-14 使用者明確授權合併部署，已 fast-forward 並一般推送 main。保留 feature worktree，不刪除其他工作。
 
 ## Important Notes
 - 不可要求或儲存淡江校務系統帳密；不可爬取受限制校務資料

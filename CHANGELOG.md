@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-14 — Codex：正式發布
+- 使用者要求合併部署後，將 `codex/schedule-session-labels` fast-forward 合併 main、一般推送 GitHub 並部署正式站；月／年檢視、教師標示、未登入 API 401 實測成功。
+- 發布前 lint、typecheck、121 個單元測試、build、132 個 E2E 全通過；既有依賴漏洞未在本輪修復。
+
 ## 2026-10-14 — Codex：前端需求調整
 - 使用者授權 Codex 另開前端分支，正課／助教標示與月／年学生行事曆改由 Codex 實作，不再僅列為 Claude Code 待辦。
 - 使用者先提出、後撤回單日完整小時格；未發布该版面，保留原單日時間軸，HANDOFF 舊待辦已更新。
