@@ -39,6 +39,9 @@
     <link rel="apple-touch-startup-image" href="/splash/dark-1206x2622.png" media="screen and (device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: dark)" />
     <link rel="apple-touch-startup-image" href="/splash/dark-1320x2868.png" media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) and (prefers-color-scheme: dark)" />
     <style>
+      /* Until the app is ready, everything around the page is splash-colored (no white strip at launch). */
+      html { background-color: #7F1A1F; }
+      html[data-theme='dark'] { background-color: #141414; }
       /* Boot splash. It sits above #root as its own layer and fades out once the first real screen is ready
          (src/lib/splash.ts). <BootScreen> reuses these styles if a full-screen load happens later.
          Logo and title stay still so the iOS launch image hands off without a jump; only the rest fades in. */

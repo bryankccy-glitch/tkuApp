@@ -56,6 +56,19 @@ function fixIfStuck() {
   setTimeout(() => { busy = false; }, 250);
 }
 
+/**
+ * iOS only honours focus() inside a user gesture, so outside one the nudge above may do nothing
+ * (confirmed in the Simulator: the timed nudge left the page short; the same nudge from a tap worked).
+ * So the first tap after the page got stuck also runs it — unless that tap is on a text field,
+ * where the user wants the keyboard anyway.
+ */
+function fixOnTap(e: Event) {
+  if (!viewportStuck()) return;
+  const target = e.target instanceof Element ? e.target.closest('input, textarea, [contenteditable]') : null;
+  if (target) return;
+  nudgeViewport();
+}
+
 export function installIosViewportFix() {
   if (typeof window === 'undefined' || !isStandalone()) return;
   fullHeight = window.innerHeight;
@@ -76,6 +89,7 @@ export function installIosViewportFix() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(fixIfStuck, 350);
   });
+  document.addEventListener('click', fixOnTap, true);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(fixIfStuck, 300); });
 }
 

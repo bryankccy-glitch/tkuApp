@@ -126,3 +126,8 @@ html[data-kb='open'] .bottom-nav { display: none; }
 /* The nav's color continues past its bottom edge (rubber-band overscroll, rounding at the screen edge).
    The iOS home-screen "page shorter than the screen after the keyboard" bug is fixed in lib/iosViewportFix.ts. */
 .bottom-nav { box-shadow: 0 120px 0 0 rgb(var(--c-surface)); }
+
+/* What shows outside the page itself (rubber-band, and the strip iOS leaves under a home-screen app
+   whose viewport got short): the nav's color, so a stuck page never shows a band of another color.
+   While the boot splash is up, index.html paints it splash-red instead. */
+html.app-ready, html.app-ready[data-theme] { background-color: rgb(var(--c-surface)); }

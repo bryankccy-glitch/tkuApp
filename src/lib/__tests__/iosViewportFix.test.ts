@@ -32,6 +32,20 @@ describe('iOS standalone viewport fix', () => {
     expect(document.querySelector('[data-viewport-fix]')).toBeNull(); // helper removed again
   });
 
+  it('the first tap after the page got stuck also nudges (iOS only allows focus() in a gesture)', async () => {
+    vi.useFakeTimers();
+    const mod = await load(874);
+    mod.installIosViewportFix();
+    setInner(812);
+    const nudged: Element[] = [];
+    document.addEventListener('focusin', (e) => { if ((e.target as Element).hasAttribute('data-viewport-fix')) nudged.push(e.target as Element); });
+    document.getElementById('root')!.click();
+    expect(nudged).toHaveLength(1);
+    vi.advanceTimersByTime(100);
+    document.querySelector('textarea')!.click(); // tapping a field: let it get the keyboard
+    expect(nudged).toHaveLength(2 - 1);
+  });
+
   it('does nothing when the height is fine or a field is still focused', async () => {
     vi.useFakeTimers();
     const mod = await load(874);

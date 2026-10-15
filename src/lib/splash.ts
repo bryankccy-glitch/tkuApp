@@ -18,6 +18,7 @@ export function splashShowing(): boolean {
 function hide() {
   const node = el();
   gone = true;
+  document.documentElement.classList.add('app-ready');
   if (!node) return;
   node.classList.add('splash--out');
   node.setAttribute('aria-hidden', 'true');
@@ -28,7 +29,10 @@ function hide() {
 
 /** Keeps the splash up until the returned release function is called. */
 export function holdSplash(): () => void {
-  if (!splashShowing()) return () => {};
+  if (!splashShowing()) {
+    if (typeof document !== 'undefined') document.documentElement.classList.add('app-ready');
+    return () => {};
+  }
   holds += 1;
   if (timer) clearTimeout(timer);
   let released = false;
