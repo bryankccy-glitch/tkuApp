@@ -169,7 +169,7 @@ export default function AssistantPage() {
   return (
     <div
       className="fixed left-1/2 z-20 flex w-full max-w-app -translate-x-1/2 flex-col bg-canvas"
-      style={{ top: viewport?.top ?? 0, height: viewport ? `calc(${viewport.height}px + var(--ios-gap, 0px))` : '100dvh' }}
+      style={{ top: viewport?.top ?? 0, height: viewport?.height ?? '100dvh' }}
     >
       <header className="flex shrink-0 items-start justify-between gap-3 border-b border-line/60 px-4 pb-3 pt-[calc(1rem+env(safe-area-inset-top))]">
         <div>
@@ -185,7 +185,7 @@ export default function AssistantPage() {
         )}
       </header>
 
-      <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 [-webkit-overflow-scrolling:touch]" aria-live="polite">
+      <div ref={listRef} data-keep-scroll className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 [-webkit-overflow-scrolling:touch]" aria-live="polite">
         {messages.length === 0 ? (
           <div className="flex flex-col items-start">
             <p className="text-h3 text-ink">{t('ai.emptyTitle')}</p>
