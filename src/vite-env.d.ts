@@ -6,3 +6,5 @@ interface ImportMetaEnv {
   readonly VITE_HASH_ROUTER?: string;
   readonly VITE_PREVIEW_DEMO?: string;
 }
+
+declare const __BUILD__: string;

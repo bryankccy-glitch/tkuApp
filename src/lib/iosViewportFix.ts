@@ -26,7 +26,11 @@ let busy = false;
 
 /** True when the page is shorter than the tallest height seen while no keyboard was up. */
 export function viewportStuck(): boolean {
-  return !isField(document.activeElement) && fullHeight - window.innerHeight > 4;
+  if (isField(document.activeElement) || window.innerWidth > window.innerHeight) return false;
+  // In a standalone app the page normally fills the screen, so screen.height is the reference too.
+  const full = Math.max(fullHeight, window.screen?.height ?? 0);
+  const missing = full - window.innerHeight;
+  return missing > 4 && missing < 120; // a status bar, never a keyboard
 }
 
 /** Focus + blur a hidden read-only input: makes WebKit restore the full-height viewport. */
@@ -49,7 +53,7 @@ function fixIfStuck() {
   if (busy || !viewportStuck()) return;
   busy = true;
   nudgeViewport();
-  setTimeout(() => { busy = false; }, 400);
+  setTimeout(() => { busy = false; }, 250);
 }
 
 export function installIosViewportFix() {
@@ -60,11 +64,17 @@ export function installIosViewportFix() {
       fullHeight = Math.max(fullHeight, window.innerHeight);
     }
   });
-  // Keyboard closed: give iOS a moment to finish its own resize, then check.
+  // Keyboard closed: iOS animates for a while, and a nudge during the animation doesn't stick, so
+  // check several times; each check only acts if the page is still short.
   document.addEventListener('focusout', (e) => {
     if (!isField(e.target as Element) || isHelper(e.target)) return;
-    setTimeout(fixIfStuck, 150);
-    setTimeout(fixIfStuck, 600);
+    for (const ms of [300, 700, 1200, 2000]) setTimeout(fixIfStuck, ms);
+  });
+  // Any later resize that leaves the page short (no field focused) is checked too.
+  let resizeTimer: ReturnType<typeof setTimeout> | undefined;
+  window.visualViewport?.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(fixIfStuck, 350);
   });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(fixIfStuck, 300); });
 }

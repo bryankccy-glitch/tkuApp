@@ -50,6 +50,7 @@ export default function AboutPage() {
           ))}
         </ul>
       </section>
+      <p className="mt-8 pb-2 text-center text-[11px] text-muted">TKU Campus OS · {__BUILD__}</p>
     </Page>
   );
 }

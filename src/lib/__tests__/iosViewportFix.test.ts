@@ -5,6 +5,7 @@ async function load(innerH: number) {
   Object.defineProperty(navigator, 'standalone', { value: true, configurable: true });
   Object.defineProperty(window, 'innerHeight', { value: innerH, configurable: true, writable: true });
   Object.defineProperty(window, 'innerWidth', { value: 402, configurable: true });
+  Object.defineProperty(window.screen, 'height', { value: innerH, configurable: true });
   document.body.innerHTML = '<div id="root"><textarea></textarea></div>';
   return import('../iosViewportFix');
 }
@@ -24,7 +25,7 @@ describe('iOS standalone viewport fix', () => {
     ta.focus();
     setInner(812); // keyboard closed but stuck short (measured in the iOS 26.3 Simulator)
     ta.blur();
-    vi.advanceTimersByTime(150);
+    vi.advanceTimersByTime(300);
     expect(focused).toHaveLength(1);
     expect(focused[0]!.readOnly).toBe(true);
     vi.advanceTimersByTime(100);

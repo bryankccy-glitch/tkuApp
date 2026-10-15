@@ -8,6 +8,8 @@ import { devApi } from './vite-dev-api';
 const previewBuild = process.env.PREVIEW_BUILD === '1';
 
 export default defineConfig({
+  // Build label shown at the bottom of 關於 (Vercel provides the commit SHA at build time).
+  define: { __BUILD__: JSON.stringify((process.env.VERCEL_GIT_COMMIT_SHA ?? 'dev').slice(0, 7)) },
   base: previewBuild ? './' : '/',
   plugins: [
     react(),
