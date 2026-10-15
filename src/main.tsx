@@ -13,11 +13,9 @@ import './i18n';
 import { seedPreviewDemo } from './lib/data/previewDemo';
 import { disablePageZoom } from './lib/noZoom';
 import { holdSplash } from './lib/splash';
-import { installIosViewportFix } from './lib/iosViewportFix';
 import { reloadForNewVersion } from './app/RouteError';
 
 disablePageZoom();
-installIosViewportFix();
 
 // After a deploy, an open/cached app may ask for page code that no longer exists: reload once to get the new version.
 window.addEventListener('vite:preloadError', (e) => {

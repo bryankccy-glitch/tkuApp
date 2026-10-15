@@ -11,7 +11,10 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- Must stay opaque ("default"). "black-translucent" makes iOS 26 home-screen apps start the page
+         under the status bar but size it one status bar short, leaving a strip at the bottom that CSS
+         can't paint (WebKit bug 301108). iOS reads this only when the app is added to the home screen. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="淡江校園" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
