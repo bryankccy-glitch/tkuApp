@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useVisualViewport } from '@/hooks/useVisualViewport';
-import { vpDebugTap } from '@/lib/vpDebug';
 import { useSearchParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { ArrowUp, Check, Copy, ExternalLink, FileText, RotateCcw, Square, Trash2, UserRound, MapPin } from 'lucide-react';
@@ -174,7 +173,7 @@ export default function AssistantPage() {
     >
       <header className="flex shrink-0 items-start justify-between gap-3 border-b border-line/60 px-4 pb-3 pt-[calc(1rem+env(safe-area-inset-top))]">
         <div>
-          <h1 className="text-h2 text-ink" onClick={vpDebugTap}>{t('ai.title')}</h1>
+          <h1 className="text-h2 text-ink">{t('ai.title')}</h1>
           <p className={cn('mt-0.5 text-caption text-muted', typing && 'hidden')}>
             {mode === 'cloud' ? t('ai.cloudHint') : t('ai.localHint')}
           </p>

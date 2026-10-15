@@ -1,13 +1,16 @@
 /**
- * iOS home-screen (standalone) web apps have a WebKit bug: after the on-screen keyboard closes, the
- * page keeps a viewport ~one status bar shorter than the screen. Anything fixed to the bottom then
- * floats with a dark band under it for the rest of the session (window.innerHeight, visualViewport
- * and 100dvh all stay low; scrollTo/blur don't help). Toggling `display` on the full-height app root
- * forces WebKit to measure the viewport again, which restores the full height.
- * We only do this in standalone mode, only when the height is actually stuck, and hide the one-frame
- * relayout under a quick veil in the page's own background color.
- * See: dev.to/cederhook "Fixing the iOS standalone-PWA keyboard bug that shrinks your viewport".
+ * iOS home-screen (standalone) web apps have a WebKit bug (seen on iOS 26, Dynamic Island iPhones):
+ * after the on-screen keyboard closes, the page keeps a viewport one status bar shorter than the
+ * screen (e.g. innerHeight 874 → 812 on iPhone 17 Pro). Anything fixed to the bottom then floats
+ * with a band under it until the app is killed.
+ *
+ * Verified in the iOS 26.3 Simulator (iPhone 17 Pro, home-screen app) with a diagnostics panel:
+ * toggling `display` on the root, rewriting the viewport meta and scrollTo did NOT help; briefly
+ * focusing and blurring a hidden read-only input DID restore the full height (812 → 874). A
+ * read-only field doesn't open the keyboard, so nothing visible happens.
  */
+const HELPER = 'data-viewport-fix';
+
 const isStandalone = () => {
   const nav = navigator as Navigator & { standalone?: boolean };
   return nav.standalone === true || window.matchMedia?.('(display-mode: standalone)').matches === true;
@@ -16,6 +19,7 @@ const isField = (el: Element | null) =>
   el instanceof HTMLTextAreaElement ||
   (el instanceof HTMLInputElement && !['checkbox', 'radio', 'button', 'submit', 'range', 'file'].includes(el.type)) ||
   (el instanceof HTMLElement && el.isContentEditable);
+const isHelper = (el: EventTarget | null) => el instanceof Element && el.hasAttribute(HELPER);
 
 let fullHeight = 0;
 let busy = false;
@@ -25,53 +29,43 @@ export function viewportStuck(): boolean {
   return !isField(document.activeElement) && fullHeight - window.innerHeight > 4;
 }
 
-function remeasure(root: HTMLElement) {
-  // Keep every scroll position: the page itself and inner scroll areas marked data-keep-scroll.
-  const pageY = window.scrollY;
-  const inner = [...document.querySelectorAll<HTMLElement>('[data-keep-scroll]')].map((el) => [el, el.scrollTop] as const);
-  root.style.display = 'none';
-  void root.offsetHeight; // synchronous reflow while hidden
-  root.style.display = '';
-  window.scrollTo(0, pageY);
-  for (const [el, top] of inner) el.scrollTop = top;
+/** Focus + blur a hidden read-only input: makes WebKit restore the full-height viewport. */
+export function nudgeViewport() {
+  const input = document.createElement('input');
+  input.readOnly = true;
+  input.tabIndex = -1;
+  input.setAttribute(HELPER, '');
+  input.setAttribute('aria-hidden', 'true');
+  input.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px;pointer-events:none';
+  document.body.appendChild(input);
+  input.focus({ preventScroll: true });
+  setTimeout(() => {
+    input.blur();
+    input.remove();
+  }, 50);
 }
 
 function fixIfStuck() {
   if (busy || !viewportStuck()) return;
-  const root = document.getElementById('root');
-  if (!root) return;
   busy = true;
-  const veil = document.createElement('div');
-  veil.setAttribute('aria-hidden', 'true');
-  veil.style.cssText = 'position:fixed;inset:-100px 0;z-index:9000;pointer-events:none;opacity:0;transition:opacity 120ms ease-out;background:rgb(var(--c-canvas))';
-  document.body.appendChild(veil);
-  requestAnimationFrame(() => { veil.style.opacity = '1'; });
-  setTimeout(() => {
-    remeasure(root);
-    setTimeout(() => {
-      veil.style.transition = 'opacity 220ms ease-out';
-      veil.style.opacity = '0';
-      setTimeout(() => { veil.remove(); busy = false; }, 260);
-    }, 60);
-  }, 140);
+  nudgeViewport();
+  setTimeout(() => { busy = false; }, 400);
 }
 
 export function installIosViewportFix() {
   if (typeof window === 'undefined' || !isStandalone()) return;
   fullHeight = window.innerHeight;
-  const track = () => {
+  window.addEventListener('resize', () => {
     if (!isField(document.activeElement) && window.innerWidth < window.innerHeight) {
       fullHeight = Math.max(fullHeight, window.innerHeight);
     }
-  };
-  window.addEventListener('resize', track);
+  });
   // Keyboard closed: give iOS a moment to finish its own resize, then check.
   document.addEventListener('focusout', (e) => {
-    if (!isField(e.target as Element)) return;
+    if (!isField(e.target as Element) || isHelper(e.target)) return;
     setTimeout(fixIfStuck, 150);
     setTimeout(fixIfStuck, 600);
   });
-  // Coming back to the app can also leave it short.
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(fixIfStuck, 300); });
 }
 

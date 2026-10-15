@@ -20,7 +20,7 @@ Claude Code（main）；前一輪 Codex（`codex/schedule-session-labels`）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
-- **iOS 主畫面 App 鍵盤收起後畫面變矮 — Claude Code（2026-10-15）**：在使用者 Mac 的 Xcode Simulator（iOS 26.3）重現：iPhone 17 Pro（動態島）把 App 加入主畫面 → AI 助理打字送出 → 收鍵盤後，整個 WebView 變矮約一個狀態列，底部導覽被抬高、文字被切、下方一條色塊，切到首頁仍卡住；iPhone 16e（瀏海）同流程不會發生。前一版（`88c107b`，把導覽往下推補缺口）錯誤：缺口區域根本不在 WebView 內，推下去只會被切掉，已移除。改用 `src/lib/iosViewportFix.ts`：只在主畫面模式、偵測到高度比無鍵盤時的最大值少 >4px（輸入框未聚焦）時，於 focusout 後 150／600ms 及回到前景時，對 `#root` 切換 `display:none` 再還原強制 WebKit 重新量測，並保留頁面與 `[data-keep-scroll]` 的捲動位置；過程以頁面底色遮罩 120ms 淡入、220ms 淡出遮住。
+- **iOS 主畫面 App 鍵盤收起後畫面變矮 — Claude Code（2026-10-15）**：在使用者 Mac 的 Xcode Simulator（iOS 26.3）重現：iPhone 17 Pro（動態島）把 App 加入主畫面 → AI 助理打字送出 → 收鍵盤後 `innerHeight` 由 874 變 812 且不恢復，底部導覽被抬高、下方一條色塊，切頁仍卡住；iPhone 16e（瀏海）不會發生。以暫時診斷面板在模擬器逐一實測：對 `#root`／`html` 切 display、改寫 viewport meta、scrollTo 都無效（812→812）；**聚焦再失焦一個隱藏的唯讀 input 有效（812→874）**。`src/lib/iosViewportFix.ts` 改為：主畫面模式下，輸入框失焦後 150／600ms 及回到前景時，若高度比無鍵盤時最大值少 >4px，就做這個聚焦／失焦（唯讀不會叫出鍵盤）。移除 `88c107b` 的導覽下推做法（缺口不在 WebView 內，只會切掉導覽文字）與診斷面板。
 - **iOS 主畫面 App 底部浮起 — Claude Code（2026-10-14）**：使用者截圖量測：底部導覽（含 34pt 底部安全區）下方還有約 59pt 深色條＝狀態列高度，判斷是 iOS（主畫面模式）把版面算得比螢幕矮一個狀態列，`bottom: 0` 的元素因此浮起。新增 `src/lib/iosViewportGap.ts`：只在主畫面模式、沒有輸入框聚焦（鍵盤會正常縮版面）時，以 `screen.height - innerHeight`（限 0–90px）算出缺口寫入 `--ios-gap`；底部導覽改 `bottom: calc(-1 * var(--ios-gap))` 貼到真正底部，AI 助理圖層高度加上缺口。瀏覽器／正常情況為 0，行為不變。**尚待實機確認**（瀏覽器無法模擬此 iOS 行為）。
 - **捲動卡頓與底部色差 — Claude Code（2026-10-14）**：使用者回報 iPhone 主畫面 App 上下滑動卡卡、底部導覽下方有一條較深的色帶。卡頓主因：`noZoom.ts` 在 document 掛了非 passive 的 `touchmove`（為擋雙指縮放），讓每次捲動都要等主執行緒；已移除（雙指縮放已由 `html { touch-action: pan-x pan-y }` 擋住，iOS 由 gesture 事件擋住，縮放 e2e 仍通過）。AI 助理頁開啟時鎖住整頁捲動，只捲訊息區。色差：部分 iOS 主畫面版本頁面底部高於實體螢幕底部，底部導覽下方露出頁面底色；導覽改為不透明 `bg-surface` 並用 box-shadow 把同色往下延伸 120px。**尚待實機確認**。
 - **AI 助理改成通訊軟體版面＋部署後舊版錯誤 — Claude Code（2026-10-14）**：使用者錄影比對 Instagram 私訊：要「標題固定、訊息在中間捲動、輸入列直接貼在鍵盤上」；我們的版本在 Safari 打字時整頁上下跳、底部導覽夾在輸入列與鍵盤中間（iOS 此時是縮小版面而非捲動，前一版用高度差判斷鍵盤因此失效）。改為：AI 助理整頁是固定圖層，大小跟著 `useVisualViewport`（可見區域 top／height），header 固定、訊息區 `overflow-y-auto`、輸入列在底部；輸入框聚焦時（不再靠高度猜鍵盤）隱藏底部導覽與說明文字，輸入列貼齊鍵盤；按送出／停止不會讓輸入框失焦（鍵盤不收起）；離開輸入時頁面捲回頂端。移除 `useKeyboardInset`。另：錄影中出現「Unexpected Application Error: 'text/html' is not a valid JavaScript MIME type」——部署後舊版頁面要載入已不存在的程式檔，Vercel 改寫規則把它回成 index.html。修正：`vercel.json` 改寫排除 `/assets/`（缺檔回 404）、`vite:preloadError` 與路由 `errorElement`（`src/app/RouteError.tsx`）偵測舊版程式檔錯誤時自動重新整理一次（sessionStorage 防無限重整），其他錯誤顯示友善錯誤頁與「重新載入」，不再出現 React Router 開發者錯誤頁。
@@ -125,7 +125,7 @@ Claude Code（main）；前一輪 Codex（`codex/schedule-session-labels`）
 - 其餘見 ARCHITECTURE.md
 
 ## Tests
-- Claude Code iOS 鍵盤高度（2026-10-15）：lint ✅、Vitest 26 files／126 tests ✅、Playwright 132 passed ✅。Simulator iPhone 17 Pro 重現問題 ✅；修正部署後的模擬器驗證見下一筆紀錄。
+- Claude Code iOS 鍵盤高度（2026-10-15）：lint ✅、Vitest 26 files／126 tests ✅、Playwright 132 passed ✅。Simulator iPhone 17 Pro 重現問題 ✅；第一版修法（切 display）部署後於模擬器驗證**無效**，經診斷面板改為聚焦／失焦唯讀欄位；最終版部署後的模擬器驗證結果見提交後紀錄。
 - Claude Code iOS 底部缺口（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 26 files／127 tests ✅（新增缺口量測 3 項）、Playwright 全套 132 passed ✅。
 - Claude Code 捲動／色差（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 25 files／124 tests ✅、Playwright 全套 132 passed ✅（含禁止縮放測試）。
 - Claude Code 通訊版面／舊版錯誤（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 25 files／124 tests ✅、Playwright 全套 132 passed ✅。iPhone 13 尺寸截圖：空對話、多則對話、聚焦輸入框並把視窗縮到 500px 模擬鍵盤（標題留在上方、訊息區捲動、輸入列在最下方、導覽隱藏）。**真實 iOS 鍵盤與舊版自動重整仍待實機確認**。
