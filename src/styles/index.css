@@ -52,6 +52,10 @@
      center (iOS lets a page pan/bounce horizontally as soon as anything is even 1px too wide).
      `clip` (not hidden) keeps window scrolling and position: sticky working. */
   html, body { overflow-x: clip; overscroll-behavior-x: none; }
+  /* A plain `grid` (no grid-cols-*) gets one implicit `auto` column, which WebKit may size to its
+     content's max-content width — on iPhone that pushed the home page a few px wider than the screen
+     and the right edge got cut off. One shrinkable column keeps every such stack inside its parent. */
+  .grid:not([class*='grid-cols']) { grid-template-columns: minmax(0, 1fr); }
   /* The campus map keeps its own pinch-to-zoom. */
   .leaflet-container { touch-action: none; }
   body {
