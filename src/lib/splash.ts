@@ -5,6 +5,8 @@
  * half-built screen in between. Once gone it never comes back; later full-screen loads render
  * <BootScreen> in React with the same look.
  */
+import { retryShortViewport } from './iosShortViewport';
+
 let holds = 0;
 let timer: ReturnType<typeof setTimeout> | undefined;
 let gone = false;
@@ -22,7 +24,7 @@ function hide() {
   if (!node) return;
   node.classList.add('splash--out');
   node.setAttribute('aria-hidden', 'true');
-  const remove = () => node.remove();
+  const remove = () => { node.remove(); retryShortViewport(); };
   node.addEventListener('transitionend', remove, { once: true });
   setTimeout(remove, 600); // reduced motion / no transition
 }

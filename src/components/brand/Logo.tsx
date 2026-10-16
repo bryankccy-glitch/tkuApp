@@ -1,3 +1,4 @@
+import { retryShortViewport } from '@/lib/iosShortViewport';
 import { cn } from '@/lib/cn';
 import { useLayoutEffect, useState } from 'react';
 import { t } from '@/i18n/t';
@@ -44,6 +45,17 @@ export function Wordmark({ className }: { className?: string }) {
 export function BootScreen({ label = t('common.loading') }: { label?: string }) {
   const [overlay] = useState(splashShowing);
   useLayoutEffect(() => (overlay ? holdSplash() : undefined), [overlay]);
+  // While this full-screen splash is up, paint everything around the page splash-colored too — on iOS a
+  // strip below the page (outside it) shows the html background and would otherwise be the light canvas.
+  useLayoutEffect(() => {
+    if (overlay) return undefined;
+    const root = document.documentElement;
+    root.classList.add('boot-screen');
+    return () => {
+      root.classList.remove('boot-screen');
+      retryShortViewport();
+    };
+  }, [overlay]);
   if (overlay) return null;
   return (
     <div className="splash splash--static" role="status" aria-label={label}>

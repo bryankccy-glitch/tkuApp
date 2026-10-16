@@ -139,6 +139,9 @@ html[data-kb='open'] .bottom-nav { display: none; }
    whose viewport got short): the nav's color, so a stuck page never shows a band of another color.
    While the boot splash is up, index.html paints it splash-red instead. */
 html.app-ready, html.app-ready[data-theme] { background-color: rgb(var(--c-surface)); }
+/* A later full-screen <BootScreen> keeps the surroundings splash-colored (matches index.html). */
+html.boot-screen, html.boot-screen[data-theme] { background-color: #7F1A1F; }
+html.boot-screen[data-theme='dark'] { background-color: #141414; }
 
 /* Bottom safe area, normally the home-indicator inset. When iOS leaves a home-screen app one status bar
    short (lib/iosShortViewport.ts sets html.vp-short and --vp-gap), the missing strip already covers the

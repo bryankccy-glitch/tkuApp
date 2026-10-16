@@ -97,6 +97,12 @@ export function fixShortViewport() {
   setTimeout(() => { nudging = false; applyShortViewport(); }, 400);
 }
 
+/** Start a fresh round of attempts (e.g. once the launch splash is gone and the page has settled). */
+export function retryShortViewport() {
+  attempts = 0;
+  for (const ms of [0, 400, 1200]) setTimeout(fixShortViewport, ms);
+}
+
 function onGesture(e: Event) {
   if (!shortBy()) return;
   const t = e.target instanceof Element ? e.target : null;
