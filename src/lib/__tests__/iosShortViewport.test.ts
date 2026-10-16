@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-async function load(screenH: number, innerH: number, standalone = true) {
+async function load(screenH: number, innerH: number, standalone = true, top = 62) {
   vi.resetModules();
+  setSafeTop(top);
   Object.defineProperty(navigator, 'standalone', { value: standalone, configurable: true });
   Object.defineProperty(window.screen, 'height', { value: screenH, configurable: true });
   Object.defineProperty(window, 'innerHeight', { value: innerH, configurable: true, writable: true });
@@ -10,6 +11,14 @@ async function load(screenH: number, innerH: number, standalone = true) {
   document.documentElement.className = '';
   document.body.innerHTML = '<div id="root"><button>tap</button><textarea></textarea></div>';
   return import('../iosShortViewport');
+}
+
+// jsdom has no layout: report the env(safe-area-inset-top) probe as `top` px tall.
+function setSafeTop(top: number) {
+  Element.prototype.getBoundingClientRect = function (this: HTMLElement) {
+    const h = this.hasAttribute?.('data-safe-top-probe') ? top : 0;
+    return { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: h, width: 0, height: h, toJSON: () => ({}) } as DOMRect;
+  };
 }
 
 describe('iOS short viewport (WebKit 301108)', () => {
@@ -22,8 +31,9 @@ describe('iOS short viewport (WebKit 301108)', () => {
     expect(document.documentElement.style.getPropertyValue('--vp-gap')).toBe('62px');
   });
 
-  it('stays off in the browser, at full height, and while the keyboard is up', async () => {
+  it('stays off in the browser, at full height, with an opaque status bar, and while the keyboard is up', async () => {
     expect((await load(874, 812, false)).applyShortViewport()).toBe(0);
+    expect((await load(874, 812, true, 0)).applyShortViewport()).toBe(0); // old install: page starts below the bar
     expect((await load(874, 874)).applyShortViewport()).toBe(0);
     const mod = await load(874, 812);
     document.querySelector('textarea')!.focus();
@@ -32,8 +42,10 @@ describe('iOS short viewport (WebKit 301108)', () => {
   });
 
   it('nudges on the next tap, but not when the tap is on a text field', async () => {
+    vi.useFakeTimers();
     const mod = await load(874, 812);
     mod.installIosShortViewport();
+    vi.advanceTimersByTime(500); // let the automatic scroll attempt finish
     const nudged: Element[] = [];
     document.addEventListener('focusin', (e) => { if ((e.target as Element).hasAttribute('data-viewport-fix')) nudged.push(e.target as Element); });
     document.querySelector('button')!.click();
@@ -41,6 +53,7 @@ describe('iOS short viewport (WebKit 301108)', () => {
     document.querySelector('textarea')!.click();
     expect(nudged).toHaveLength(1);
     expect(document.querySelector('[data-viewport-fix]')).toBeNull();
+    vi.useRealTimers();
   });
 
   it('scrolls 1px and back to make WebKit recompute the height, leaving nothing behind', async () => {

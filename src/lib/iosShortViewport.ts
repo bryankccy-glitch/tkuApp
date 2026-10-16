@@ -23,9 +23,25 @@ const isField = (el: Element | null) =>
   (el instanceof HTMLInputElement && !['checkbox', 'radio', 'button', 'submit', 'range', 'file'].includes(el.type)) ||
   (el instanceof HTMLElement && el.isContentEditable);
 
+/** Top safe-area inset in px. 0 means the page starts below an opaque status bar (older installs). */
+let probe: HTMLDivElement | null = null;
+export function safeTop(): number {
+  if (!probe) {
+    probe = document.createElement('div');
+    probe.setAttribute('aria-hidden', 'true');
+    probe.setAttribute('data-safe-top-probe', '');
+    probe.style.cssText = 'position:fixed;top:0;left:0;width:0;visibility:hidden;pointer-events:none;height:env(safe-area-inset-top)';
+    document.body.appendChild(probe);
+  }
+  return probe.getBoundingClientRect().height;
+}
+
 /** Missing px at the bottom, or 0 when the page fills the screen (or the keyboard is legitimately up). */
 export function shortBy(): number {
   if (!isStandalone() || isField(document.activeElement)) return 0;
+  // Only the translucent status bar (page drawn under it) has this bug. With an opaque bar the page is
+  // legitimately one status bar shorter than the screen — folding the nav there pushes it too low.
+  if (safeTop() <= 0) return 0;
   if (window.innerWidth > window.innerHeight) return 0;
   const gap = Math.round((window.screen?.height ?? 0) - window.innerHeight);
   return gap >= 20 && gap <= 120 ? gap : 0;
@@ -74,7 +90,7 @@ let nudging = false;
 export function fixShortViewport() {
   const gap = applyShortViewport();
   if (!gap) { attempts = 0; return; }
-  if (nudging || attempts >= 3) return;
+  if (nudging || attempts >= 3) return; // per episode; a tap gets one more try
   attempts += 1;
   nudging = true;
   scrollNudge();
@@ -85,10 +101,12 @@ function onGesture(e: Event) {
   if (!shortBy()) return;
   const t = e.target instanceof Element ? e.target : null;
   if (t?.closest('input, textarea, [contenteditable]')) return; // that tap wants the keyboard
-  attempts = 0;
+  if (nudging || attempts >= 4) return; // never turn into work on every tap
+  attempts += 1;
+  nudging = true;
   scrollNudge();
   nudgeViewport();
-  setTimeout(fixShortViewport, 400);
+  setTimeout(() => { nudging = false; applyShortViewport(); }, 400);
 }
 
 export function installIosShortViewport() {
