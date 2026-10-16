@@ -14,10 +14,12 @@ import { seedPreviewDemo } from './lib/data/previewDemo';
 import { disablePageZoom } from './lib/noZoom';
 import { holdSplash } from './lib/splash';
 import { installIosShortViewport } from './lib/iosShortViewport';
+import { installPwaUpdates } from './lib/pwaUpdate';
 import { reloadForNewVersion } from './app/RouteError';
 
 disablePageZoom();
 installIosShortViewport();
+installPwaUpdates();
 
 // After a deploy, an open/cached app may ask for page code that no longer exists: reload once to get the new version.
 window.addEventListener('vite:preloadError', (e) => {
