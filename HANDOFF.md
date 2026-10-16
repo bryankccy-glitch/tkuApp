@@ -1,7 +1,7 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-14（Asia/Taipei, UTC+8）
+2026-10-16（Asia/Taipei, UTC+8）
 
 ## Updated By
 Claude Code（main）；前一輪 Codex（`codex/schedule-session-labels`）
@@ -20,6 +20,7 @@ Claude Code（main）；前一輪 Codex（`codex/schedule-session-labels`）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **滿版天氣＋iOS 26 底部浮起的最終解 — Claude Code（2026-10-16）**：使用者要首頁／登入的天氣場景延伸到狀態列底下（滿版），同時 AI 助理收鍵盤後底部不能浮起。狀態列改回 `black-translucent`（滿版），WebKit 301108（收鍵盤後 `innerHeight` 874→812）改以 `src/lib/iosShortViewport.ts` 處理：(1) 偵測：主畫面模式、無輸入框聚焦、直向、`screen.height - innerHeight` 介於 20–120；(2) **把視窗捲 1px 再捲回來（`scrollNudge`），WebKit 會重算高度回 874**——在 iOS 26.3 模擬器 iPhone 17 Pro 實測，且不需要使用者手勢，收鍵盤後約 0.5 秒內自動恢復；每次最多試 3 次，下次點擊會再試；(3) 恢復前的過渡期以 `html.vp-short`／`--safe-bottom` 收掉底部安全區、`html.app-ready` 底色＝導覽列色，不會出現色塊。同場以診斷面板比較：改 viewport meta（4 種）、聚焦唯讀 input 在此情境無效。診斷面板（`vpDebug.ts`）已移除。另修：AI 輸入框空白時不再量高度（冷啟動偶爾量到折行的 placeholder 變成三行高）。**iOS 只在加入主畫面時讀狀態列設定：從不透明版（`d758a84`）升級的手機要刪除主畫面 App 再重新加入**。
 - **iOS 26 主畫面 App 底部空白條的真正原因 — Claude Code（2026-10-15）**：使用者回報 `a9e963d` 後兩個問題（鍵盤收起後底部被抬高、淺色啟動時紅色下方白條）仍在。查到根因是 `apple-mobile-web-app-status-bar-style=black-translucent`：iOS 26 主畫面 App 會把頁面從螢幕頂端開始畫、卻少算一個狀態列高度，底部留下 CSS 畫不到的空白條（WebKit bug 301108；其他專案同樣以改為不透明狀態列解決）。改為 `default`（不透明），並移除先前所有繞道修法（`iosViewportFix.ts` 聚焦／失焦、底部偏移；在不透明狀態列下 `screen.height - innerHeight` 本來就等於狀態列高度，會誤判）。**iOS 只在「加入主畫面」時讀這個設定：既有安裝必須從主畫面刪除 App 再重新加入**。之前幾版的修法（88c107b／d3ab56e／edfd83e／398b23a／a9e963d）都只治標，已被取代。
 - **iOS 主畫面 App 鍵盤收起後畫面變矮 — Claude Code（2026-10-15）**：在使用者 Mac 的 Xcode Simulator（iOS 26.3）重現：iPhone 17 Pro（動態島）把 App 加入主畫面 → AI 助理打字送出 → 收鍵盤後 `innerHeight` 由 874 變 812 且不恢復，底部導覽被抬高、下方一條色塊，切頁仍卡住；iPhone 16e（瀏海）不會發生。以暫時診斷面板在模擬器逐一實測：對 `#root`／`html` 切 display、改寫 viewport meta、scrollTo 都無效（812→812）；**聚焦再失焦一個隱藏的唯讀 input 有效（812→874）**。`src/lib/iosViewportFix.ts` 改為：主畫面模式下，輸入框失焦後 150／600ms 及回到前景時，若高度比無鍵盤時最大值少 >4px，就做這個聚焦／失焦（唯讀不會叫出鍵盤）。移除 `88c107b` 的導覽下推做法（缺口不在 WebView 內，只會切掉導覽文字）與診斷面板。第一次自動版（失焦後 150／600ms）部署後在模擬器仍卡住，推測鍵盤動畫期間觸發無效；改為失焦後 300／700／1200／2000ms 與 visualViewport resize 後各檢查一次，判斷基準加入 `screen.height`。「關於」頁底部新增建置版本（Vercel commit SHA 前 7 碼），方便確認手機跑的是哪一版。`398b23a` 在模擬器確認為新版後仍卡住：iOS 只在使用者手勢中接受 `focus()`（診斷面板按鈕是手勢所以有效、計時器不是）。因此再加：卡住後的第一次點擊（點輸入框除外）在 click 事件中執行同一個聚焦／失焦。另外頁面外圍底色（`html`）在 App 就緒後改為導覽列同色（`html.app-ready`），卡住期間底部不會出現別的顏色；啟動畫面期間 `html` 為啟動紅（深色 #141414），修正使用者回報「淺色模式啟動時紅色畫面下方閃一條白色」。
 - **iOS 主畫面 App 底部浮起 — Claude Code（2026-10-14）**：使用者截圖量測：底部導覽（含 34pt 底部安全區）下方還有約 59pt 深色條＝狀態列高度，判斷是 iOS（主畫面模式）把版面算得比螢幕矮一個狀態列，`bottom: 0` 的元素因此浮起。新增 `src/lib/iosViewportGap.ts`：只在主畫面模式、沒有輸入框聚焦（鍵盤會正常縮版面）時，以 `screen.height - innerHeight`（限 0–90px）算出缺口寫入 `--ios-gap`；底部導覽改 `bottom: calc(-1 * var(--ios-gap))` 貼到真正底部，AI 助理圖層高度加上缺口。瀏覽器／正常情況為 0，行為不變。**尚待實機確認**（瀏覽器無法模擬此 iOS 行為）。
