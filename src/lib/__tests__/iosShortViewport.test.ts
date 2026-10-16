@@ -6,6 +6,7 @@ async function load(screenH: number, innerH: number, standalone = true) {
   Object.defineProperty(window.screen, 'height', { value: screenH, configurable: true });
   Object.defineProperty(window, 'innerHeight', { value: innerH, configurable: true, writable: true });
   Object.defineProperty(window, 'innerWidth', { value: 402, configurable: true });
+  window.scrollTo = (() => {}) as typeof window.scrollTo;
   document.documentElement.className = '';
   document.body.innerHTML = '<div id="root"><button>tap</button><textarea></textarea></div>';
   return import('../iosShortViewport');
@@ -40,5 +41,20 @@ describe('iOS short viewport (WebKit 301108)', () => {
     document.querySelector('textarea')!.click();
     expect(nudged).toHaveLength(1);
     expect(document.querySelector('[data-viewport-fix]')).toBeNull();
+  });
+
+  it('scrolls 1px and back to make WebKit recompute the height, leaving nothing behind', async () => {
+    vi.useFakeTimers();
+    const mod = await load(874, 812);
+    const scroll = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    mod.fixShortViewport();
+    expect(scroll).toHaveBeenCalledWith(0, 1);
+    vi.advanceTimersByTime(500);
+    expect(scroll).toHaveBeenLastCalledWith(0, 0);
+    expect(document.querySelector('[data-viewport-spacer]')).toBeNull();
+    for (let i = 0; i < 5; i += 1) { mod.fixShortViewport(); vi.advanceTimersByTime(500); }
+    expect(scroll.mock.calls.filter((c) => c[1] === 1)).toHaveLength(3); // gives up after 3 tries per episode
+    scroll.mockRestore();
+    vi.useRealTimers();
   });
 });
