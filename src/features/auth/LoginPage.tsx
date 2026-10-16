@@ -101,7 +101,7 @@ export default function LoginPage() {
         </div>
       </header>
 
-      <main className="relative z-10 -mt-7 flex-1 rounded-t-[28px] bg-canvas px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-6">
+      <main className="relative z-10 -mt-7 flex-1 rounded-t-[28px] bg-canvas px-5 pb-[calc(1.5rem+var(--safe-bottom))] pt-6">
         {tab === 'forgot' ? (
           <div className="mb-5">
             <h2 className="text-h3 text-ink">{t('auth.resetTitle')}</h2>

@@ -70,7 +70,7 @@
 
 @layer components {
   .tabular { font-variant-numeric: tabular-nums; }
-  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-bottom { padding-bottom: var(--safe-bottom); }
   .field {
     @apply w-full rounded-sm border border-line bg-surface px-3 py-2.5 text-body text-ink placeholder:text-muted
       focus:border-blue focus:outline-none focus:ring-2 focus:ring-blue/25;
@@ -131,3 +131,9 @@ html[data-kb='open'] .bottom-nav { display: none; }
    whose viewport got short): the nav's color, so a stuck page never shows a band of another color.
    While the boot splash is up, index.html paints it splash-red instead. */
 html.app-ready, html.app-ready[data-theme] { background-color: rgb(var(--c-surface)); }
+
+/* Bottom safe area, normally the home-indicator inset. When iOS leaves a home-screen app one status bar
+   short (lib/iosShortViewport.ts sets html.vp-short and --vp-gap), the missing strip already covers the
+   home indicator, so the inset shrinks by that much and the nav sits flush instead of floating. */
+:root { --safe-bottom: env(safe-area-inset-bottom); }
+html.vp-short { --safe-bottom: max(0px, calc(env(safe-area-inset-bottom) - var(--vp-gap, 0px))); }
