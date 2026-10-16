@@ -8,6 +8,14 @@ for (const path of PAGES) {
     await page.waitForLoadState('networkidle');
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(0);
+    // Even if something grows 1px too wide later, the page itself must not move sideways.
+    await page.evaluate(() => {
+      const wide = document.createElement('div');
+      wide.style.cssText = 'width:150vw;height:1px';
+      document.body.appendChild(wide);
+      window.scrollTo(80, window.scrollY);
+    });
+    expect(await page.evaluate(() => window.scrollX)).toBe(0);
   });
 }
 

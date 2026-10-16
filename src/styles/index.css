@@ -48,6 +48,10 @@
 @layer base {
   /* App feel: fixed layout — no pinch-zoom or double-tap zoom (scrolling still works). */
   html { -webkit-text-size-adjust: 100%; touch-action: pan-x pan-y; }
+  /* Pages only scroll up and down: nothing may widen the page, so it can't be dragged sideways off
+     center (iOS lets a page pan/bounce horizontally as soon as anything is even 1px too wide).
+     `clip` (not hidden) keeps window scrolling and position: sticky working. */
+  html, body { overflow-x: clip; overscroll-behavior-x: none; }
   /* The campus map keeps its own pinch-to-zoom. */
   .leaflet-container { touch-action: none; }
   body {
