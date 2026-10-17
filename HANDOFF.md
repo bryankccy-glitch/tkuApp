@@ -20,6 +20,7 @@ Claude Code（main）；前一輪 Codex（`codex/schedule-session-labels`）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **啟動畫面顏色跟 App 外觀一致 — Claude Code（2026-10-17）**：使用者手機系統深色、App「外觀」設淺色，開啟時先黑（iOS 依系統外觀選的 apple-touch-startup-image）再紅（網頁 splash 依 App 設定）。改為：App 設定為淺色／深色時，`theme-init.js`（最早）與 `ThemeProvider`（切換時）把所有啟動圖改指向該主題、移除 `prefers-color-scheme` 條件（`src/lib/startupImage.ts`）；「跟隨系統」維持原本依系統選圖。iOS 在啟動時讀啟動圖，所以切換外觀後下一次開啟才生效；若 iOS 只在加入主畫面時快取，需重新加入。**尚待 iPhone 確認**。
 - **載入畫面下方淺色條（第二次）— Claude Code（2026-10-17）**：使用者回報 `4dbaee6` 後仍有淺色條。工作目錄中有一份來源不明、未提交的 `index.html` 修改（2026-10-17 00:55，非本對話所寫）：啟動畫面期間 `body` 透明、`#root` 不繪製（iOS 依頁面本身——body 底色與頁面底部內容，如淺色導覽列——決定下方空白條顏色）。檢查後採用並提交；因 `#root` 隱藏期間無法聚焦，E2E「skip link」改為等 `app-ready` 後才按 Tab。**尚待 iPhone 確認**。
 - **載入畫面下方淺色條 — Claude Code（2026-10-16）**：使用者截圖：啟動畫面（紅）下方一條米白。iOS 26 啟動時頁面也可能少一個狀態列高（WebKit 301108），下方那條顯示 `html` 背景；`#boot` 結束後若 React 又顯示 `<BootScreen>`（登入確認、學期、lazy 頁），此時 `html.app-ready` 已是頁面底色。`BootScreen` 顯示期間加 `html.boot-screen`（淺色 #7F1A1F、深色 #141414，與啟動畫面相同），結束時與 `#boot` 移除時都重新嘗試恢復完整高度（`retryShortViewport`）。新增 `BootScreen.test.tsx`。**尚待 iPhone 確認**。
 - **首頁右側被切掉 — Claude Code（2026-10-16）**：使用者 iPhone 截圖：有活動資料後，首頁內容比螢幕寬約 17px，右邊卡片與「查看全部」被 `overflow-x: clip` 切掉。推斷原因是 WebKit 對沒有指定欄數的 `grid`（隱含 `auto` 欄）依內容 max-content 撐寬；Chromium 不會（Playwright 量不到超出）。全域加 `.grid:not([class*='grid-cols']) { grid-template-columns: minmax(0, 1fr) }`。**尚待 iPhone 實機確認**。

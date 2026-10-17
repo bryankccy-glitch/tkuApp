@@ -1,3 +1,4 @@
+import { syncStartupImages } from '@/lib/startupImage';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 
 export type ThemePref = 'light' | 'dark' | 'system';
@@ -24,6 +25,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     apply(pref);
+    syncStartupImages(pref);
     if (pref !== 'system' || !window.matchMedia) return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const on = () => apply('system');
