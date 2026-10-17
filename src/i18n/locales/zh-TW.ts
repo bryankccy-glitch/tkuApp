@@ -245,6 +245,7 @@ const zh = {
     "unknownError": "發生未知錯誤",
     "loadFailed": "資料載入失敗",
     "reload": "重新載入",
+    "slowLoad": "載入比平常久，可以重新載入試試",
     "checkingSignIn": "確認登入狀態",
     "updatedTitle": "App 已更新",
     "updatedBody": "正在載入新版本。如果畫面沒有自動更新，請按下方按鈕重新整理。",

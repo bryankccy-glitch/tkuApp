@@ -39,16 +39,22 @@ export function AuthProvider({ children, localRepository = localRepo }: { childr
 
   useEffect(() => {
     if (!supabase) return;
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
+    // Never wait forever for the sign-in check: on a slow/offline phone, refreshing an expired session
+    // (or a stuck storage lock in supabase-js) could leave the app on the loading screen indefinitely.
+    let settled = false;
+    const done = () => { if (!settled) { settled = true; setLoading(false); } };
+    const timer = setTimeout(done, 6000);
+    supabase.auth.getSession()
+      .then(({ data }) => setSession(data.session))
+      .catch(() => { /* treated as signed out; a later auth event can still sign in */ })
+      .finally(() => { clearTimeout(timer); done(); });
     const { data } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
+      done();
       // Signing in ends guest mode.
       if (s) { writeGuest(false); setGuest(false); }
     });
-    return () => data.subscription.unsubscribe();
+    return () => { clearTimeout(timer); data.subscription.unsubscribe(); };
   }, []);
 
   const continueAsGuest = useCallback(() => { writeGuest(true); setGuest(true); }, []);

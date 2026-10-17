@@ -29,6 +29,33 @@ function hide() {
   setTimeout(remove, 600); // reduced motion / no transition
 }
 
+/** If loading stalls (slow network, a stuck request), offer a way out instead of an endless splash. */
+export const STALL_MS = 12_000;
+export function stallMessage(): { text: string; button: string } {
+  const en = typeof document !== 'undefined' && document.documentElement.lang === 'en';
+  return en
+    ? { text: 'This is taking longer than usual. Try reloading.', button: 'Reload' }
+    : { text: '載入比平常久，可以重新載入試試', button: '重新載入' };
+}
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    const node = el();
+    if (gone || !node || node.querySelector('.splash-retry')) return;
+    const { text, button } = stallMessage();
+    const box = document.createElement('div');
+    box.className = 'splash-retry';
+    const msg = document.createElement('p');
+    msg.textContent = text;
+    msg.style.margin = '0';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = button;
+    btn.addEventListener('click', () => window.location.reload());
+    box.append(msg, btn);
+    node.querySelector('.splash-bar')?.after(box);
+  }, STALL_MS);
+}
+
 /** Keeps the splash up until the returned release function is called. */
 export function holdSplash(): () => void {
   if (!splashShowing()) {

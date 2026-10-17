@@ -1,8 +1,8 @@
 import { retryShortViewport } from '@/lib/iosShortViewport';
 import { cn } from '@/lib/cn';
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { t } from '@/i18n/t';
-import { holdSplash, splashShowing } from '@/lib/splash';
+import { STALL_MS, holdSplash, splashShowing } from '@/lib/splash';
 
 const base = import.meta.env.BASE_URL;
 const src = (size: 128 | 256 | 512) => `${base}brand/logo-${size}.png`;
@@ -56,6 +56,12 @@ export function BootScreen({ label = t('common.loading') }: { label?: string }) 
       retryShortViewport();
     };
   }, [overlay]);
+  const [stalled, setStalled] = useState(false);
+  useEffect(() => {
+    if (overlay) return undefined;
+    const id = setTimeout(() => setStalled(true), STALL_MS);
+    return () => clearTimeout(id);
+  }, [overlay]);
   if (overlay) return null;
   return (
     <div className="splash splash--static" role="status" aria-label={label}>
@@ -63,6 +69,12 @@ export function BootScreen({ label = t('common.loading') }: { label?: string }) 
       <p className="splash-title">TKU Campus OS</p>
       <p className="splash-sub">{t('brand.subtitle')}</p>
       <div className="splash-bar" aria-hidden="true"><span /></div>
+      {stalled && (
+        <div className="splash-retry">
+          <p style={{ margin: 0 }}>{t('common.slowLoad')}</p>
+          <button type="button" onClick={() => window.location.reload()}>{t('common.reload')}</button>
+        </div>
+      )}
       <p className="splash-tag">One Campus. One OS.</p>
     </div>
   );

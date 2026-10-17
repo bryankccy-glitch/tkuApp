@@ -245,6 +245,7 @@ const en = {
     "unknownError": "Something went wrong",
     "loadFailed": "Couldn’t load data",
     "reload": "Reload",
+    "slowLoad": "This is taking longer than usual. Try reloading.",
     "checkingSignIn": "Checking sign-in",
     "updatedTitle": "App updated",
     "updatedBody": "Loading the new version. If the screen doesn’t refresh by itself, tap the button below.",
