@@ -65,6 +65,8 @@ test('PWA manifest and service worker are installable', async ({ page, request }
 
 test('keyboard users can skip to main content', async ({ page }) => {
   await page.goto('/');
+  // The app is hidden (not focusable) under the launch splash; tab once it is shown.
+  await page.waitForFunction(() => document.documentElement.classList.contains('app-ready'));
   await page.keyboard.press('Tab');
   const skip = page.getByRole('link', { name: '跳到主要內容' });
   await expect(skip).toBeFocused();

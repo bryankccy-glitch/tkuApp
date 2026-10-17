@@ -46,6 +46,13 @@
       /* Until the app is ready, everything around the page is splash-colored (no white strip at launch). */
       html { background-color: #7F1A1F; }
       html[data-theme='dark'] { background-color: #141414; }
+      /* iOS colors the strip it leaves below a too-short page (WebKit 301108) from the page itself — the
+         body background and what sits at the page's bottom edge (the app painted under the splash, e.g.
+         the light nav). While a splash is up, nothing but splash color may show: body is transparent and
+         the app under it is not painted (it is still laid out, so revealing it is instant). */
+      html:not(.app-ready) body, html.boot-screen body { background-color: transparent !important; }
+      html:not(.app-ready) #root, html.boot-screen #root { visibility: hidden; }
+      html.boot-screen #root .splash { visibility: visible; }
       /* Boot splash. It sits above #root as its own layer and fades out once the first real screen is ready
          (src/lib/splash.ts). <BootScreen> reuses these styles if a full-screen load happens later.
          Logo and title stay still so the iOS launch image hands off without a jump; only the rest fades in. */
