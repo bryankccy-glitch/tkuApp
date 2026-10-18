@@ -615,6 +615,25 @@ const en = {
     "confirmPassword": "Confirm password",
     "updatePassword": "Update password"
   },
+  "widget": {
+    "title": "Home Screen widget",
+    "intro": "A Weather-style widget on your iPhone Home Screen: next class, today's classes, your nearest task and Tamsui weather.",
+    "needsAccount": "The widget reads your cloud data, so sign in first (guest data stays inside the app on this device).",
+    "step1": "Install the free “Scriptable” app from the App Store.",
+    "step2": "Tap “Create widget” below, then “Copy widget script”.",
+    "step3": "Open Scriptable, tap “+”, paste the script and name it “TKU Campus”.",
+    "step4": "On the Home Screen, long-press → Edit → Add Widget → Scriptable (medium). Long-press it → Edit Widget → choose “TKU Campus” as the Script.",
+    "create": "Create widget",
+    "regenerate": "Create a new one (the old one stops working)",
+    "copy": "Copy widget script",
+    "copied": "Copied — paste it into Scriptable",
+    "copyFailed": "Couldn't copy, please try again",
+    "onceNote": "The script contains your personal key and is shown only now; create a new one if you need it again.",
+    "privacy": "The key can only read your timetable and tasks. Don't share it.",
+    "revoke": "Turn off widget",
+    "revoked": "Turned off — the widget will show that it can't load",
+    "failed": "Something went wrong, please try again"
+  },
   "me": {
     "signedOut": "Signed out",
     "guestTitle": "Guest mode",

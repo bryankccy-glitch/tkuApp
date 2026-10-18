@@ -615,6 +615,25 @@ const zh = {
     "confirmPassword": "再輸入一次",
     "updatePassword": "更新密碼"
   },
+  "widget": {
+    "title": "桌面小工具",
+    "intro": "在 iPhone 桌面放一個像天氣小工具的方塊：下一堂課、今天課表、最近的作業和淡水天氣。",
+    "needsAccount": "桌面小工具要讀取雲端資料，請先登入帳號（訪客模式的資料只存在這台裝置的 App 裡）。",
+    "step1": "到 App Store 安裝免費的「Scriptable」。",
+    "step2": "按下方「產生小工具」，再按「複製小工具程式」。",
+    "step3": "打開 Scriptable，按右上角「＋」，把程式貼上，名稱改成「淡江校園」。",
+    "step4": "回到桌面長按空白處 →「編輯」→「加入小工具」→ 選 Scriptable 的中型方塊，再長按它 →「編輯小工具」→ Script 選「淡江校園」。",
+    "create": "產生小工具",
+    "regenerate": "重新產生（舊的會失效）",
+    "copy": "複製小工具程式",
+    "copied": "已複製，貼到 Scriptable 即可",
+    "copyFailed": "無法複製，請再試一次",
+    "onceNote": "程式裡含你的個人密鑰，只會顯示這一次；離開此頁後要再拿，請重新產生。",
+    "privacy": "密鑰只能讀取你的課表和作業，請勿分享。",
+    "revoke": "停用小工具",
+    "revoked": "已停用，桌面上的小工具會顯示無法讀取",
+    "failed": "設定失敗，請稍後再試"
+  },
   "me": {
     "signedOut": "已登出",
     "guestTitle": "訪客模式",

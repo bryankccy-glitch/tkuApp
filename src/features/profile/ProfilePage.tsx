@@ -10,6 +10,7 @@ import { useAuth, useRepo } from '@/app/AuthProvider';
 import { useTheme, type ThemePref } from '@/app/ThemeProvider';
 import { useTranslation } from 'react-i18next';
 import { ReminderSettings } from './ReminderSettings';
+import { WidgetSettings } from './WidgetSettings';
 import { useProfile, useUpdateProfile } from '@/lib/hooks';
 import { downloadText } from '@/lib/ics';
 import { useQueryClient } from '@tanstack/react-query';
@@ -163,6 +164,7 @@ export default function ProfilePage() {
       </section>
 
       <ReminderSettings />
+      <WidgetSettings />
 
       <section aria-labelledby="p-data" className="mt-5 rounded-lg border border-line bg-surface">
         <h2 id="p-data" className="px-5 pt-5 text-h3 text-ink">{t('me.dataPrivacy')}</h2>
