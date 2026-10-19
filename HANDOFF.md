@@ -20,6 +20,7 @@ Claude Code（main）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **校園活動每日自動同步 — Claude Code（2026-10-19）**：新增 `api/sync-events.ts`＋Vercel Cron（`vercel.json` `crons`，每天 UTC 20:00＝台北 04:00）。抓 enroll.tku.edu.tw 列表（含分頁）與候選活動頁，條件：學生可參加、未額滿、10 週內開始、活動期間 ≤14 天、非招生／系友等；新活動以欄位組成的摘要寫入（不複製原文），既有活動只更新時間／地點（保留手寫摘要），變額滿或從列表消失的未來活動改 archived；列表少於 10 筆視為頁面異常、不動資料。`campus_events.source_url` 加唯一索引（migration `20261019060000`，已套用線上）。解析器依 WebFetch 看到的頁面結構寫成並以合成 HTML 測試（`api/sync-events.test.ts`），**未對真實 HTML 跑過**（此環境連不到 enroll.tku.edu.tw）。需開發者在 Vercel 設 `CRON_SECRET`（未設時端點回 503，不會執行）。
 - **iPhone 桌面小工具（Scriptable 版）— Claude Code（2026-10-18）**：使用者要像 iOS 天氣小工具的桌面小工具，選「先 A（Scriptable）後 B（原生 App＋WidgetKit）」，內容：下一堂課、今天課表、淡水天氣、最近作業。網頁 App 無法提供 iOS 小工具，故由免費的 Scriptable App 承載。新增：(1) migration `20261018140000_widget_tokens.sql`（已用 Supabase MCP 套用到線上；每人一組密鑰，只存 SHA-256；RLS 僅本人可建立／讀／刪，已以 SQL 驗證不能替他人建立）；(2) `api/widget.ts`（GET＋Bearer 密鑰，service role 依雜湊找使用者，回傳本學期下一堂課／今日課表（連堂合併）／最近未完成作業／Open-Meteo 淡水天氣，`api/widget.test.ts`）；(3) 「我的 → 桌面小工具」（`WidgetSettings.tsx`）：產生／重新產生／停用、複製含密鑰的 Scriptable 腳本與步驟，訪客顯示需登入；(4) 腳本 `widgetScript.ts`（中型／小型，淡江紅漸層）。腳本以 Node 模擬 Scriptable API 跑過版面邏輯與錯誤畫面，**未在真的 Scriptable／iPhone 上執行過**。⚠ 範圍：`api/**` 與 migration 原屬 Codex，此次依使用者直接要求由 Claude Code 撰寫，Codex 之後可接手維護。B（原生 App）尚未開始。
 - **啟動卡在載入畫面 — Claude Code（2026-10-17）**：使用者回報「載入不進去」。iOS 模擬器（訪客、Wi-Fi）可正常開啟，未能重現。程式中找到會無限等待的地方：`AuthProvider` 的 `supabase.auth.getSession()` 沒有逾時也沒有 catch——已登入且 token 過期時要先連線換新，手機網路慢／離線或 supabase-js 的儲存鎖卡住就永遠停在「確認登入狀態」。修正：最多等 6 秒（逾時當作未登入，之後拿到 session 會自動從登入頁回首頁）、錯誤也結束載入、`onAuthStateChange` 首次事件也結束載入。另加保險：啟動畫面（`#boot` 與 React `<BootScreen>`）超過 12 秒顯示「載入比平常久」與「重新載入」按鈕。新增 `AuthProvider.test.tsx`。
 - **啟動畫面顏色跟 App 外觀一致 — Claude Code（2026-10-17）**：使用者手機系統深色、App「外觀」設淺色，開啟時先黑（iOS 依系統外觀選的 apple-touch-startup-image）再紅（網頁 splash 依 App 設定）。改為：App 設定為淺色／深色時，`theme-init.js`（最早）與 `ThemeProvider`（切換時）把所有啟動圖改指向該主題、移除 `prefers-color-scheme` 條件（`src/lib/startupImage.ts`）；「跟隨系統」維持原本依系統選圖。iOS 在啟動時讀啟動圖，所以切換外觀後下一次開啟才生效；若 iOS 只在加入主畫面時快取，需重新加入。**尚待 iPhone 確認**。
@@ -112,7 +113,7 @@ Claude Code（main）
 
 ## Known Issues
 - 以下標「尚待 iPhone 確認」的版面修正只在模擬器或測試中驗證過
-- 校園活動是 2026-10-16 快照，不會自動更新或下架額滿／過期活動
+- 校園活動同步的解析器尚未對真實頁面驗證；若淡江網站改版或擋掉 Vercel 的連線，同步會失敗（Logs 會記錄，資料不會被清空）
 - Supabase 安全建議：Auth 的「Leaked password protection」未開（需開發者在後台 Authentication → Settings 開啟）；SECURITY DEFINER 好友／刪帳號函式開放 authenticated 呼叫屬設計如此；ai_usage／knowledge_chunks／admin_audit_logs 只給 service role（無 policy 屬設計）
 - 一位使用者 Email 網域為 gamil.com（疑似打錯），重設密碼信會收不到
 - 淡江大橋塔身輪廓與單/雙索面待查核（目前為詮釋）
@@ -127,7 +128,7 @@ Claude Code（main）
 
 ## Next Steps
 - **桌面小工具**：使用者在 iPhone 裝 Scriptable 實測後依截圖微調；第二階段 B（原生 App＋WidgetKit，需 Xcode 與 Apple Developer）尚未開始
-- **校園活動自動同步**：Vercel Cron 每日抓 enroll.tku.edu.tw 列表與活動頁，依 source_url upsert，額滿／過期改 archived
+- **校園活動自動同步**：已實作；待開發者設 `CRON_SECRET` 後在 Vercel → Cron Jobs 手動 Run 一次，看 Logs 的 `sync-events {...}` 結果，並確認首頁活動
 - **AI 知識庫**：在有 GEMINI_API_KEY 的環境執行 `npm run ingest`（knowledge_documents 目前 0 筆）
 - **Codex（api，使用者截圖 2026-10-14）**：正式站問「明天第一堂課在哪裡？」回「目前無法產生回答，請稍後再試。」——此句是 `api/gemini.ts` 在已呼叫工具（有 sources）但最後串流沒有任何文字時的備援。推測：最後一次 `streamGenerateContent` 沒帶 `tools`，但對話內含 functionCall／functionResponse，模型仍想呼叫工具而回空（或回傳只有 thought）。建議：(1) 第一輪 `generateContent` 若已有文字且無 function call，直接用該文字回應，不再多打一次串流；(2) 最後串流請求帶同樣 `tools` 並設 `toolConfig.functionCallingConfig.mode = 'NONE'`；(3) 記錄 `finishReason`（不含內容）方便查 Vercel logs。Claude Code 因裝置連線中斷未能查看 Vercel 執行紀錄。
 - **開發者／Claude Code**：行事曆分支已依使用者授權合併並正式部署。私人行程 migration 已套用，勿重複建立表；真人登入後驗證雲端 CRUD，重新上傳截圖核對教師／助教，再由使用者確認加入。舊課程中已合併的正課／助教資料不會自動重建，需核對原圖。單日完整小時格已撤回，不要實作。後續可加私人行程提醒／.ics／可信校曆。誤建 `AGEMINI_API_KEY` 可由開發者自行刪除，保留正確 `GEMINI_API_KEY`。
