@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import * as images from '@/lib/images';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MarketPage, { filterPosts } from '../MarketPage';
@@ -14,7 +15,7 @@ const routes = [
 
 const post = (over: Partial<MarketPost>): MarketPost => ({
   id: 'p1', userId: 'other', authorName: '學長', kind: 'sell', category: 'book', title: '微積分課本', description: '幾乎全新',
-  price: 300, courseCode: 'TEBXB0A', condition: 'like_new', status: 'open', commentCount: 0, createdAt: new Date().toISOString(), updatedAt: '', ...over,
+  price: 300, courseCode: 'TEBXB0A', condition: 'like_new', status: 'open', photos: [], commentCount: 0, createdAt: new Date().toISOString(), updatedAt: '', ...over,
 });
 
 describe('filterPosts', () => {
@@ -62,6 +63,24 @@ describe('Market pages', () => {
     expect(await screen.findByRole('heading', { name: '普通物理 課本' })).toBeInTheDocument();
     expect(social.posts[0]).toMatchObject({ title: '普通物理 課本', price: 250, kind: 'sell' });
     expect(screen.getByText('管理我的貼文')).toBeInTheDocument();
+  });
+
+  it('uploads photos (downscaled) and shows them on the post', async () => {
+    localStorage.setItem('tku.market.rulesAccepted', '1');
+    vi.spyOn(images, 'downscaleToJpeg').mockResolvedValue(new Blob(['x'], { type: 'image/jpeg' }));
+    const { repo, social } = repoWithSocial();
+    const user = userEvent.setup();
+    renderApp(routes, '/market', repo);
+    await user.click((await screen.findAllByRole('button', { name: '發文' }))[0]!);
+    const dialog = await screen.findByRole('dialog', { name: '新增貼文' });
+    await user.type(within(dialog).getByLabelText('標題'), '工程數學 講義');
+    const file = new File(['img'], 'a.png', { type: 'image/png' });
+    await user.upload(within(dialog).getByLabelText('加入照片'), file);
+    expect(await within(dialog).findByRole('button', { name: '移除這張照片' })).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: '刊登' }));
+    expect(await screen.findByRole('img', { name: '商品照片 1' })).toBeInTheDocument();
+    expect(social.posts[0]!.photos).toHaveLength(1);
+    expect(images.downscaleToJpeg).toHaveBeenCalledTimes(1);
   });
 
   it('lets others comment and report, but not manage the post', async () => {

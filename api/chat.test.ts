@@ -214,6 +214,23 @@ describe('AI configuration and prompt injection boundaries', () => {
     expect(String(fetchMock.mock.calls[1]?.[0])).not.toContain(env.geminiApiKey);
   });
 
+  it('never answers "目前無法產生回答" when the final stream is empty but a retry has text', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(modelResponse([{ functionCall: { id: 'c1', name: 'getTodaySchedule', args: {} } }]))
+      .mockResolvedValueOnce(modelResponse([{ text: '' }]))
+      .mockResolvedValueOnce(streamedText([]))
+      .mockResolvedValueOnce(modelResponse([{ text: '明天第一堂在 B217。' }]));
+    vi.stubGlobal('fetch', fetchMock);
+    const store = makeStore();
+    const { response, chunks } = makeResponse();
+    await createChatHandler({ readEnv: () => env, createStore: () => store, answer: answerWithTools, now: () => new Date() })(mockRequest(), response);
+    const finalStream = JSON.parse(String(fetchMock.mock.calls[2]?.[1]?.body)) as { toolConfig?: { functionCallingConfig?: { mode?: string } }; tools?: unknown[] };
+    expect(finalStream.toolConfig?.functionCallingConfig?.mode).toBe('NONE');
+    expect(finalStream.tools?.length).toBe(1);
+    expect(chunks.join('')).toContain('明天第一堂在 B217。');
+    expect(chunks.join('')).not.toContain('目前無法產生回答');
+  });
+
   it.each(['tool-round', 'final-stream'])('returns HTTP 429 before SSE starts when Gemini exhausts quota at %s', async (stage) => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const fetchMock = vi.fn();

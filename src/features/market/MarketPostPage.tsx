@@ -69,6 +69,15 @@ function PostDetail({ userId }: { userId: string }) {
         {p.courseCode && <Info label={t('market.form.courseCode')} value={p.courseCode} />}
         <Info label={t('market.postedBy')} value={`${p.authorName} · ${timeAgo(p.createdAt)}`} />
       </dl>
+      {p.photos.length > 0 && (
+        <div className="-mx-4 mt-4 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-1">
+          {p.photos.map((url, i) => (
+            <a key={url} href={url} target="_blank" rel="noreferrer noopener" className="shrink-0 snap-start">
+              <img src={url} alt={t('market.photoAlt', { n: i + 1 })} className="h-56 max-w-[85vw] rounded-sm border border-line object-cover" />
+            </a>
+          ))}
+        </div>
+      )}
       {p.description && <p className="mt-4 whitespace-pre-wrap break-words text-body text-ink">{p.description}</p>}
 
       {mine ? (

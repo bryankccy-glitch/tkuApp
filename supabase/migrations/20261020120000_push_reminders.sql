@@ -35,7 +35,7 @@ grant all on public.push_sent to service_role;
 
 -- Every minute: call the Vercel function. The shared secret lives in Vault as 'cron_secret'
 -- (set by the developer: select vault.create_secret('<CRON_SECRET>', 'cron_secret');).
-create extension if not exists pg_net;
+create extension if not exists pg_net with schema extensions;
 create extension if not exists pg_cron;
 select cron.schedule(
   'push-reminders',

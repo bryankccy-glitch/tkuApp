@@ -701,7 +701,7 @@ const zh = {
     "notePush": "已開啟推播：就算 App 完全關閉，時間到也會跳通知（iPhone 需 iOS 16.4 以上、從主畫面開啟的 App）。",
     "noteCanPush": "開啟後會改用推播，App 關閉也會提醒。",
     "pushFailed": "無法開啟推播，暫時只在 App 開著時提醒",
-    "note": "App 開著或在背景執行時會準時提醒；完全關閉 App 後的推播需要伺服器支援，正在規劃中。也可以在課程或待辦上用「加入提醒」存進手機行事曆。"
+    "note": "訪客模式只會在 App 開著時提醒；登入帳號後開啟提醒，就能在 App 關閉時也收到推播。也可以在課程或待辦上用「加入提醒」存進手機行事曆。"
   },
   "about": {
     "title": "關於 TKU Campus OS",
@@ -864,7 +864,14 @@ const zh = {
     "posted": "已刊登",
     "saved": "已更新貼文",
     "deleted": "已刪除貼文",
+    "photoAlt": "商品照片 {{n}}",
     "form": {
+      "photos": "照片",
+      "photosHint": "選填，最多 {{count}} 張，會自動壓縮",
+      "photoAdd": "加入照片",
+      "photoUploading": "上傳中…",
+      "photoRemove": "移除這張照片",
+      "photoFailed": "照片上傳失敗，請再試一次",
       "newTitle": "新增貼文",
       "editTitle": "編輯貼文",
       "publish": "刊登",

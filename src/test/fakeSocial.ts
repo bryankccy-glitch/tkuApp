@@ -44,7 +44,7 @@ export class FakeSocial implements SocialApi {
   async getMarketPost(id: string) { return (await this.listMarketPosts()).find((p) => p.id === id) ?? null; }
   async createMarketPost(input: MarketPostInput) {
     const now = new Date().toISOString();
-    const post: MarketPost = { ...input, id: this.id('p'), userId: this.userId, authorName: '我', status: 'open', commentCount: 0, createdAt: now, updatedAt: now };
+    const post: MarketPost = { ...input, photos: input.photos ?? [], id: this.id('p'), userId: this.userId, authorName: '我', status: 'open', commentCount: 0, createdAt: now, updatedAt: now };
     this.posts.unshift(post);
     return post;
   }
@@ -54,6 +54,10 @@ export class FakeSocial implements SocialApi {
     Object.assign(p, patch);
     return p;
   }
+  async uploadMarketPhoto(_photo: Blob) {
+    return `https://example.supabase.co/storage/v1/object/public/market-photos/${this.id('img')}.jpg`;
+  }
+
   async deleteMarketPost(id: string) { this.posts = this.posts.filter((p) => p.id !== id); }
   async listComments(postId: string) { return this.comments.filter((c) => c.postId === postId); }
   async addComment(postId: string, body: string) {

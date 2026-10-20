@@ -95,7 +95,9 @@ function MarketFeed({ userId }: { userId: string }) {
         <ul className="grid gap-2.5">
           {list.map((p) => (
             <li key={p.id}>
-              <Link to={`/market/${p.id}`} className={cn('block rounded-lg border border-line bg-surface p-4 transition-colors hover:bg-sunken', p.status === 'closed' && 'opacity-60')}>
+              <Link to={`/market/${p.id}`} className={cn('flex gap-3 rounded-lg border border-line bg-surface p-4 transition-colors hover:bg-sunken', p.status === 'closed' && 'opacity-60')}>
+                {p.photos[0] && <img src={p.photos[0]} alt="" loading="lazy" className="h-20 w-20 shrink-0 rounded-sm border border-line object-cover" />}
+                <div className="min-w-0 flex-1">
                 <div className="flex items-start gap-2">
                   <KindBadge kind={p.kind} />
                   <p className="min-w-0 flex-1 text-body font-semibold leading-snug text-ink">{p.title}</p>
@@ -110,6 +112,7 @@ function MarketFeed({ userId }: { userId: string }) {
                   <span className="inline-flex shrink-0 items-center gap-1" aria-label={t('market.commentCount', { count: p.commentCount })}>
                     <MessageCircle className="h-3.5 w-3.5" aria-hidden />{p.commentCount}
                   </span>
+                </div>
                 </div>
               </Link>
             </li>

@@ -29,17 +29,17 @@ interface FriendScheduleRow {
 }
 interface PostRow {
   id: string; user_id: string; author_name: string; kind: MarketKind; category: MarketCategory; title: string;
-  description: string; price: number | null; course_code: string | null; condition: MarketCondition | null;
+  description: string; price: number | null; course_code: string | null; condition: MarketCondition | null; photos: string[] | null;
   status: MarketStatus; created_at: string; updated_at: string; market_comments?: { count: number }[];
 }
 interface CommentRow { id: string; post_id: string; user_id: string; author_name: string; body: string; created_at: string }
 
-const POST_COLS = 'id, user_id, author_name, kind, category, title, description, price, course_code, condition, status, created_at, updated_at, market_comments(count)';
+const POST_COLS = 'id, user_id, author_name, kind, category, title, description, price, course_code, condition, photos, status, created_at, updated_at, market_comments(count)';
 
 function mapPost(r: PostRow): MarketPost {
   return {
     id: r.id, userId: r.user_id, authorName: r.author_name, kind: r.kind, category: r.category, title: r.title,
-    description: r.description, price: r.price, courseCode: r.course_code, condition: r.condition, status: r.status,
+    description: r.description, price: r.price, courseCode: r.course_code, condition: r.condition, status: r.status, photos: r.photos ?? [],
     commentCount: r.market_comments?.[0]?.count ?? 0, createdAt: r.created_at, updatedAt: r.updated_at,
   };
 }
@@ -119,6 +119,7 @@ export class SupabaseSocial implements SocialApi {
     const { data, error } = await this.db.from('market_posts').insert({
       kind: input.kind, category: input.category, title: input.title.trim(), description: input.description.trim(),
       price: input.price, course_code: input.courseCode?.trim().toUpperCase() || null, condition: input.condition,
+      photos: (input.photos ?? []).slice(0, 4),
     }).select(POST_COLS).single();
     fail(error);
     return mapPost(data as unknown as PostRow);
@@ -134,9 +135,17 @@ export class SupabaseSocial implements SocialApi {
     if (patch.courseCode !== undefined) row.course_code = patch.courseCode?.trim().toUpperCase() || null;
     if (patch.condition !== undefined) row.condition = patch.condition;
     if (patch.status !== undefined) row.status = patch.status;
+    if (patch.photos !== undefined) row.photos = patch.photos.slice(0, 4);
     const { data, error } = await this.db.from('market_posts').update(row).eq('id', id).select(POST_COLS).single();
     fail(error);
     return mapPost(data as unknown as PostRow);
+  }
+
+  async uploadMarketPhoto(photo: Blob) {
+    const path = `${this.userId}/${crypto.randomUUID()}.jpg`;
+    const { error } = await this.db.storage.from('market-photos').upload(path, photo, { contentType: 'image/jpeg', upsert: false });
+    fail(error);
+    return this.db.storage.from('market-photos').getPublicUrl(path).data.publicUrl;
   }
 
   async deleteMarketPost(id: string) {

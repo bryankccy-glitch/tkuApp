@@ -701,7 +701,7 @@ const en = {
     "notePush": "Push is on: reminders arrive even when the app is closed (iPhone needs iOS 16.4+ and the Home Screen app).",
     "noteCanPush": "Turning this on uses push, so reminders arrive even when the app is closed.",
     "pushFailed": "Couldn't turn on push — reminders only while the app is open for now",
-    "note": "Reminders arrive while the app is open or running in the background. Push notifications after the app is fully closed need a server and are planned. You can also use “Add reminder” to save items to your phone calendar."
+    "note": "In guest mode reminders only arrive while the app is open; sign in and turn reminders on to get push notifications even when it is closed. You can also use “Add reminder” to save items to your phone calendar."
   },
   "about": {
     "title": "About TKU Campus OS",
@@ -864,7 +864,14 @@ const en = {
     "posted": "Posted",
     "saved": "Post updated",
     "deleted": "Post deleted",
+    "photoAlt": "Item photo {{n}}",
     "form": {
+      "photos": "Photos",
+      "photosHint": "optional, up to {{count}}, resized automatically",
+      "photoAdd": "Add photo",
+      "photoUploading": "Uploading…",
+      "photoRemove": "Remove this photo",
+      "photoFailed": "Couldn't upload the photo, please try again",
       "newTitle": "New post",
       "editTitle": "Edit post",
       "publish": "Post",

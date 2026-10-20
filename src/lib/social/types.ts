@@ -37,12 +37,14 @@ export interface MarketPost {
   courseCode: string | null;
   condition: MarketCondition | null;
   status: MarketStatus;
+  /** Public image URLs (market-photos bucket), at most 4. */
+  photos: string[];
   commentCount: number;
   createdAt: string;
   updatedAt: string;
 }
 
-export type MarketPostInput = Pick<MarketPost, 'kind' | 'category' | 'title' | 'description' | 'price' | 'courseCode' | 'condition'>;
+export type MarketPostInput = Pick<MarketPost, 'kind' | 'category' | 'title' | 'description' | 'price' | 'courseCode' | 'condition'> & { photos?: string[] };
 
 export interface MarketComment {
   id: string;
@@ -74,6 +76,8 @@ export interface SocialApi {
   createMarketPost(input: MarketPostInput): Promise<MarketPost>;
   updateMarketPost(id: string, patch: Partial<MarketPostInput & { status: MarketStatus }>): Promise<MarketPost>;
   deleteMarketPost(id: string): Promise<void>;
+  /** Uploads one (already downscaled) JPEG and returns its public URL. */
+  uploadMarketPhoto(photo: Blob): Promise<string>;
   listComments(postId: string): Promise<MarketComment[]>;
   addComment(postId: string, body: string): Promise<MarketComment>;
   deleteComment(id: string): Promise<void>;

@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { ImagePlus, ShieldCheck, X } from 'lucide-react';
+import { useSocial } from '@/lib/social/hooks';
+import { downscaleToJpeg } from '@/lib/images';
 import { Sheet } from '@/components/ui/Sheet';
 import { Button } from '@/components/ui/Button';
 import { Segmented } from '@/components/ui/misc';
@@ -9,6 +11,7 @@ import {
 import { t } from '@/i18n/t';
 
 const RULES_KEY = 'tku.market.rulesAccepted';
+const MAX_PHOTOS = 4;
 
 function rulesAccepted() {
   try { return localStorage.getItem(RULES_KEY) === '1'; } catch { return false; }
@@ -27,6 +30,26 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
   const [condition, setCondition] = useState<MarketCondition | ''>('');
   const [agree, setAgree] = useState(rulesAccepted);
   const [error, setError] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const social = useSocial();
+
+  const addPhotos = async (files: FileList | null) => {
+    if (!files?.length || !social) return;
+    setError(null);
+    setUploading(true);
+    try {
+      const room = MAX_PHOTOS - photos.length;
+      const picked = [...files].filter((f) => f.type.startsWith('image/')).slice(0, room);
+      const urls: string[] = [];
+      for (const f of picked) urls.push(await social.uploadMarketPhoto(await downscaleToJpeg(f)));
+      setPhotos((p) => [...p, ...urls].slice(0, MAX_PHOTOS));
+    } catch {
+      setError(t('market.form.photoFailed'));
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -37,6 +60,7 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
     setPrice(initial?.price != null ? String(initial.price) : '');
     setCourseCode(initial?.courseCode ?? '');
     setCondition(initial?.condition ?? '');
+    setPhotos(initial?.photos ?? []);
     setError(null);
   }, [open, initial]);
 
@@ -57,6 +81,7 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
     await onSubmit({
       kind, category, title: tt, description: description.trim(), price: p,
       courseCode: courseCode.trim() || null, condition: kind === 'sell' && condition ? condition : null,
+      photos,
     });
   };
 
@@ -69,7 +94,7 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
       footer={
         <>
           <Button variant="secondary" className="flex-1" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button type="submit" form="market-form" className="flex-1" loading={saving}>{initial ? t('common.save') : t('market.form.publish')}</Button>
+          <Button type="submit" form="market-form" className="flex-1" loading={saving} disabled={uploading}>{initial ? t('common.save') : t('market.form.publish')}</Button>
         </>
       }
     >
@@ -117,6 +142,26 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
         <div>
           <label className="label" htmlFor="mk-desc">{t('market.form.description')}</label>
           <textarea id="mk-desc" className="field min-h-[96px]" rows={4} maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('market.form.descriptionPh')} />
+        </div>
+
+        <div>
+          <p className="label">{t('market.form.photos')} <span className="font-normal">· {t('market.form.photosHint', { count: MAX_PHOTOS })}</span></p>
+          <div className="grid grid-cols-4 gap-2">
+            {photos.map((url) => (
+              <div key={url} className="relative aspect-square overflow-hidden rounded-sm border border-line bg-sunken">
+                <img src={url} alt="" className="h-full w-full object-cover" />
+                <button type="button" onClick={() => setPhotos((p) => p.filter((x) => x !== url))} aria-label={t('market.form.photoRemove')}
+                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white"><X className="h-3.5 w-3.5" /></button>
+              </div>
+            ))}
+            {photos.length < MAX_PHOTOS && (
+              <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-sm border border-dashed border-line text-label text-muted hover:bg-sunken">
+                <ImagePlus className="h-5 w-5" aria-hidden />
+                {uploading ? t('market.form.photoUploading') : t('market.form.photoAdd')}
+                <input type="file" accept="image/*" multiple className="sr-only" disabled={uploading} onChange={(e) => { void addPhotos(e.target.files); e.target.value = ''; }} />
+              </label>
+            )}
+          </div>
         </div>
 
         <div className="rounded-sm border border-line bg-sunken p-3">

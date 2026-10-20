@@ -108,6 +108,9 @@ export async function answerWithTools(options: {
     ...(Object.keys(properties).length ? { parameters: { type: 'OBJECT', properties, required: Object.keys(properties) } } : {}),
   })) }];
 
+  const textOf = (parts: GeminiPart[] | undefined) => (parts ?? []).filter((p) => p.text && !p.thought).map((p) => p.text).join('');
+  // A tool-free answer from the planning round: used if the final stream comes back empty.
+  let plannedText = '';
   for (let round = 0; round < 3; round += 1) {
     const response = await geminiFetch(env.geminiApiKey, env.geminiModel, 'generateContent', {
       systemInstruction, contents, tools, store: false,
@@ -116,7 +119,7 @@ export async function answerWithTools(options: {
     const payload = await response.json() as GeminiResponse;
     const content = payload.candidates?.[0]?.content;
     const calls = content?.parts.filter((part) => part.functionCall) ?? [];
-    if (calls.length === 0) break;
+    if (calls.length === 0) { plannedText = textOf(content?.parts); break; }
     // Preserve the complete model turn, including Gemini 3 thought signatures.
     if (content) contents.push(content);
     const results: GeminiPart[] = [];
@@ -131,8 +134,12 @@ export async function answerWithTools(options: {
     contents.push({ role: 'user', parts: results });
   }
 
+  // The conversation may contain functionCall/functionResponse turns, so the tools must be declared,
+  // but calling them is switched off: the model has to answer in text (an empty answer was the bug
+  // behind "目前無法產生回答").
+  const noTools = { tools, toolConfig: { functionCallingConfig: { mode: 'NONE' } } };
   const response = await geminiFetch(env.geminiApiKey, env.geminiModel, 'streamGenerateContent', {
-    systemInstruction, contents, store: false,
+    systemInstruction, contents, store: false, ...noTools,
   });
   if (!response.body) throw new Error('Gemini 串流沒有回應內容。');
   // Only commit the downstream HTTP 200 after every upstream HTTP request succeeded.
@@ -164,6 +171,20 @@ export async function answerWithTools(options: {
     }
   } finally {
     reader.releaseLock();
+  }
+  if (!answer.trim() && plannedText.trim()) {
+    answer = plannedText;
+    onDelta(answer);
+  }
+  if (!answer.trim()) {
+    // One non-streaming retry before giving up.
+    try {
+      const retry = await geminiFetch(env.geminiApiKey, env.geminiModel, 'generateContent', { systemInstruction, contents, store: false, ...noTools });
+      const payload = await retry.json() as GeminiResponse;
+      const text = textOf(payload.candidates?.[0]?.content?.parts);
+      if (text.trim()) { answer = text; onDelta(answer); }
+      else console.warn('gemini empty answer', JSON.stringify({ finishReason: (payload.candidates?.[0] as { finishReason?: string } | undefined)?.finishReason ?? null }));
+    } catch { /* fall through to the fixed message */ }
   }
   if (!answer.trim()) {
     answer = sources.length === 0 ? '查無可靠資料。請使用淡江大學官方網站確認：https://www.tku.edu.tw/' : '目前無法產生回答，請稍後再試。';
