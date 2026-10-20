@@ -15,6 +15,8 @@ export interface ReminderPrefs {
   classMinutes: number;
   /** use each task's own remindMinutesBefore */
   tasks: boolean;
+  /** this device has a server push subscription — the server sends the reminders, not the open app */
+  push?: boolean;
 }
 
 export const DEFAULT_PREFS: ReminderPrefs = { enabled: false, classMinutes: 10, tasks: true };

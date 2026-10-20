@@ -1,0 +1,71 @@
+import { describe, expect, it } from 'vitest';
+import { dueClassReminders, dueTaskReminders, runPushReminders, type Sub, type PushMessage } from './push-reminders';
+import type { EntryRow } from './widget';
+
+const e = (weekday: number, start: string, end: string, name: string, room = 'B217'): EntryRow => ({ weekday, start_time: `${start}:00`, end_time: `${end}:00`, room, name });
+// Monday 2026-10-19 in Taipei
+const at = (hhmm: string) => new Date(`2026-10-19T${hhmm}:00+08:00`);
+
+describe('push reminder timing', () => {
+  const rows = [e(1, '08:10', '09:00', '統計學'), e(1, '09:10', '10:00', '統計學'), e(1, '13:10', '14:00', '英文', 'FL105'), e(2, '08:10', '09:00', '會計')];
+
+  it('fires a class reminder at start − minutes, once per back-to-back block', () => {
+    expect(dueClassReminders(rows, 10, at('07:59'))).toEqual([]);
+    const due = dueClassReminders(rows, 10, at('08:00'));
+    expect(due).toHaveLength(1);
+    expect(due[0]).toMatchObject({ id: 'class:2026-10-19:08:10:統計學', title: '10 分鐘後上課：統計學' });
+    expect(due[0]!.body).toContain('B217（商管大樓）');
+    expect(dueClassReminders(rows, 10, at('09:00'))).toEqual([]); // continuation of 統計學
+    expect(dueClassReminders(rows, 10, at('13:02'))[0]?.title).toBe('10 分鐘後上課：英文'); // 2 min late still ok
+    expect(dueClassReminders(rows, 10, at('13:06'))).toEqual([]); // too late
+    expect(dueClassReminders(rows, 0, at('08:00'))).toEqual([]);
+  });
+
+  it('fires a task reminder at due − remind_minutes_before', () => {
+    const t = { id: 't1', title: '期中報告', kind: 'report', due_at: '2026-10-19T12:00:00+08:00', remind_minutes_before: 60 };
+    expect(dueTaskReminders([t], at('10:59'))).toEqual([]);
+    expect(dueTaskReminders([t], at('11:00'))[0]).toMatchObject({ title: '報告即將截止：期中報告' });
+    expect(dueTaskReminders([{ ...t, remind_minutes_before: null }], at('11:00'))).toEqual([]);
+  });
+});
+
+describe('runPushReminders', () => {
+  it('sends each reminder once to every device and drops dead subscriptions', async () => {
+    const subs: Sub[] = [
+      { endpoint: 'https://push/a', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: true },
+      { endpoint: 'https://push/gone', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: true },
+    ];
+    const sentIds = new Set<string>();
+    const deleted: string[] = [];
+    const q = (table: string) => {
+      const chain: Record<string, unknown> = {};
+      const result = () => {
+        if (table === 'push_subscriptions') return { data: subs, error: null };
+        if (table === 'schedule_entries') return { data: [{ weekday: 1, start_time: '08:10:00', end_time: '09:00:00', room: 'B217', user_courses: { name: '統計學', semester_id: 's1' } }], error: null };
+        if (table === 'semesters') return { data: [{ id: 's1', start_date: '2026-09-01', end_date: '2027-01-31' }], error: null };
+        return { data: [], error: null };
+      };
+      for (const m of ['select', 'eq', 'not', 'gte', 'lte', 'in']) chain[m] = () => chain;
+      chain.then = (ok: (v: unknown) => void) => ok(result());
+      chain.insert = async (row: { reminder_id: string }) => {
+        if (sentIds.has(row.reminder_id)) return { error: { code: '23505' } };
+        sentIds.add(row.reminder_id);
+        return { error: null };
+      };
+      chain.delete = () => ({ eq: async (_c: string, v: string) => { deleted.push(v); return { error: null }; } });
+      return chain;
+    };
+    const db = { from: q } as never;
+    const delivered: string[] = [];
+    const send = async (s: Sub, m: PushMessage) => {
+      if (s.endpoint.endsWith('gone')) throw Object.assign(new Error('gone'), { statusCode: 410 });
+      delivered.push(`${s.endpoint}|${m.id}`);
+    };
+    const first = await runPushReminders(db, send, at('08:00'));
+    expect(first).toMatchObject({ users: 1, sent: 1, removed: 1 });
+    expect(deleted).toEqual(['https://push/gone']);
+    const again = await runPushReminders(db, send, at('08:01'));
+    expect(again.sent).toBe(0); // already sent
+    expect(delivered).toEqual(['https://push/a|class:2026-10-19:08:10:統計學']);
+  });
+});

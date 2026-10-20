@@ -698,6 +698,9 @@ const en = {
     "before": "{{count}} min before class",
     "tasks": "Remind me about homework and exams at each item’s own time",
     "test": "Send a test notification",
+    "notePush": "Push is on: reminders arrive even when the app is closed (iPhone needs iOS 16.4+ and the Home Screen app).",
+    "noteCanPush": "Turning this on uses push, so reminders arrive even when the app is closed.",
+    "pushFailed": "Couldn't turn on push — reminders only while the app is open for now",
     "note": "Reminders arrive while the app is open or running in the background. Push notifications after the app is fully closed need a server and are planned. You can also use “Add reminder” to save items to your phone calendar."
   },
   "about": {

@@ -98,7 +98,7 @@ type CourseRel = { name: string; semester_id: string } | { name: string; semeste
 const rel = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? v[0] ?? null : v);
 
 /** Entries of the semester in session today (or, between semesters, the most recent one). */
-async function loadEntries(db: SupabaseClient, userId: string, today: string): Promise<EntryRow[]> {
+export async function loadEntries(db: SupabaseClient, userId: string, today: string, inSessionOnly = false): Promise<EntryRow[]> {
   const { data, error } = await db
     .from('schedule_entries')
     .select('weekday,start_time,end_time,room,user_courses!inner(name,semester_id)')
@@ -111,7 +111,8 @@ async function loadEntries(db: SupabaseClient, userId: string, today: string): P
   if (semErr) throw new Error(semErr.message);
   const list = (sems ?? []) as { id: string; start_date: string; end_date: string }[];
   const current = list.find((s) => s.start_date <= today && today <= s.end_date)
-    ?? [...list].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
+    ?? (inSessionOnly ? undefined : [...list].sort((a, b) => b.start_date.localeCompare(a.start_date))[0]);
+  if (!current) return [];
   return rows
     .filter((r) => rel(r.user_courses)?.semester_id === current?.id)
     .map((r) => ({ weekday: r.weekday, start_time: r.start_time, end_time: r.end_time, room: r.room, name: rel(r.user_courses)?.name ?? '' }));

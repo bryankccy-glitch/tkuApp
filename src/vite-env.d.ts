@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_ANON_KEY?: string;
   readonly VITE_HASH_ROUTER?: string;
   readonly VITE_PREVIEW_DEMO?: string;
+  readonly VITE_VAPID_PUBLIC_KEY?: string;
 }
 
 declare const __BUILD__: string;

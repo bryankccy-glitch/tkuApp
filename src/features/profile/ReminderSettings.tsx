@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useAuth } from '@/app/AuthProvider';
+import { pushAvailable, removePushSubscription, savePushSubscription } from '@/services/pushSubscription';
 import { BellRing } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { notificationSupport, readPrefs, showReminder, writePrefs, type ReminderPrefs } from '@/services/reminders';
@@ -10,13 +12,34 @@ export function ReminderSettings() {
   const [prefs, setPrefs] = useState<ReminderPrefs>(readPrefs);
   const [support, setSupport] = useState(notificationSupport);
 
+  const { mode, session } = useAuth();
+  const userId = mode === 'cloud' ? session?.user.id : undefined;
+  const canPush = Boolean(userId) && pushAvailable();
+
   const update = (p: ReminderPrefs) => {
     setPrefs(p);
     writePrefs(p);
   };
 
+  /** Keeps the server copy (push subscription + settings) in step; falls back to in-app reminders. */
+  const sync = async (p: ReminderPrefs) => {
+    if (!canPush || !userId) return update({ ...p, push: false });
+    try {
+      if (p.enabled) {
+        await savePushSubscription(userId, p);
+        update({ ...p, push: true });
+      } else {
+        await removePushSubscription();
+        update({ ...p, push: false });
+      }
+    } catch {
+      update({ ...p, push: false });
+      if (p.enabled) toast({ tone: 'error', message: t('remind.pushFailed') });
+    }
+  };
+
   const toggle = async () => {
-    if (prefs.enabled) return update({ ...prefs, enabled: false });
+    if (prefs.enabled) return void sync({ ...prefs, enabled: false });
     if (support === 'unsupported') return;
     let perm = support;
     if (perm === 'default') {
@@ -27,8 +50,10 @@ export function ReminderSettings() {
       toast({ tone: 'error', message: t('remind.denied') });
       return;
     }
-    update({ ...prefs, enabled: true });
+    const next = { ...prefs, enabled: true };
+    update(next);
     toast({ tone: 'success', message: t('remind.enabled') });
+    await sync(next);
   };
 
   const test = async () => {
@@ -66,7 +91,7 @@ export function ReminderSettings() {
         <div className="mt-4 grid gap-3">
           <div>
             <label htmlFor="r-class" className="label">{t('remind.classLabel')}</label>
-            <select id="r-class" className="field" value={prefs.classMinutes} onChange={(e) => update({ ...prefs, classMinutes: Number(e.target.value) })}>
+            <select id="r-class" className="field" value={prefs.classMinutes} onChange={(e) => void sync({ ...prefs, classMinutes: Number(e.target.value) })}>
               <option value={0}>{t('remind.off')}</option>
               <option value={5}>{t('remind.before', { count: 5 })}</option>
               <option value={10}>{t('remind.before', { count: 10 })}</option>
@@ -75,7 +100,7 @@ export function ReminderSettings() {
             </select>
           </div>
           <label className="flex items-center gap-2 text-body text-ink">
-            <input type="checkbox" checked={prefs.tasks} onChange={(e) => update({ ...prefs, tasks: e.target.checked })} className="h-4 w-4 accent-[rgb(var(--c-primary))]" />
+            <input type="checkbox" checked={prefs.tasks} onChange={(e) => void sync({ ...prefs, tasks: e.target.checked })} className="h-4 w-4 accent-[rgb(var(--c-primary))]" />
             {t('remind.tasks')}
           </label>
           <button type="button" onClick={test} className="inline-flex h-9 items-center gap-1.5 justify-self-start rounded-sm border border-line px-3 text-caption font-semibold text-ink hover:bg-sunken">
@@ -84,7 +109,7 @@ export function ReminderSettings() {
         </div>
       )}
       <p className="mt-3 text-[11px] leading-relaxed text-muted">
-        {t('remind.note')}
+        {prefs.enabled && prefs.push ? t('remind.notePush') : canPush ? t('remind.noteCanPush') : t('remind.note')}
       </p>
     </section>
   );

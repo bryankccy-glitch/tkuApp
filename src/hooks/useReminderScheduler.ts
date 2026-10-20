@@ -18,7 +18,7 @@ export function useReminderScheduler() {
   useEffect(() => {
     const tick = () => {
       const prefs = readPrefs();
-      if (!prefs.enabled || notificationSupport() !== 'granted') return;
+      if (!prefs.enabled || prefs.push || notificationSupport() !== 'granted') return; // push: the server sends them
       const now = Date.now();
       const fired = readFired();
       const due = remindersBetween(data.current.courses, data.current.tasks, prefs, now - GRACE_MS, now + 1);
