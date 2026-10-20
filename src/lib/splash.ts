@@ -32,7 +32,7 @@ function hide() {
 /** If loading stalls (slow network, a stuck request), offer a way out instead of an endless splash. */
 export const STALL_MS = 12_000;
 export function stallMessage(): { text: string; button: string } {
-  const en = typeof document !== 'undefined' && document.documentElement.lang === 'en';
+  const en = typeof document !== 'undefined' && !document.documentElement.lang.startsWith('zh');
   return en
     ? { text: 'This is taking longer than usual. Try reloading.', button: 'Reload' }
     : { text: '載入比平常久，可以重新載入試試', button: '重新載入' };

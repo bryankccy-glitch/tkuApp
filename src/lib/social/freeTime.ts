@@ -23,7 +23,8 @@ export function commonFreeBlocks(people: Course[][], days: Weekday[] = [1, 2, 3,
   const out: FreeBlock[] = [];
   for (const d of days) {
     let current: FreeBlock | null = null;
-    for (const p of TKU_PERIODS) {
+    // Day periods only (1–12): a shared free evening isn't a useful "common free period".
+    for (const p of TKU_PERIODS.filter((x) => x.no <= 12)) {
       const free = people.every((courses) => !busy(courses, d, p.start, p.end));
       if (free) {
         if (current && current.to === p.no - 1) {

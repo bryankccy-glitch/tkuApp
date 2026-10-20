@@ -82,6 +82,12 @@ const en = {
   },
   "settings": {
     "language": "Language",
+    "moreLanguages": "More languages (machine translated)",
+    "chooseLanguage": "Choose another language…",
+    "languageLoading": "Downloading translation…",
+    "languageFailed": "Couldn't load this language right now, please try again later",
+    "moreNote": "Other languages are translated from English by AI; the first switch takes a few seconds.",
+    "machineNote": "This language is machine translated by AI and may be imprecise; untranslated text shows in English.",
     "zh": "繁體中文",
     "en": "English"
   },
@@ -456,7 +462,7 @@ const en = {
     "roomsHere": "Rooms starting with {{code}} (e.g. {{code}}101) are in this building.",
     "navigate": "Navigate in Google Maps",
     "verified": "Verified.",
-    "unverified": "Names and codes come from a student-compiled list and are pending verification against official sources; positions aren’t pinned yet."
+    "unverified": "Names and codes come from a student-compiled list pending official verification; map positions are from OpenStreetMap and may be off by a few metres."
   },
   "events": {
     "copied": "Event link copied",
@@ -704,6 +710,7 @@ const en = {
     "note": "In guest mode reminders only arrive while the app is open; sign in and turn reminders on to get push notifications even when it is closed. You can also use “Add reminder” to save items to your phone calendar."
   },
   "about": {
+    "nightPeriods": "; periods 13–14: ",
     "title": "About TKU Campus OS",
     "mission": "Making campus life simpler, smarter and more connected.",
     "unofficial1": "TKU Campus OS is an independent platform built by Tamkang students. ",
@@ -722,7 +729,7 @@ const en = {
     "codes": "Building codes",
     "codesNote": "Student-compiled list, pending verification against official sources",
     "location": "Campus location",
-    "locationNote": "; individual building positions not yet verified",
+    "locationNote": "; building positions from OpenStreetMap",
     "mapTiles": "Map tiles",
     "official": "Official documents & services"
   },
@@ -730,7 +737,8 @@ const en = {
     "H": "Tamkang’s most iconic buildings",
     "O": "The Communication Building uses codes O and Q",
     "Q": "The Communication Building uses codes O and Q",
-    "T": "Source spells it “驚生”; name pending verification"
+    "T": "The code list misspells it “驚生”; checked against OpenStreetMap",
+    "Z": "Student dorms, halls 1–5; the map marks hall 1"
   },
   "preview": {
     "banner": "Preview: example courses and to-dos are loaded and stay in this browser. Feel free to add, edit and delete."
@@ -751,6 +759,7 @@ const en = {
     }
   },
   "friends": {
+    "incomingBadge": "{{count}} friend requests",
     "tabsLabel": "Timetable",
     "tabMine": "Mine",
     "tabFriends": "Friends",
@@ -961,7 +970,7 @@ const en = {
     "readingHint": "Takes about 10–30 seconds",
     "reviewHint": "Check each course the AI found — rename, untick or remove time slots as needed.",
     "found": "Found {{count}} course entries (lectures and TA sessions separated)",
-    "skipped": "{{count}} cells are in periods 13–14, whose times aren’t verified yet, so they weren’t added. Add them manually.",
+    "skipped": "{{count}} cells are outside the period table (periods 1–14), so they weren’t added. Add them manually.",
     "includeName": "Add {{name}}",
     "courseName": "Course name",
     "instructor": "Instructor",

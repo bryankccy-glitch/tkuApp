@@ -67,7 +67,7 @@ export function useChat() {
         conversationId: conversationId.current,
         semesterId: semester?.id,
         // Answer language follows the UI; campus times are always Taipei time.
-        lang: i18n.language === 'en' ? 'en' : 'zh-TW',
+        lang: i18n.language,
         timezone: 'Asia/Taipei',
         // The API rejects empty turns (e.g. a stopped reply), so drop them.
         history: history.filter((m) => !m.error && m.content.trim()).slice(-8).map((m) => ({ role: m.role, content: m.content.slice(0, 2000) })),

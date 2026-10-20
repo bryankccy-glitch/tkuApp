@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dueClassReminders, dueTaskReminders, runPushReminders, type Sub, type PushMessage } from './push-reminders';
+import { dueClassReminders, dueFriendNotices, dueTaskReminders, runPushReminders, type Sub, type PushMessage } from './push-reminders';
 import type { EntryRow } from './widget';
 
 const e = (weekday: number, start: string, end: string, name: string, room = 'B217'): EntryRow => ({ weekday, start_time: `${start}:00`, end_time: `${end}:00`, room, name });
@@ -45,7 +45,7 @@ describe('runPushReminders', () => {
         if (table === 'semesters') return { data: [{ id: 's1', start_date: '2026-09-01', end_date: '2027-01-31' }], error: null };
         return { data: [], error: null };
       };
-      for (const m of ['select', 'eq', 'not', 'gte', 'lte', 'in']) chain[m] = () => chain;
+      for (const m of ['select', 'eq', 'not', 'gte', 'lte', 'in', 'or']) chain[m] = () => chain;
       chain.then = (ok: (v: unknown) => void) => ok(result());
       chain.insert = async (row: { reminder_id: string }) => {
         if (sentIds.has(row.reminder_id)) return { error: { code: '23505' } };
@@ -67,5 +67,22 @@ describe('runPushReminders', () => {
     const again = await runPushReminders(db, send, at('08:01'));
     expect(again.sent).toBe(0); // already sent
     expect(delivered).toEqual(['https://push/a|class:2026-10-19:08:10:統計學']);
+  });
+});
+
+describe('friend notices', () => {
+  it('tells the addressee about a new request and the requester when it is accepted', () => {
+    const now = new Date('2026-10-20T12:00:00Z');
+    const names = new Map([['a', '小明'], ['b', '小華']]);
+    const rows = [
+      { id: 'f1', requester: 'a', addressee: 'b', status: 'pending', created_at: '2026-10-20T11:58:00Z', updated_at: '2026-10-20T11:58:00Z' },
+      { id: 'f2', requester: 'b', addressee: 'a', status: 'accepted', created_at: '2026-10-19T00:00:00Z', updated_at: '2026-10-20T11:59:00Z' },
+      { id: 'f3', requester: 'a', addressee: 'b', status: 'pending', created_at: '2026-10-20T10:00:00Z', updated_at: '2026-10-20T10:00:00Z' },
+    ];
+    expect(dueFriendNotices(rows, names, 'b', now)).toEqual([
+      expect.objectContaining({ id: 'friend:req:f1', body: expect.stringContaining('小明') }),
+      expect.objectContaining({ id: 'friend:acc:f2', body: expect.stringContaining('小明') }),
+    ]);
+    expect(dueFriendNotices(rows, names, 'a', now)).toEqual([]);
   });
 });

@@ -1,3 +1,4 @@
+import { languageInfo } from '../src/i18n/languages.js';
 import type { ChatRequest, SourceRef } from './chat-schema.js';
 import type { ServerEnv, ToolName, ToolResult } from './store.js';
 
@@ -30,8 +31,8 @@ export const SYSTEM_INSTRUCTIONS = `你是 TKU Campus OS 校園助理，並非�
 若校方知識庫沒有可靠結果，請明確回答「查無可靠資料」，並建議使用所附官方來源連結自行確認。
 引用個人資料時只描述必要內容，不要推斷未提供的資訊。回答簡潔、具體，日期時間以使用者時區呈現。`;
 
-export function instructionsFor(language: 'zh-TW' | 'en' | undefined, timezone: string): string {
-  const answerLanguage = language === 'en' ? 'English' : '繁體中文（台灣）';
+export function instructionsFor(language: string | undefined, timezone: string): string {
+  const answerLanguage = !language || language === 'zh-TW' ? '繁體中文（台灣）' : languageInfo(language)?.english ?? 'English';
   return `${SYSTEM_INSTRUCTIONS}\n請全程使用${answerLanguage}回答。\n使用者時區：${timezone}`;
 }
 

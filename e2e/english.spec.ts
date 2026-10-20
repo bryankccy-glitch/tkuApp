@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 /** With English selected, core screens contain no Chinese UI text (proper nouns like building names excepted). */
 const PAGES = ['/', '/schedule', '/schedule?add=1', '/tasks', '/tasks?add=1', '/assistant', '/events', '/me'];
-const ALLOWED = ['繁體中文']; // language switch option
+const ALLOWED = ['繁體中文', '简体中文', '日本語']; // language switch options (names in their own language)
 
 test.beforeEach(async ({ page }) => {
   await page.route('https://api.open-meteo.com/**', (r) => r.abort());

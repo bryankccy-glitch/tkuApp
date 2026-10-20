@@ -4,7 +4,9 @@
  * 查核狀態（2026-10-12）：
  * - 代碼與名稱：來自學生社群整理之代碼表（1111 大學網），待與校方公開資料逐筆核對。
  * - T 驚聲紀念大樓：來源誤植為「驚生」，依校內常見名稱修正，待核對。
- * - 個別建築座標：尚未取得可信來源，一律為 null，不在地圖上標記。
+ * - 個別建築座標（2026-10-20）：OpenStreetMap 校園建物圖資（Overpass 查詢，建物輪廓中心點），
+ *   每筆附 OSM way 編號；宮燈教室為 6 棟中心點平均、松濤館標 1 館、司令台取校內操場旁那座。
+ *   OSM 為社群編輯（ODbL），位置可能有數公尺誤差；名稱以 OSM 核對過（T 驚聲紀念大樓、ED 在 OSM 作「教育大樓」）。
  * - 校園中心座標：Wikipedia「Tamkang University」條目（25.175, 121.449）。
  */
 // Plain data only — also imported by the server functions in api/, so no app-only imports here.
@@ -15,8 +17,9 @@ export interface CampusPlace {
   code: string;
   name: string;
   category: PlaceCategory;
-  /** Only set when verified against a trustworthy source. */
+  /** Only set when taken from a citable source (coordsSource). */
   coords: { lat: number; lng: number } | null;
+  coordsSource?: { name: string; url: string };
   source: { name: string; url: string };
   verified: boolean;
   note?: string;
@@ -35,9 +38,18 @@ export const CAMPUS_CENTER = {
   address: '25137 新北市淡水區英專路 151 號',
 };
 
-const p = (code: string, name: string, category: PlaceCategory, note?: string): CampusPlace => ({
-  code, name, category, coords: null, source: CODE_SOURCE, verified: false, note,
-});
+/** Building outline centres from OpenStreetMap (way ids), see header. */
+const OSM: Record<string, [number, number, string]> = {"A": [25.174772, 121.449117, "235418117"], "B": [25.176571, 121.450093, "292253711"], "C": [25.175259, 121.448892, "235418085"], "E": [25.176003, 121.451762, "235418107"], "ED": [25.175807, 121.452657, "235418109"], "F": [25.175745, 121.449614, "235418091"], "FL": [25.174829, 121.451684, "235418154"], "G": [25.17616, 121.45108, "235418104"], "H": [25.174228, 121.448625, "235418122"], "HC": [25.174813, 121.447876, "964267202"], "I": [25.174328, 121.450935, "235418151"], "J": [25.176219, 121.447755, "235418071"], "K": [25.176438, 121.451043, "294126064"], "L": [25.176218, 121.449414, "285904595"], "M": [25.176184, 121.450415, "235418097"], "N": [25.174575, 121.447202, "235413781"], "O": [25.175641, 121.449119, "235418089"], "Q": [25.175641, 121.449119, "235418089"], "R": [25.17466, 121.450284, "235418142"], "S": [25.175449, 121.448153, "235418066"], "SG": [25.176128, 121.448612, "964229634"], "T": [25.175466, 121.451311, "235418157"], "U": [25.174746, 121.45097, "235418149"], "V": [25.174988, 121.449447, "235418115"], "Z": [25.174583, 121.451752, "235418156"], "P": [25.17395, 121.445665, "964270669"], "RT": [25.175033, 121.449782, "235418113"], "SS": [25.175528, 121.447613, "446753144"], "GA": [25.173847, 121.447109, "971523384"]};
+export const COORDS_SOURCE = { name: 'OpenStreetMap contributors（ODbL）', url: 'https://www.openstreetmap.org/' };
+
+const p = (code: string, name: string, category: PlaceCategory, note?: string): CampusPlace => {
+  const c = OSM[code];
+  return {
+    code, name, category, source: CODE_SOURCE, verified: false, note,
+    coords: c ? { lat: c[0], lng: c[1] } : null,
+    ...(c ? { coordsSource: { name: COORDS_SOURCE.name, url: `https://www.openstreetmap.org/way/${c[2]}` } } : {}),
+  };
+};
 
 export const CAMPUS_PLACES: CampusPlace[] = [
   p('A', '行政大樓', 'admin'),
@@ -61,10 +73,10 @@ export const CAMPUS_PLACES: CampusPlace[] = [
   p('R', '活動中心', 'service'),
   p('S', '騮先紀念科學館', 'academic'),
   p('SG', '紹謨紀念體育館', 'sports'),
-  p('T', '驚聲紀念大樓', 'academic', '來源誤植為「驚生」，名稱待核對'),
+  p('T', '驚聲紀念大樓', 'academic', '原代碼表誤植為「驚生」，已依 OpenStreetMap 核對為驚聲'),
   p('U', '覺生紀念圖書館', 'library'),
   p('V', '視聽教育館', 'academic'),
-  p('Z', '松濤館', 'service'),
+  p('Z', '松濤館', 'service', '學生宿舍，共 1–5 館；地圖標示 1 館'),
   p('P', '司令台', 'other'),
   p('RT', '網球場', 'sports'),
   p('SS', '溜冰場', 'sports'),

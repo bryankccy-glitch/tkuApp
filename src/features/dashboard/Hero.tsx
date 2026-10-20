@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { intlLocale } from '@/i18n';
 import { CalendarClock, CalendarDays, ListChecks, MapPinned, Megaphone, WifiOff } from 'lucide-react';
 import { LogoMark } from '@/components/brand/Logo';
 import { PixelCampusScene } from '@/components/campus-scene/PixelCampusScene';
@@ -44,7 +45,7 @@ export function Hero({ name, summary }: { name?: string; summary?: HeroSummary }
   const tod = useTimeOfDay(weather);
   const scene = useMemo(() => applyOverride(buildScene(tod.now, tod.sunrise, tod.sunset, weather), params.get('scene')), [tod, weather, params]);
   const g = greetingKey(tod.phase, tod.now, tod.sunset);
-  const locale = i18n.language === 'en' ? 'en-US' : 'zh-TW';
+  const locale = intlLocale(i18n.language);
   const date = new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', weekday: 'long', timeZone: 'Asia/Taipei' }).format(tod.now);
   const timeFmt = (iso: string) => new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei' }).format(new Date(iso));
 

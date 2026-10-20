@@ -1,4 +1,4 @@
-import i18n from '@/i18n';
+import i18n, { intlLocale } from '@/i18n';
 import type { Weekday } from './types';
 
 export function toMinutes(hhmm: string): number {
@@ -54,7 +54,7 @@ export function combineLocal(date: string, time: string): string {
   return new Date(y ?? 1970, (mo ?? 1) - 1, da ?? 1, h ?? 0, mi ?? 0).toISOString();
 }
 
-const locale = () => (i18n.language === 'en' ? 'en-US' : 'zh-TW');
+const locale = () => intlLocale();
 const fmtCache = new Map<string, Intl.DateTimeFormat>();
 function fmt(kind: 'long' | 'short' | 'time'): Intl.DateTimeFormat {
   const key = `${locale()}|${kind}`;

@@ -82,6 +82,12 @@ const zh = {
   },
   "settings": {
     "language": "語言",
+    "moreLanguages": "更多語言（機器翻譯）",
+    "chooseLanguage": "選擇其他語言…",
+    "languageLoading": "正在下載翻譯…",
+    "languageFailed": "暫時無法載入這個語言，請稍後再試",
+    "moreNote": "其他語言由 AI 從英文翻譯，第一次切換需要幾秒鐘。",
+    "machineNote": "目前語言為 AI 機器翻譯，可能有不精確的地方；沒翻到的地方會顯示英文。",
     "zh": "繁體中文",
     "en": "English"
   },
@@ -456,7 +462,7 @@ const zh = {
     "roomsHere": "教室編號以 {{code}} 開頭的課程（例如 {{code}}101）在這棟建築。",
     "navigate": "在 Google 地圖導航",
     "verified": "資料已查核。",
-    "unverified": "名稱與代碼來自學生整理的資料，尚待與校方公開資料核對；座標尚未標記。"
+    "unverified": "名稱與代碼來自學生整理的資料，尚待與校方公開資料核對；地圖位置取自 OpenStreetMap，可能有數公尺誤差。"
   },
   "events": {
     "copied": "已複製活動連結",
@@ -704,6 +710,7 @@ const zh = {
     "note": "訪客模式只會在 App 開著時提醒；登入帳號後開啟提醒，就能在 App 關閉時也收到推播。也可以在課程或待辦上用「加入提醒」存進手機行事曆。"
   },
   "about": {
+    "nightPeriods": "；第 13–14 節：",
     "title": "關於 TKU Campus OS",
     "mission": "讓校園生活更簡單、更智慧、更有連結。",
     "unofficial1": "TKU Campus OS 是淡江學生自主開發的第三方平台，",
@@ -722,7 +729,7 @@ const zh = {
     "codes": "建築代碼",
     "codesNote": "學生社群整理資料，尚待與校方公開資料核對",
     "location": "校園位置",
-    "locationNote": "；個別建築座標尚未查核",
+    "locationNote": "；個別建築位置取自 OpenStreetMap",
     "mapTiles": "地圖圖資",
     "official": "官方文件與服務連結"
   },
@@ -730,7 +737,8 @@ const zh = {
     "H": "淡江最具代表性的建築群",
     "O": "傳播館代碼包含 O 與 Q",
     "Q": "傳播館代碼包含 O 與 Q",
-    "T": "來源誤植為「驚生」，名稱待核對"
+    "T": "原代碼表誤植為「驚生」，已依 OpenStreetMap 核對為驚聲",
+    "Z": "學生宿舍，共 1–5 館；地圖標示 1 館"
   },
   "preview": {
     "banner": "預覽版：已放入範例課程與待辦，資料只存在這個瀏覽器。可以自由新增、編輯、刪除。"
@@ -751,6 +759,7 @@ const zh = {
     }
   },
   "friends": {
+    "incomingBadge": "{{count}} 個好友邀請",
     "tabsLabel": "課表類型",
     "tabMine": "我的課表",
     "tabFriends": "好友",
@@ -961,7 +970,7 @@ const zh = {
     "readingHint": "大約需要 10–30 秒",
     "reviewHint": "請逐一確認 AI 讀到的課程，可以修改名稱、取消勾選或移除時段。",
     "found": "讀到 {{count}} 個課程項目（正課與助教課分開）",
-    "skipped": "有 {{count}} 格位在第 13–14 節，這兩節的時間尚未查核，沒有自動加入，請手動新增。",
+    "skipped": "有 {{count}} 格不在節次表（第 1–14 節）範圍內，沒有自動加入，請手動新增。",
     "includeName": "加入 {{name}}",
     "courseName": "課程名稱",
     "instructor": "授課教師",

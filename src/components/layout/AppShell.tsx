@@ -5,10 +5,13 @@ import { LoadingMark } from '@/components/brand/Logo';
 import { PRIMARY_NAV, isNavActive } from './nav';
 import { useTranslation } from 'react-i18next';
 import { useReminderScheduler } from '@/hooks/useReminderScheduler';
+import { useFriends } from '@/lib/social/hooks';
 
 function BottomNav() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
+  const { data: friends } = useFriends();
+  const incoming = (friends ?? []).filter((f) => f.direction === 'incoming').length;
   return (
     <nav aria-label={t('nav.main')} className="bottom-nav safe-bottom fixed bottom-0 left-1/2 z-40 w-full max-w-app -translate-x-1/2 border-t border-line bg-surface">
       <ul className="grid h-16 grid-cols-5">
@@ -33,6 +36,11 @@ function BottomNav() {
                   <>
                     <span className="relative">
                       <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.4 : 1.9} />
+                      {item.to === '/schedule' && incoming > 0 && (
+                        <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white" aria-label={t('friends.incomingBadge', { count: incoming })}>
+                          {incoming > 9 ? '9+' : incoming}
+                        </span>
+                      )}
                     </span>
                     <span>{t(item.label)}</span>
                     <span className={cn('h-1 w-1 rounded-full', active ? 'bg-heritage' : 'bg-transparent')} aria-hidden />

@@ -9,7 +9,7 @@ import { BootScreen } from './components/brand/Logo';
 import { router } from './app/router';
 import { LanguageRoot } from './app/LanguageRoot';
 import './styles/index.css';
-import './i18n';
+import { refreshLanguagePack } from './i18n';
 import { seedPreviewDemo } from './lib/data/previewDemo';
 import { disablePageZoom } from './lib/noZoom';
 import { holdSplash } from './lib/splash';
@@ -20,6 +20,8 @@ import { reloadForNewVersion } from './app/RouteError';
 disablePageZoom();
 installIosShortViewport();
 installPwaUpdates();
+// A machine-translated language may have new strings after a deploy: refresh its cached pack quietly.
+setTimeout(() => void refreshLanguagePack(), 4000);
 
 // After a deploy, an open/cached app may ask for page code that no longer exists: reload once to get the new version.
 window.addEventListener('vite:preloadError', (e) => {

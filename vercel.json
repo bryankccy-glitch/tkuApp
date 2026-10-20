@@ -10,6 +10,9 @@
     },
     "api/sync-events.ts": {
       "maxDuration": 60
+    },
+    "api/translate.ts": {
+      "maxDuration": 60
     }
   },
   "rewrites": [

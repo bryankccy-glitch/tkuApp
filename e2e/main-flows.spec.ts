@@ -59,7 +59,7 @@ test('CSV import adds courses', async ({ page }) => {
 test('campus explorer finds the building for a room code', async ({ page }) => {
   await page.goto('/explore');
   await page.getByLabel('搜尋建築或教室').fill('HC306');
-  await page.getByRole('button', { name: /守謙國際會議中心/ }).click();
+  await page.getByRole('button', { name: /^HC 守謙國際會議中心/ }).click();
   await expect(page.getByRole('heading', { name: '守謙國際會議中心' })).toBeVisible();
   await expect(page.getByRole('link', { name: '在 Google 地圖導航' })).toHaveAttribute('href', /google\.com\/maps/);
 });

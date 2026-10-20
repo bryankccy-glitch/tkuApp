@@ -62,6 +62,22 @@ export function dueTaskReminders(tasks: TaskRow[], now: Date): PushMessage[] {
   return out;
 }
 
+interface FriendRow { id: string; requester: string; addressee: string; status: string; created_at: string; updated_at: string }
+
+/** New friend requests to this user, and requests of theirs that were just accepted. */
+export function dueFriendNotices(rows: FriendRow[], names: Map<string, string>, userId: string, now: Date): PushMessage[] {
+  const recent = (iso: string) => now.getTime() - Date.parse(iso) < 10 * 60_000;
+  const out: PushMessage[] = [];
+  for (const f of rows) {
+    if (f.status === 'pending' && f.addressee === userId && recent(f.created_at)) {
+      out.push({ id: `friend:req:${f.id}`, title: '新的好友邀請', body: `${names.get(f.requester) ?? '一位同學'} 想加你為好友，點這裡查看`, url: '/schedule' });
+    } else if (f.status === 'accepted' && f.requester === userId && recent(f.updated_at)) {
+      out.push({ id: `friend:acc:${f.id}`, title: '好友邀請已接受', body: `${names.get(f.addressee) ?? '對方'} 接受了你的好友邀請，現在可以互看課表`, url: '/schedule' });
+    }
+  }
+  return out;
+}
+
 export interface RunResult { users: number; sent: number; failed: number; removed: number }
 
 export async function runPushReminders(db: SupabaseClient, send: (sub: Sub, msg: PushMessage) => Promise<void>, now = new Date()): Promise<RunResult> {
@@ -84,6 +100,19 @@ export async function runPushReminders(db: SupabaseClient, send: (sub: Sub, msg:
         .gte('due_at', now.toISOString()).lte('due_at', new Date(now.getTime() + 15 * 86_400_000).toISOString());
       if (tErr) throw new Error(tErr.message);
       msgs.push(...dueTaskReminders((tasks ?? []) as TaskRow[], now));
+    }
+    {
+      const since = new Date(now.getTime() - 10 * 60_000).toISOString();
+      const { data: fr, error: fErr } = await db.from('friendships').select('id,requester,addressee,status,created_at,updated_at')
+        .or(`addressee.eq.${userId},requester.eq.${userId}`).gte('updated_at', since);
+      if (fErr) throw new Error(fErr.message);
+      const rows = (fr ?? []) as FriendRow[];
+      if (rows.length) {
+        const others = [...new Set(rows.map((r) => (r.requester === userId ? r.addressee : r.requester)))];
+        const { data: profs } = await db.from('profiles').select('id,display_name').in('id', others);
+        const names = new Map(((profs ?? []) as { id: string; display_name: string }[]).map((p) => [p.id, p.display_name]));
+        msgs.push(...dueFriendNotices(rows, names, userId, now));
+      }
     }
     for (const msg of msgs) {
       // Claim first: a concurrent or repeated run can't send the same reminder twice.

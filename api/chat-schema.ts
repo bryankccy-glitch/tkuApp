@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isSupported } from '../src/i18n/languages.js';
 
 const timezoneSchema = z.string().min(1).max(100).refine((timezone) => {
   try {
@@ -13,7 +14,7 @@ export const chatRequestSchema = z.object({
   message: z.string().trim().min(1, '訊息不可為空').max(1000, '訊息不可超過 1000 字'),
   conversationId: z.string().uuid().nullable(),
   semesterId: z.string().uuid().optional(),
-  lang: z.enum(['zh-TW', 'en']).optional(),
+  lang: z.string().max(10).refine(isSupported, 'unsupported language').optional(),
   timezone: timezoneSchema,
   history: z.array(z.object({
     role: z.enum(['user', 'assistant']),

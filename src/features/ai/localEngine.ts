@@ -7,7 +7,7 @@ import { formatPeriods, timesToPeriods, PERIOD_SOURCE, TKU_PERIODS } from '@/lib
 import { CAMPUS_PLACES, buildingFromRoom, type CampusPlace } from '@/data/places';
 import { OFFICIAL_SOURCES } from '@/data/sources';
 import { t } from '@/i18n/t';
-import i18n from '@/i18n';
+import { isChinese } from '@/i18n';
 import type { SourceRef } from './types';
 
 /**
@@ -146,7 +146,7 @@ function knowledgeAnswer(q: string): EngineAnswer | null {
   const hits = OFFICIAL_SOURCES.filter((s) => s.keywords.some((k) => q.includes(k)) || s.keywordsEn.some((k) => lower.includes(k)));
   if (!hits.length) return null;
   const top = hits.slice(0, 2);
-  const en = i18n.language === 'en';
+  const en = !isChinese();
   const docs = top.map((s) => (en ? `“${s.titleEn}” (《${s.title}》)` : `《${s.title}》`)).join(t('ai.and'));
   return {
     content: t('ai.knowledge.answer', { docs }),

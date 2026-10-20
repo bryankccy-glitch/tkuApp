@@ -3,7 +3,7 @@ import { occurrencesOn } from '@/lib/schedule';
 import { addDays, weekdayOf } from '@/lib/time';
 import { TASK_KIND_LABELS } from '@/lib/labels';
 import { buildingFromRoom } from '@/data/places';
-import i18n from '@/i18n';
+import i18n, { intlLocale } from '@/i18n';
 
 /**
  * 本機提醒：App 開著（或在背景仍執行）時，以系統通知提醒上課與截止。
@@ -81,7 +81,7 @@ export function remindersBetween(courses: Course[], tasks: Task[], prefs: Remind
           id: `task:${t.id}:${due}:${t.remindMinutesBefore}`,
           at,
           title: i18n.t('reminder.taskTitle', { kind: TASK_KIND_LABELS[t.kind], title: t.title }),
-          body: i18n.t('reminder.taskBody', { time: new Date(due).toLocaleString(i18n.language === 'en' ? 'en-US' : 'zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei' }) }),
+          body: i18n.t('reminder.taskBody', { time: new Date(due).toLocaleString(intlLocale(), { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei' }) }),
           url: '/tasks',
         });
       }

@@ -4,7 +4,10 @@ try {
   var dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   var l = localStorage.getItem('tku.lang');
-  if (l === 'en') document.documentElement.lang = 'en';
+  if (l && l !== 'zh-TW') {
+    document.documentElement.lang = l === 'zh-CN' ? 'zh-Hans-CN' : l;
+    if (l === 'ar' || l === 'fa' || l === 'he') document.documentElement.dir = 'rtl';
+  }
 } catch (e) {}
 // Same as src/lib/startupImage.ts, as early as possible: launch screen follows the app's own theme.
 try {

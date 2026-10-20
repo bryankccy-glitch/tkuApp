@@ -59,16 +59,20 @@ describe('cellsToCourses (淡江 timetable screenshot)', () => {
     expect(r.courses.find((x) => x.name === '投資學')?.group).toBe('國企系經管二');
   });
 
-  it('skips periods without verified times and ignores empty / repeated cells', () => {
+  it('maps night periods 13–14, and ignores empty / repeated cells', () => {
     const r = cellsToCourses([
       c(1, 13, '', '夜間課', 'X', 'B 101'),
+      c(1, 14, '', '夜間課', 'X', 'B 101'),
       c(1, 1, '', '   ', 'X', ''),
       c(9, 1, '', '錯誤星期', 'X', ''),
       c(2, 1, '', '微積分', 'A', 'H 112'),
       c(2, 1, '', '微積分', 'A', 'H 112'),
     ]);
-    expect(r.skipped.map((x) => x.course)).toEqual(['夜間課']);
-    expect(summary(r)).toEqual({ 微積分: { instructor: 'A', slots: ['2 08:10-09:00 H112'] } });
+    expect(r.skipped).toEqual([]);
+    expect(summary(r)).toEqual({
+      夜間課: { instructor: 'X', slots: ['1 20:10-22:00 B101'] },
+      微積分: { instructor: 'A', slots: ['2 08:10-09:00 H112'] },
+    });
   });
 
   it('treats width and spacing variants of the same name as one course', () => {

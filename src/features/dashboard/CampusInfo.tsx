@@ -4,7 +4,7 @@ import { useCampusEvents } from '@/lib/events';
 import { QUICK_SERVICES } from '@/data/sources';
 import { EVENT_CATEGORY_LABELS } from '@/lib/labels';
 import { formatDateShort } from '@/lib/time';
-import i18n from '@/i18n';
+import { isChinese } from '@/i18n';
 import { t } from '@/i18n/t';
 
 export function CampusInfo() {
@@ -54,9 +54,9 @@ export function CampusInfo() {
                 rel="noreferrer noopener"
                 className="group flex h-full flex-col justify-between gap-2 rounded-sm border border-line bg-surface p-3 transition-colors hover:border-primary/40"
               >
-                <span className="text-body font-semibold leading-snug text-ink">{i18n.language === 'en' ? s.titleEn : s.title}</span>
+                <span className="text-body font-semibold leading-snug text-ink">{!isChinese() ? s.titleEn : s.title}</span>
                 <span className="flex items-center justify-between gap-1 text-[11px] text-muted">
-                  <span className="truncate">{i18n.language === 'en' ? new URL(s.url).hostname : s.publisher}</span>
+                  <span className="truncate">{!isChinese() ? new URL(s.url).hostname : s.publisher}</span>
                   <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-60 group-hover:opacity-100" aria-hidden />
                 </span>
               </a>

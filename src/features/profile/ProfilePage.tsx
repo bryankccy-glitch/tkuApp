@@ -11,6 +11,7 @@ import { useTheme, type ThemePref } from '@/app/ThemeProvider';
 import { useTranslation } from 'react-i18next';
 import { ReminderSettings } from './ReminderSettings';
 import { WidgetSettings } from './WidgetSettings';
+import { LanguagePicker } from './LanguagePicker';
 import { useProfile, useUpdateProfile } from '@/lib/hooks';
 import { downloadText } from '@/lib/ics';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,7 +25,7 @@ export default function ProfilePage() {
   const qc = useQueryClient();
   const toast = useToast();
   const { pref, setPref } = useTheme();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { data: profile } = useProfile();
   const update = useUpdateProfile();
   const [name, setName] = useState('');
@@ -152,15 +153,7 @@ export default function ProfilePage() {
             </button>
           ))}
         </div>
-        <h3 id="p-lang" className="mt-5 text-body font-semibold text-ink">{t('settings.language')}</h3>
-        <div role="radiogroup" aria-labelledby="p-lang" className="mt-2 grid grid-cols-2 gap-2">
-          {(['zh-TW', 'en'] as const).map((lng) => (
-            <button key={lng} type="button" role="radio" aria-checked={i18n.language === lng} onClick={() => void i18n.changeLanguage(lng)}
-              className={cn('h-11 rounded-sm border text-caption font-semibold', i18n.language === lng ? 'border-primary bg-primary/[0.06] text-primary' : 'border-line text-muted hover:text-ink')}>
-              {t(lng === 'en' ? 'settings.en' : 'settings.zh')}
-            </button>
-          ))}
-        </div>
+        <LanguagePicker />
       </section>
 
       <ReminderSettings />
