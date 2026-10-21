@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import en from '../src/i18n/locales/en.js';
 import { isBuiltIn, languageInfo } from '../src/i18n/languages.js';
-import { geminiFetch, type GeminiResponse } from './gemini.js';
+import { geminiFetch, type GeminiResponse } from './_lib/gemini.js';
 
 /**
  * GET /api/translate?lang=ja — the app's interface strings machine-translated from English.

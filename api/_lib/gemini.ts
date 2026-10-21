@@ -1,4 +1,4 @@
-import { languageInfo } from '../src/i18n/languages.js';
+import { languageInfo } from '../../src/i18n/languages.js';
 import type { ChatRequest, SourceRef } from './chat-schema.js';
 import type { ServerEnv, ToolName, ToolResult } from './store.js';
 

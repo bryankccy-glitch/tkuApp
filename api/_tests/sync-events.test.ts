@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildSummary, categorize, isEligible, parseDetail, parseList, parsePageCount, syncEvents, ORIGIN, SOURCE_NAME, type Detail, type ListItem } from './sync-events';
+import { buildSummary, categorize, isEligible, parseDetail, parseList, parsePageCount, syncEvents, ORIGIN, SOURCE_NAME, type Detail, type ListItem } from '../sync-events.js';
 
 // Synthetic fixtures shaped like enroll.tku.edu.tw (table: 序號|活動起迄日|活動名稱|對象|報名起迄日|承辦單位|我要報名).
 const row = (n: number, cid: string, title: string, who: string, org: string, extra = '') => `

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hashToken, mergeSlots, pickNext, taipeiClock, type EntryRow } from './widget';
+import { hashToken, mergeSlots, pickNext, taipeiClock, type EntryRow } from '../widget.js';
 
 const e = (weekday: number, start: string, end: string, name: string, room = 'B217'): EntryRow =>
   ({ weekday, start_time: `${start}:00`, end_time: `${end}:00`, room, name });

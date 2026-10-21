@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { chatRequestSchema, type ChatRequest, type SourceRef } from './chat-schema.js';
-import { answerWithTools, createEmbedding, GeminiApiError } from './gemini.js';
-import { formatSse, sendSseError, startSse } from './sse.js';
-import { CampusStore, InvalidConversationError, type ServerEnv, type ToolName, type ToolResult } from './store.js';
+import { chatRequestSchema, type ChatRequest, type SourceRef } from './_lib/chat-schema.js';
+import { answerWithTools, createEmbedding, GeminiApiError } from './_lib/gemini.js';
+import { formatSse, sendSseError, startSse } from './_lib/sse.js';
+import { CampusStore, InvalidConversationError, type ServerEnv, type ToolName, type ToolResult } from './_lib/store.js';
 
 type Store = {
   authenticate(): Promise<string | null>;

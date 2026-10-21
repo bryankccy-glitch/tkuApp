@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { dueClassReminders, dueFriendNotices, dueTaskReminders, runPushReminders, type Sub, type PushMessage } from './push-reminders';
-import type { EntryRow } from './widget';
+import { dueClassReminders, dueFriendNotices, dueTaskReminders, runPushReminders, type Sub, type PushMessage } from '../push-reminders.js';
+import type { EntryRow } from '../widget.js';
 
 const e = (weekday: number, start: string, end: string, name: string, room = 'B217'): EntryRow => ({ weekday, start_time: `${start}:00`, end_time: `${end}:00`, room, name });
 // Monday 2026-10-19 in Taipei

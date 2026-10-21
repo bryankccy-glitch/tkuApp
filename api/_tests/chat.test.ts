@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createChatHandler, readServerEnv } from './chat.js';
-import { chatRequestSchema } from './chat-schema.js';
-import { formatSse, type SseEvent } from './sse.js';
-import { answerWithTools, createEmbedding, instructionsFor, SYSTEM_INSTRUCTIONS, wrapToolData } from './gemini.js';
-import type { ServerEnv, ToolName, ToolResult } from './store.js';
+import { createChatHandler, readServerEnv } from '../chat.js';
+import { chatRequestSchema } from '../_lib/chat-schema.js';
+import { formatSse, type SseEvent } from '../_lib/sse.js';
+import { answerWithTools, createEmbedding, instructionsFor, SYSTEM_INSTRUCTIONS, wrapToolData } from '../_lib/gemini.js';
+import type { ServerEnv, ToolName, ToolResult } from '../_lib/store.js';
 
 const validBody = {
   message: '今天有什麼課？',

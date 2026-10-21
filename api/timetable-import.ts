@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { z } from 'zod';
 import { readServerEnv } from './chat.js';
-import { CampusStore, type ServerEnv } from './store.js';
-import { geminiFetch, GeminiApiError, type GeminiResponse } from './gemini.js';
+import { CampusStore, type ServerEnv } from './_lib/store.js';
+import { geminiFetch, GeminiApiError, type GeminiResponse } from './_lib/gemini.js';
 
 /**
  * POST /api/timetable-import

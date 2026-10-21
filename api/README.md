@@ -25,7 +25,8 @@ Status：503 未設定 AI/Supabase（前端自動改用本機助理）、401 tok
 
 ## Implementation
 - `chat.ts` validates the request, verifies the bearer token with Supabase Auth, records/checks `ai_usage`, stores conversation messages with the user JWT client, then streams Gemini `streamGenerateContent` deltas through the existing SSE contract.
-- `gemini.ts` uses the official REST API with the key only in the `x-goog-api-key` header. There is no AI SDK dependency, URL key parameter, or persistent Gemini session. Generation requests explicitly set `store: false` to disable request logging. Function calls are restricted to the six read-only tools; matching function IDs and thought signatures are preserved on subsequent turns.
+- Layout: every `api/*.ts` file is a Vercel Function (Hobby plan allows at most 12 per deployment). Shared code lives in `api/_lib/` and tests in `api/_tests/` — folders starting with `_` are not deployed as functions, so never put helpers or tests directly in `api/`.
+- `_lib/gemini.ts` uses the official REST API with the key only in the `x-goog-api-key` header. There is no AI SDK dependency, URL key parameter, or persistent Gemini session. Generation requests explicitly set `store: false` to disable request logging. Function calls are restricted to the six read-only tools; matching function IDs and thought signatures are preserved on subsequent turns.
 - SSE starts only after the upstream tool rounds and streaming HTTP request succeed, so an upstream HTTP 429 remains an HTTP 429 to the frontend. Failures during an already-started stream use `error` + `done` events.
 - Tool reads for schedules, tasks, events, and conversations use the user's JWT client. Only usage accounting, vector search, and document ingestion use the service-role client.
 - `searchUniversityKnowledge` returns official-source fallback links even when the vector search has no reliable match; retrieved text is enclosed in untrusted-data markers before it is sent back to the model.

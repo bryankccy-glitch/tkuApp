@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { OFFICIAL_SOURCES } from '../src/data/sources.js';
-import { createEmbedding } from '../api/gemini.js';
+import { createEmbedding } from '../api/_lib/gemini.js';
 
 const CHUNK_SIZE = 650;
 const CHUNK_OVERLAP = 100;

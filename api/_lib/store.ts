@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { CAMPUS_PLACES } from '../src/data/places.js';
-import { OFFICIAL_SOURCES } from '../src/data/sources.js';
+import { CAMPUS_PLACES } from '../../src/data/places.js';
+import { OFFICIAL_SOURCES } from '../../src/data/sources.js';
 import type { SourceRef } from './chat-schema.js';
 
 export type ServerEnv = {

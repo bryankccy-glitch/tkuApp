@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createTimetableImportHandler, readTimetable, VISION_PROMPT } from './timetable-import.js';
-import type { ServerEnv } from './store.js';
+import { createTimetableImportHandler, readTimetable, VISION_PROMPT } from '../timetable-import.js';
+import type { ServerEnv } from '../_lib/store.js';
 
 const env: ServerEnv = {
   supabaseUrl: 'https://example.supabase.co', supabaseAnonKey: 'anon', supabaseServiceRoleKey: 'service',

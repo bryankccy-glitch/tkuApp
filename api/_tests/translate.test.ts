@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SOURCE, VERSION, acceptTranslation, flatten, translateAll, unflatten } from './translate';
+import { SOURCE, VERSION, acceptTranslation, flatten, translateAll, unflatten } from '../translate.js';
 
 describe('translate', () => {
   it('round-trips nested strings', () => {

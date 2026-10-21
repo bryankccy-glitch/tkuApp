@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { isSupported } from '../src/i18n/languages.js';
+import { isSupported } from '../../src/i18n/languages.js';
 
 const timezoneSchema = z.string().min(1).max(100).refine((timezone) => {
   try {
