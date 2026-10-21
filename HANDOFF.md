@@ -1,12 +1,14 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-19（Asia/Taipei, UTC+8）
+2026-10-21（Asia/Taipei, UTC+8）
 
 ## Updated By
 Claude Code（main）
 
 ## Current Status
+2026-10-21：課表截圖匯入改為手機上 OCR、助理本機模式加強、翻譯快取優先；不再需要 Gemini 金鑰（見 Latest Changes）。lint、typecheck、170 單元、132 E2E 通過。
+
 收尾狀態（2026-10-19）：main 為正式版（Vercel 自動部署）。iOS 主畫面 App：滿版天氣、AI 助理收鍵盤自動恢復高度、啟動畫面依 App 外觀單色、自動更新、登入確認不會無限等待；校園活動已匯入 48 筆（快照，不自動更新）；桌面小工具（Scriptable 版）已上線待實機確認。lint、typecheck、138 單元、132 E2E 皆通過。
 
 ## Completed
@@ -20,6 +22,8 @@ Claude Code（main）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **拿掉 API 金鑰依賴 — Claude Code（2026-10-21）**：學校合作沒談成，使用者不想自付 API 費用，目標是刪掉 `GEMINI_API_KEY` 但功能照舊。(1) **課表截圖匯入改在手機上辨識**：Tesseract.js 7（WASM）＋ `chi_tra` best_int 模型，專為選課系統「查詢選課課表」頁設計：以格線找出 9 條直線／15 條橫線（節次欄＋週一～日、第 1–14 節），逐格切行、去掉底線、藍色連結行＝課名，再解析班級／課名／教師_教室；教室碼數字修正（B1l8→B118）、「X 教」→助教、同課教師一字之差取多數、「體育一」→「體育－」；畫面若從第 N 節開始則讀節次欄判斷。以使用者提供的截圖（含姓名學號，只在本機測試、未提交）驗證：28 個有課格子的星期／節次／教室 100% 正確，課名字元錯誤率約 3–6%（主要是老師姓名），使用者在確認畫面可修改。引擎與模型由 `scripts/copy-ocr-assets.mjs` 在 dev/build 前從 node_modules 複製到 `public/ocr/`（不進 Git，約 5.5 MB／裝置，Service Worker 執行時快取）；CSP `script-src` 加 `'wasm-unsafe-eval'`，worker 同源。以正式建置＋相同 CSP 的 Chromium 跑過整個匯入流程（3.6 秒）。訪客也能用（不再需要登入）。刪除 `api/timetable-import.ts`、其測試、`src/lib/imageResize.ts`、`GEMINI_VISION_MODEL`。(2) **本機助理加強**（`src/features/ai/localEngine.ts`）：現在／下一堂課（倒數、下課後接什麼、Google 地圖連結）、幾點下課、空堂、單一課程（部分課名即可，例「經濟在哪」）的時間／教室／老師、某課的作業與考試、本週課表總覽、學期第幾週、今天日期、自我介紹；第五節等中文數字；簡體中文提問（字元對照轉繁）；建築回答附地圖連結。`/api/chat` 回 503（沒金鑰）時 10 分鐘內直接用本機，429／5xx／網路錯誤也改用本機回答；標題說明依實際回答來源。(3) **`/api/translate` 沒金鑰也能用**：先找同版本快取；否則用該語言最新的舊版快取＋新字串補英文（`mergeStale`），有金鑰時只翻缺的字串再存新版本；完全沒快取且沒金鑰回 503。線上 `ui_translations` 目前只有 ja。
+- **待辦**：使用者 push 後，若要保留 28 種機器翻譯語言，需在刪金鑰前把每種語言叫一次 `/api/translate?lang=xx` 產生快取（免費額度每分鐘有限，建議一分鐘一種）；之後即可在 Vercel 刪除 `GEMINI_API_KEY`（與誤建的 `AGEMINI_API_KEY`）。刪除後 AI 助理只剩本機模式，知識庫 RAG（本來就未建）不可用。
 - **部署失敗修正 — Claude Code（2026-10-21）**：`d6c1d04`、`f7abdc4`、`0f5b4c5` 三次部署都失敗：Vercel Hobby 方案每次部署最多 12 個 Serverless Functions，而 `api/` 底下每個 .ts（含 helper 與 *.test.ts）都被當成一個 function（共 16 個）。改為共用程式放 `api/_lib/`（chat-schema、gemini、sse、store）、測試放 `api/_tests/`，底線開頭資料夾不會部署成 function；現在只有 6 個 function。`scripts/ingest.ts`、`api/README.md` 已更新路徑。
 - **建築位置、夜間節次、多語言、好友通知 — Claude Code（2026-10-20）**：(1) 校園建築座標：取自 OpenStreetMap（使用者電腦上的瀏覽器查 Overpass，建物輪廓中心點），29 個代碼全部有座標並附 OSM way 編號（`src/data/places.ts` `OSM` 表、`coordsSource`）；宮燈教室取 6 棟平均、松濤館標 1 館、司令台取校內操場旁；T 驚聲紀念大樓名稱已依 OSM 核對；地圖現在會顯示標記。(2) 第 13、14 節 20:10–21:00、21:10–22:00：來源 淡江 112-1 日間部考試相關事項公告節次表（acc.tku.edu.tw），114-2 網路借用教室作業日程表載 11～14 節 18:10–22:00 佐證；課表、圖片匯入皆支援；共同空堂仍只算 1–12 節。(3) 語言：內建 繁中、简中（`scripts/make-zh-cn.py` 以 OpenCC t2s 逐字轉換自 zh-TW，改 zh-TW 後要重跑）、English；另 28 種語言（含日韓越泰印尼馬來菲律賓緬柬蒙印地尼泊爾孟加拉西葡法德義荷波捷瑞俄烏土阿波斯希伯來）由 `api/translate.ts` 用 Gemini 從英文機器翻譯，存 `ui_translations`（migration 已套用）＋CDN／瀏覽器快取，佔位符不符就保留英文、翻譯成功率 <50% 不快取；「我的 → 外觀 → 更多語言」選擇，標示機器翻譯；阿拉伯／波斯／希伯來設 `dir=rtl`（版面未逐頁調整）。AI 助理回答語言跟著介面語言。**機器翻譯未在正式站實際產生過**（需 GEMINI_API_KEY 與額度）。(4) 好友邀請通知：底部「課表」分頁顯示待回覆邀請數紅點；推播排程同時通知「新好友邀請」與「好友邀請已接受」（`dueFriendNotices`，10 分鐘內、push_sent 去重）。
 - **功能檢查與補強 — Claude Code（2026-10-20）**：(1) AI 助理「目前無法產生回答」：`api/gemini.ts` 最後串流改帶同樣 tools 並 `functionCallingConfig.mode = 'NONE'`；串流為空時先用規劃回合的文字，再以非串流重試一次，仍空才顯示固定訊息並記錄 `finishReason`（新增測試）。(2) 二手市集照片：migration `20261020140000_market_photos.sql`（已套用：`market_posts.photos text[]` 最多 4 張；公開 bucket `market-photos`，只能上傳／刪除自己 `<uid>/` 資料夾，限 JPEG 2 MB）；發文表單可加照片（前端縮成 ≤1280px JPEG）、列表顯示縮圖、貼文頁可左右滑看照片；CSP `img-src` 加 `https://*.supabase.co`（新增測試）。(3) 提醒說明文字改為推播版。資料庫建議：`pg_net` 安裝在 public schema（Supabase 建議移到 extensions；搬移需重建擴充、已取消，影響低；migration 檔已改為 `with schema extensions` 供新環境使用）。

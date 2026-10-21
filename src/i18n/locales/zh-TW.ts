@@ -1,18 +1,55 @@
 // Generated from the translation store; edit keys here directly is fine.
 const zh = {
   "calendar": {
-    "title": "學生行事曆", "month": "月", "year": "年", "previous": "上一期", "next": "下一期", "today": "今天",
-    "monthHeading": "{{year}} 年 {{month}} 月", "monthName": "{{month}} 月", "itemCount": "{{count}} 個行程", "dayLabel": "{{date}}，{{count}} 個行程",
-    "addEvent": "新增行程", "editEvent": "編輯行程", "eventTitle": "行程名稱", "titleRequired": "請輸入 1–120 字的行程名稱",
-    "kind": "行程類型", "startDate": "開始日期", "startTime": "開始時間", "endDate": "結束日期", "endTime": "結束時間",
-    "location": "地點", "notes": "備註", "repeat": "重複", "once": "不重複", "weekly": "每週", "repeatUntil": "重複截止日期（可不填）",
-    "invalidRange": "請填寫有效日期時間，結束必須晚於開始；每週行程不得超過 7 天。", "invalidRepeat": "截止日期不可早於開始日期。",
+    "title": "學生行事曆",
+    "month": "月",
+    "year": "年",
+    "previous": "上一期",
+    "next": "下一期",
+    "today": "今天",
+    "monthHeading": "{{year}} 年 {{month}} 月",
+    "monthName": "{{month}} 月",
+    "itemCount": "{{count}} 個行程",
+    "dayLabel": "{{date}}，{{count}} 個行程",
+    "addEvent": "新增行程",
+    "editEvent": "編輯行程",
+    "eventTitle": "行程名稱",
+    "titleRequired": "請輸入 1–120 字的行程名稱",
+    "kind": "行程類型",
+    "startDate": "開始日期",
+    "startTime": "開始時間",
+    "endDate": "結束日期",
+    "endTime": "結束時間",
+    "location": "地點",
+    "notes": "備註",
+    "repeat": "重複",
+    "once": "不重複",
+    "weekly": "每週",
+    "repeatUntil": "重複截止日期（可不填）",
+    "invalidRange": "請填寫有效日期時間，結束必須晚於開始；每週行程不得超過 7 天。",
+    "invalidRepeat": "截止日期不可早於開始日期。",
     "privateHint": "行程只供本人查看，不會分享給好友；訪客模式只存在此裝置。時間皆為臺灣時間。",
-    "seriesHint": "編輯與刪除會套用到整個每週重複行程。", "scopeHint": "整合所選學期課表、作業考試與私人行程；課程只在該學期起訖日期內顯示。",
-    "filters": "行程來源篩選", "emptyDay": "這天沒有行程，可以安排自己的時間。", "saved": "行程已儲存", "saveFailed": "行程無法儲存，請稍後再試。",
-    "deleteEvent": "刪除行程", "deleteHint": "刪除後無法復原；每週行程會刪除整個系列。", "deleted": "行程已刪除",
-    "sources": { "course": "課表", "task": "作業／考試", "personal": "私人行程" },
-    "kinds": { "work": "打工／排班", "appointment": "約會／約定", "study": "讀書／自習", "club": "社團／活動", "personal": "其他私人行程" }
+    "seriesHint": "編輯與刪除會套用到整個每週重複行程。",
+    "scopeHint": "整合所選學期課表、作業考試與私人行程；課程只在該學期起訖日期內顯示。",
+    "filters": "行程來源篩選",
+    "emptyDay": "這天沒有行程，可以安排自己的時間。",
+    "saved": "行程已儲存",
+    "saveFailed": "行程無法儲存，請稍後再試。",
+    "deleteEvent": "刪除行程",
+    "deleteHint": "刪除後無法復原；每週行程會刪除整個系列。",
+    "deleted": "行程已刪除",
+    "sources": {
+      "course": "課表",
+      "task": "作業／考試",
+      "personal": "私人行程"
+    },
+    "kinds": {
+      "work": "打工／排班",
+      "appointment": "約會／約定",
+      "study": "讀書／自習",
+      "club": "社團／活動",
+      "personal": "其他私人行程"
+    }
   },
   "greeting": {
     "morning": {
@@ -444,7 +481,13 @@ const zh = {
     "youAreHere": "藍點是你目前的位置（誤差約 {{m}} 公尺）。",
     "awayFromCampus": "你目前距離淡水校園約 {{km}} 公里。",
     "locPrivacy": "位置只在你的手機上使用，不會上傳。",
-    "locErr": {"denied": "沒有定位權限。請到瀏覽器或手機設定允許這個網站使用位置，再按一次「我的位置」。", "unavailable": "暫時抓不到你的位置，請確認已開啟定位服務，或到室外再試一次。", "timeout": "定位逾時，請再按一次「我的位置」。", "unsupported": "這個瀏覽器不支援定位。", "insecure": "定位只能在 https 網址使用。"},
+    "locErr": {
+      "denied": "沒有定位權限。請到瀏覽器或手機設定允許這個網站使用位置，再按一次「我的位置」。",
+      "unavailable": "暫時抓不到你的位置，請確認已開啟定位服務，或到室外再試一次。",
+      "timeout": "定位逾時，請再按一次「我的位置」。",
+      "unsupported": "這個瀏覽器不支援定位。",
+      "insecure": "定位只能在 https 網址使用。"
+    },
     "title": "校園探索",
     "subtitle": "淡水校園建築與教室代碼。輸入教室（例如 E304）可直接找到所在大樓。",
     "events": "活動與機會",
@@ -497,7 +540,9 @@ const zh = {
     "src": {
       "schedule": "你的課表",
       "tasks": "你的待辦與考試",
-      "tku": "淡江大學"
+      "tku": "淡江大學",
+      "map": "Google 地圖：{{name}}",
+      "semester": "你設定的學期日期"
     },
     "day": {
       "afterTomorrow": "後天",
@@ -522,7 +567,8 @@ const zh = {
     },
     "exams": {
       "none": "接下來 {{days}} 天內，你的待辦裡沒有考試。如果有考試還沒登記，可以到「作業與考試」新增，類型選小考、期中考或期末考。",
-      "count": "接下來 {{days}} 天內有 {{count}} 場考試："
+      "count": "接下來 {{days}} 天內有 {{count}} 場考試：",
+      "noneFor": "接下來 {{days}} 天內，「{{name}}」沒有登記考試。"
     },
     "tasks": {
       "count": "{{when}}還有 {{count}} 項待辦：",
@@ -530,10 +576,11 @@ const zh = {
       "overdue": "另外有 **{{count}} 項已逾期**："
     },
     "place": {
-      "answer": "**{{code}}** 是「{{name}}」。教室編號以 {{code}} 開頭的課都在這棟。\n\n可以到「探索」頁查看建築資訊，並用 Google 地圖導航。建築的精確座標仍在查核中，所以我不提供方位描述，避免帶錯路。"
+      "answer": "**{{code}}** 是「{{name}}」。教室編號以 {{code}} 開頭的課都在這棟。\n\n可以到「探索」頁查看建築資訊，並用 Google 地圖導航。建築的精確座標仍在查核中，所以我不提供方位描述，避免帶錯路。",
+      "answerMap": "**{{code}}** 是「{{name}}」。教室編號以 {{code}} 開頭的課都在這棟。\n\n下方有 Google 地圖連結可以直接導航，也可以到「探索」頁看校園地圖。"
     },
     "period": {
-      "unknown": "我只有第 1–12 節的查核資料，沒有第 {{n}} 節的時間。",
+      "unknown": "我只有第 1–14 節的查核資料，沒有第 {{n}} 節的時間。",
       "one": "第 {{n}} 節是 **{{start}}–{{end}}**。"
     },
     "events": {
@@ -544,14 +591,14 @@ const zh = {
     "knowledge": {
       "answer": "這類問題以學校公告的正式文件為準。相關文件是{{docs}}，請直接查閱原文。\n\n目前的知識庫還沒有收錄這些文件的內文，我不會自行推測申請流程、天數或期限，以免給你錯誤資訊。如果規定和你的情況有關，也可以直接詢問學校承辦單位。"
     },
-    "fallback": "這個問題我目前沒有可靠的資料可以回答。\n\n我可以幫你：\n- 查詢你的課表（例如「明天第一堂課在哪？」）\n- 整理作業與考試（例如「這週有哪些作業？」）\n- 查教室代碼（例如「FL105 在哪棟？」）\n- 找學校官方文件（例如「病假怎麼請？」）",
+    "fallback": "這個問題我目前沒有可靠的資料可以回答。\n\n我可以幫你：\n- 查課表（「下一堂課在哪？」「明天有什麼課？」）\n- 查某門課（「經濟學在哪間教室？」）\n- 整理作業與考試（「這週有哪些作業？」）\n- 查教室代碼與地圖（「B217 在哪棟？」）\n- 找學校官方文件（「病假怎麼請？」）\n\n輸入「你可以做什麼」看更多問法。",
     "quick": {
-      "1": "明天第一堂課在哪裡？",
+      "1": "下一堂課在哪？",
       "2": "這週有哪些作業？",
       "3": "幫我整理接下來的考試",
-      "4": "淡江病假怎麼請？",
-      "5": "FL105 在哪一棟？",
-      "6": "第 5 節是幾點？"
+      "4": "今天幾點下課？",
+      "5": "B217 在哪一棟？",
+      "6": "淡江病假怎麼請？"
     },
     "yourData": "你的個人資料",
     "avatar": "校園助理",
@@ -563,7 +610,7 @@ const zh = {
     "localNote": "本機助理：只使用你的資料與已查核的校園資訊",
     "title": "AI 校園助理",
     "cloudHint": "回答由 Google Gemini 產生並附上資料來源；資料不足時會直接說明。",
-    "localHint": "本機模式：根據你的課表、待辦與已查核的校園資料回答，不會上傳任何內容。",
+    "localHint": "根據你的課表、待辦與已查核的校園資料，直接在手機上回答，不會上傳任何內容。",
     "clear": "清除對話",
     "emptyTitle": "想知道什麼？",
     "emptyBody": "可以問你的課表、作業、考試、教室位置，或學校規定該看哪份文件。",
@@ -578,7 +625,49 @@ const zh = {
     "rateLimited": "提問太頻繁了，請一分鐘後再試。",
     "unavailable": "助理暫時無法回應（{{status}}）",
     "error": "回答時發生錯誤",
-    "stopped": "已停止回答。"
+    "stopped": "已停止回答。",
+    "duration": {
+      "hm": "{{h}} 小時 {{m}} 分",
+      "m": "{{m}} 分鐘"
+    },
+    "help": "我是校園助理，直接在你的手機上回答，不需要連到外部 AI 服務。可以這樣問我：\n\n- 「下一堂課在哪？」「今天幾點下課？」\n- 「明天有什麼課？」「這週課表」「週三有空堂嗎？」\n- 「經濟學在哪間教室？」「網路與通訊是誰教的？」\n- 「這週有哪些作業？」「經濟學什麼時候考試？」\n- 「B217 在哪棟？」「第五節幾點？」\n- 「現在是第幾週？」「病假怎麼請？」",
+    "date": {
+      "answer": "今天是 **{{date}}**，現在 {{time}}。"
+    },
+    "semester": {
+      "none": "還沒有設定學期，所以算不出週次。可以到「我的」設定學期日期。",
+      "before": "{{name}}還沒開始，**{{start}}** 開學（還有 {{days}} 天）。",
+      "after": "{{name}}已經在 {{end}} 結束了。",
+      "week": "今天是{{name}}第 **{{week}}** 週（{{start}} 開學，{{end}} 結束，還有 {{left}} 天）。"
+    },
+    "now": {
+      "none": "接下來 7 天都沒有排課。",
+      "ongoing": "現在正在上 **{{name}}**（{{start}}–{{end}}{{where}}{{teacher}}），再 {{left}}下課。",
+      "then": "下課後接著是 **{{name}}**，{{start}} 開始{{where}}。",
+      "next": "下一堂是 **{{name}}**：{{when}} {{start}}–{{end}}{{where}}{{teacher}}",
+      "in": "（還有 {{time}}）"
+    },
+    "end": {
+      "answer": "{{date}}最後一堂是 {{name}}{{where}}，**{{end}}** 下課。"
+    },
+    "free": {
+      "noClass": "{{date}}沒有排課，整天都有空。",
+      "none": "{{date}}的課之間沒有超過 40 分鐘的空堂。",
+      "count": "{{date}}有 {{count}} 段空堂：",
+      "range": "（課從 {{start}} 上到 {{end}}）"
+    },
+    "course": {
+      "teacher": "**{{name}}** 的授課教師是 **{{teacher}}**。",
+      "noTeacher": "「{{name}}」沒有填授課教師。可以在課表裡編輯這門課補上。",
+      "noSlots": "「{{name}}」還沒有設定上課時間。",
+      "slots": "**{{name}}**{{teacher}}每週 {{count}} 個時段："
+    },
+    "week": {
+      "title": "你這學期有 {{courses}} 門課，每週共 {{count}} 個時段："
+    },
+    "listSep": "、",
+    "quote": "「{{text}}」",
+    "upcoming": "接下來"
   },
   "auth": {
     "network": "無法連線到帳號伺服器。請確認網路連線；如果是在預覽頁開啟，預覽環境會擋住連線，請改用本機開發版或部署後的網址。",
@@ -960,15 +1049,14 @@ const zh = {
   "imageImport": {
     "button": "圖片匯入",
     "title": "用課表截圖匯入",
-    "description": "上傳淡江選課系統的課表截圖或照片，AI 會讀出每門課的星期、節次與教室，你確認後才會加入。",
+    "description": "上傳淡江選課系統「查詢選課課表」的截圖，App 會在你的手機上讀出每門課的星期、節次與教室，你確認後才會加入。",
     "choose": "選擇課表圖片或拍照",
-    "chooseHint": "支援截圖與照片（JPEG、PNG、WebP）",
-    "privacy": "圖片會經由我們的伺服器交給 Google Gemini 辨識，我們不會保存圖片。截圖上若有姓名、學號，建議先裁掉。",
+    "chooseHint": "請截完整的課表表格（含格線），字越大越準；JPEG、PNG、WebP 都可以",
+    "privacy": "圖片只在你的手機上辨識，不會上傳到任何伺服器。",
     "useCsv": "改用 CSV 匯入",
-    "needAccount": "圖片辨識需要登入帳號才能使用。你也可以改用 CSV 匯入。",
     "reading": "正在辨識課表…",
-    "readingHint": "大約需要 10–30 秒",
-    "reviewHint": "請逐一確認 AI 讀到的課程，可以修改名稱、取消勾選或移除時段。",
+    "readingHint": "第一次使用需要下載約 5 MB 的辨識引擎，之後會快很多",
+    "reviewHint": "手機辨識偶爾會認錯字（尤其是老師姓名），請逐一確認，可以修改名稱、取消勾選或移除時段。",
     "found": "讀到 {{count}} 個課程項目（正課與助教課分開）",
     "skipped": "有 {{count}} 格不在節次表（第 1–14 節）範圍內，沒有自動加入，請手動新增。",
     "includeName": "加入 {{name}}",
@@ -981,12 +1069,10 @@ const zh = {
     "addN": "加入 {{count}} 個課程項目",
     "groupNote": "開課班級：{{group}}",
     "err": {
-      "unavailable": "圖片辨識需要在部署後的網站使用（伺服器尚未設定）。你可以先改用 CSV 匯入。",
-      "auth": "登入已過期，請重新登入後再試。",
-      "rate": "辨識太頻繁了，請一分鐘後再試。",
-      "not_timetable": "這張圖片看起來不像課表，請換一張清楚的課表截圖。",
+      "engine": "辨識引擎載入失敗，請確認網路連線後再試（第一次使用需要下載）。你也可以改用 CSV 匯入。",
+      "not_timetable": "找不到課表表格。請使用選課系統「查詢選課課表」的完整截圖（含格線），或改用 CSV 匯入。",
       "too_large": "圖片太大或無法讀取，請裁切後再試。",
-      "failed": "辨識失敗，請換一張更清楚的圖片，或改用 CSV 匯入。"
+      "failed": "辨識失敗，請換一張更清楚的截圖，或改用 CSV 匯入。"
     }
   }
 } as const;

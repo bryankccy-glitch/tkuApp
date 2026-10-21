@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SOURCE, VERSION, acceptTranslation, flatten, translateAll, unflatten } from '../translate.js';
+import { SOURCE, VERSION, acceptTranslation, flatten, mergeStale, translateAll, unflatten } from '../translate.js';
 
 describe('translate', () => {
   it('round-trips nested strings', () => {
@@ -29,5 +29,27 @@ describe('translate', () => {
     const translated = keys.filter((k) => out[k]!.startsWith('JA:')).length;
     expect(translated).toBeGreaterThan(keys.length * 0.8);
     expect(calls).toBe(Math.ceil(keys.length / 90));
+  });
+
+  it('brings an older cached pack up to date without an API key', () => {
+    const keys = Object.keys(SOURCE);
+    const [a, b, c] = keys;
+    const withPlaceholder = keys.find((k) => SOURCE[k]!.includes('{{'))!;
+    const { flat, missing } = mergeStale({ [a!]: `JA:${SOURCE[a!]}`, [b!]: SOURCE[b!], [withPlaceholder]: 'lost the placeholder', obsolete: 'x' });
+    expect(Object.keys(flat).sort()).toEqual([...keys].sort());
+    expect(flat[a!]).toBe(`JA:${SOURCE[a!]}`);
+    expect(flat[b!]).toBe(SOURCE[b!]); // untranslated before → still English, and listed as missing
+    expect(flat[withPlaceholder]).toBe(SOURCE[withPlaceholder]);
+    expect(missing).toEqual(expect.arrayContaining([b!, c!, withPlaceholder]));
+    expect(missing).not.toContain(a!);
+    expect(flat).not.toHaveProperty('obsolete');
+  });
+
+  it('translates only the requested keys', async () => {
+    const only = Object.keys(SOURCE).slice(0, 3);
+    let calls = 0;
+    const out = await translateAll('Japanese', async () => { calls += 1; return '{}'; }, only);
+    expect(Object.keys(out)).toEqual(only);
+    expect(calls).toBe(1);
   });
 });

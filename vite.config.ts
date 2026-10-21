@@ -34,7 +34,17 @@ export default defineConfig({
           { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: { navigateFallbackDenylist: [/^\/api\//], importScripts: ['/push-sw.js'] },
+      workbox: {
+        navigateFallbackDenylist: [/^\/api\//],
+        importScripts: ['/push-sw.js'],
+        // On-device OCR (~5.5 MB per device) is downloaded only when a screenshot is imported, then kept.
+        globIgnores: ['ocr/**'],
+        runtimeCaching: [{
+          urlPattern: ({ url }) => url.pathname.startsWith('/ocr/'),
+          handler: 'CacheFirst',
+          options: { cacheName: 'ocr-engine', expiration: { maxEntries: 8 } },
+        }],
+      },
     }),
   ],
   resolve: { alias: { '@': path.resolve(__dirname, 'src') } },

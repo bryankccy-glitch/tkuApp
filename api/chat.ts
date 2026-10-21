@@ -37,7 +37,6 @@ export function readServerEnv(source: NodeJS.ProcessEnv = process.env): ServerEn
     supabaseServiceRoleKey,
     geminiApiKey,
     geminiModel,
-    geminiVisionModel: source.GEMINI_VISION_MODEL?.trim() || geminiModel,
     geminiEmbeddingModel: source.GEMINI_EMBEDDING_MODEL?.trim() || 'gemini-embedding-001',
     rateLimitPerMinute: positiveInteger(source.AI_RATE_LIMIT_PER_MINUTE, 10),
   };

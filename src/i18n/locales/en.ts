@@ -1,18 +1,55 @@
 // Generated from the translation store; edit keys here directly is fine.
 const en = {
   "calendar": {
-    "title": "Student calendar", "month": "Month", "year": "Year", "previous": "Previous period", "next": "Next period", "today": "Today",
-    "monthHeading": "{{year}} / {{month}}", "monthName": "Month {{month}}", "itemCount": "{{count}} events", "dayLabel": "{{date}}, {{count}} events",
-    "addEvent": "Add event", "editEvent": "Edit event", "eventTitle": "Event title", "titleRequired": "Enter a title of 1 to 120 characters",
-    "kind": "Event type", "startDate": "Start date", "startTime": "Start time", "endDate": "End date", "endTime": "End time",
-    "location": "Location", "notes": "Notes", "repeat": "Repeat", "once": "Does not repeat", "weekly": "Weekly", "repeatUntil": "Repeat until (optional)",
-    "invalidRange": "Use valid dates and times with end after start. Weekly events cannot span more than 7 days.", "invalidRepeat": "The last date cannot be before the start date.",
+    "title": "Student calendar",
+    "month": "Month",
+    "year": "Year",
+    "previous": "Previous period",
+    "next": "Next period",
+    "today": "Today",
+    "monthHeading": "{{year}} / {{month}}",
+    "monthName": "Month {{month}}",
+    "itemCount": "{{count}} events",
+    "dayLabel": "{{date}}, {{count}} events",
+    "addEvent": "Add event",
+    "editEvent": "Edit event",
+    "eventTitle": "Event title",
+    "titleRequired": "Enter a title of 1 to 120 characters",
+    "kind": "Event type",
+    "startDate": "Start date",
+    "startTime": "Start time",
+    "endDate": "End date",
+    "endTime": "End time",
+    "location": "Location",
+    "notes": "Notes",
+    "repeat": "Repeat",
+    "once": "Does not repeat",
+    "weekly": "Weekly",
+    "repeatUntil": "Repeat until (optional)",
+    "invalidRange": "Use valid dates and times with end after start. Weekly events cannot span more than 7 days.",
+    "invalidRepeat": "The last date cannot be before the start date.",
     "privateHint": "Only you can view your events; friends cannot see them. Guest data stays on this device. All times use Taiwan time.",
-    "seriesHint": "Editing or deleting affects the entire weekly series.", "scopeHint": "Combines the selected semester's classes, assignments, exams and private events. Classes only appear within that semester's dates.",
-    "filters": "Filter event sources", "emptyDay": "Nothing scheduled. Plan some time for yourself.", "saved": "Event saved", "saveFailed": "Unable to save this event. Please try again later.",
-    "deleteEvent": "Delete event", "deleteHint": "This cannot be undone. A weekly event deletes the entire series.", "deleted": "Event deleted",
-    "sources": { "course": "Classes", "task": "Assignments / exams", "personal": "Private events" },
-    "kinds": { "work": "Work / shifts", "appointment": "Dates / appointments", "study": "Study", "club": "Clubs / activities", "personal": "Other private events" }
+    "seriesHint": "Editing or deleting affects the entire weekly series.",
+    "scopeHint": "Combines the selected semester's classes, assignments, exams and private events. Classes only appear within that semester's dates.",
+    "filters": "Filter event sources",
+    "emptyDay": "Nothing scheduled. Plan some time for yourself.",
+    "saved": "Event saved",
+    "saveFailed": "Unable to save this event. Please try again later.",
+    "deleteEvent": "Delete event",
+    "deleteHint": "This cannot be undone. A weekly event deletes the entire series.",
+    "deleted": "Event deleted",
+    "sources": {
+      "course": "Classes",
+      "task": "Assignments / exams",
+      "personal": "Private events"
+    },
+    "kinds": {
+      "work": "Work / shifts",
+      "appointment": "Dates / appointments",
+      "study": "Study",
+      "club": "Clubs / activities",
+      "personal": "Other private events"
+    }
   },
   "greeting": {
     "morning": {
@@ -444,7 +481,13 @@ const en = {
     "youAreHere": "The blue dot is you (accurate to about {{m}} m).",
     "awayFromCampus": "You’re about {{km}} km from the Tamsui campus.",
     "locPrivacy": "Your location stays on your phone and is never uploaded.",
-    "locErr": {"denied": "Location permission is off. Allow this site to use your location in your browser or phone settings, then tap “My location” again.", "unavailable": "Can’t get your location right now. Make sure location services are on, or try outdoors.", "timeout": "Locating timed out — tap “My location” again.", "unsupported": "This browser doesn’t support location.", "insecure": "Location only works on an https address."},
+    "locErr": {
+      "denied": "Location permission is off. Allow this site to use your location in your browser or phone settings, then tap “My location” again.",
+      "unavailable": "Can’t get your location right now. Make sure location services are on, or try outdoors.",
+      "timeout": "Locating timed out — tap “My location” again.",
+      "unsupported": "This browser doesn’t support location.",
+      "insecure": "Location only works on an https address."
+    },
     "title": "Explore campus",
     "subtitle": "Tamsui campus buildings and room codes. Type a room (e.g. E304) to find its building.",
     "events": "Events & opportunities",
@@ -497,7 +540,9 @@ const en = {
     "src": {
       "schedule": "Your schedule",
       "tasks": "Your to-dos and exams",
-      "tku": "Tamkang University"
+      "tku": "Tamkang University",
+      "map": "Google Maps: {{name}}",
+      "semester": "Your semester dates"
     },
     "day": {
       "afterTomorrow": "The day after tomorrow",
@@ -522,7 +567,8 @@ const en = {
     },
     "exams": {
       "none": "No exams in your to-dos for the next {{days}} days. If one is missing, add it in Homework & exams as a quiz, midterm or final.",
-      "count": "{{count}} exams in the next {{days}} days:"
+      "count": "{{count}} exams in the next {{days}} days:",
+      "noneFor": "No exams are logged for “{{name}}” in the next {{days}} days."
     },
     "tasks": {
       "count": "{{when}}: {{count}} to-dos left:",
@@ -530,10 +576,11 @@ const en = {
       "overdue": "Also **{{count}} overdue**:"
     },
     "place": {
-      "answer": "**{{code}}** is {{name}}. Rooms starting with {{code}} are in this building.\n\nOpen Explore to see the building and navigate with Google Maps. Exact positions are still being verified, so I won’t give directions that might send you the wrong way."
+      "answer": "**{{code}}** is {{name}}. Rooms starting with {{code}} are in this building.\n\nOpen Explore to see the building and navigate with Google Maps. Exact positions are still being verified, so I won’t give directions that might send you the wrong way.",
+      "answerMap": "**{{code}}** is {{name}}. Rooms starting with {{code}} are in this building.\n\nThe Google Maps link below opens directions, or see the campus map on the Explore tab."
     },
     "period": {
-      "unknown": "I only have verified times for periods 1–12, not period {{n}}.",
+      "unknown": "I only have verified times for periods 1–14, not period {{n}}.",
       "one": "Period {{n}} is **{{start}}–{{end}}**."
     },
     "events": {
@@ -544,14 +591,14 @@ const en = {
     "knowledge": {
       "answer": "The official rules are in {{docs}} — please read the original document.\n\nThe knowledge base doesn’t include these documents’ text yet, so I won’t guess procedures, limits or deadlines and risk giving you wrong information. If the rule matters for your situation, ask the responsible university office."
     },
-    "fallback": "I don’t have reliable information to answer that yet.\n\nI can help you:\n- Check your schedule (e.g. “Where is my first class tomorrow?”)\n- List homework and exams (e.g. “What homework is due this week?”)\n- Find a building from a room code (e.g. “Where is FL105?”)\n- Point you to official documents (e.g. “How do I take sick leave?”)",
+    "fallback": "I don’t have reliable information to answer that.\n\nI can help with:\n- Your schedule (“Where is my next class?” “What do I have tomorrow?”)\n- A specific course (“Which room is Economics in?”)\n- Homework and exams (“What’s due this week?”)\n- Room codes and maps (“Where is B217?”)\n- Official university documents (“How do I request sick leave?”)\n\nType “what can you do” for more examples.",
     "quick": {
-      "1": "Where is my first class tomorrow?",
+      "1": "Where is my next class?",
       "2": "What homework is due this week?",
-      "3": "List my upcoming exams",
-      "4": "How do I take sick leave?",
-      "5": "Where is FL105?",
-      "6": "What time is period 5?"
+      "3": "Summarize my upcoming exams",
+      "4": "When do I finish today?",
+      "5": "Where is B217?",
+      "6": "How do I request sick leave at Tamkang?"
     },
     "yourData": "Your own data",
     "avatar": "Campus assistant",
@@ -563,7 +610,7 @@ const en = {
     "localNote": "On-device assistant: uses only your data and verified campus info",
     "title": "Campus assistant",
     "cloudHint": "Answers are generated by Google Gemini, cite their sources and say so when information is missing.",
-    "localHint": "On-device mode: answers from your schedule, to-dos and verified campus data. Nothing is uploaded.",
+    "localHint": "Answers on your phone from your schedule, tasks and verified campus data — nothing is uploaded.",
     "clear": "Clear chat",
     "emptyTitle": "What would you like to know?",
     "emptyBody": "Ask about your schedule, homework, exams, room locations, or which official document covers a rule.",
@@ -578,7 +625,49 @@ const en = {
     "rateLimited": "Too many questions — try again in a minute.",
     "unavailable": "The assistant can’t respond right now ({{status}})",
     "error": "Something went wrong while answering",
-    "stopped": "Stopped."
+    "stopped": "Stopped.",
+    "duration": {
+      "hm": "{{h}} h {{m}} min",
+      "m": "{{m}} min"
+    },
+    "help": "I’m the campus assistant. I answer right on your phone — no outside AI service needed. Try asking:\n\n- “Where is my next class?” “When do I finish today?”\n- “What classes do I have tomorrow?” “My weekly schedule” “Any free periods on Wednesday?”\n- “Which room is Economics in?” “Who teaches Networks?”\n- “What homework is due this week?” “When is the Economics exam?”\n- “Where is B217?” “What time is period 5?”\n- “Which week of the semester is it?” “How do I request sick leave?”",
+    "date": {
+      "answer": "Today is **{{date}}**, and it’s {{time}}."
+    },
+    "semester": {
+      "none": "No semester is set, so I can’t work out the week. You can set the semester dates under Me.",
+      "before": "{{name}} hasn’t started yet — classes begin **{{start}}** (in {{days}} days).",
+      "after": "{{name}} ended on {{end}}.",
+      "week": "It’s week **{{week}}** of {{name}} (started {{start}}, ends {{end}}, {{left}} days to go)."
+    },
+    "now": {
+      "none": "You have no classes in the next 7 days.",
+      "ongoing": "You’re in **{{name}}** right now ({{start}}–{{end}}{{where}}{{teacher}}) — it ends in {{left}}.",
+      "then": "After that: **{{name}}** at {{start}}{{where}}.",
+      "next": "Your next class is **{{name}}**: {{when}} {{start}}–{{end}}{{where}}{{teacher}}",
+      "in": " (in {{time}})"
+    },
+    "end": {
+      "answer": "{{date}}: your last class is {{name}}{{where}}, ending at **{{end}}**."
+    },
+    "free": {
+      "noClass": "{{date}}: no classes — the whole day is free.",
+      "none": "{{date}}: no gaps of 40 minutes or more between classes.",
+      "count": "{{date}}: {{count}} free gap(s)",
+      "range": " (classes run {{start}}–{{end}})"
+    },
+    "course": {
+      "teacher": "**{{name}}** is taught by **{{teacher}}**.",
+      "noTeacher": "No instructor is filled in for “{{name}}”. You can add one by editing the course.",
+      "noSlots": "“{{name}}” has no class times yet.",
+      "slots": "**{{name}}**{{teacher}} meets {{count}} time(s) a week:"
+    },
+    "week": {
+      "title": "You have {{courses}} courses this semester, {{count}} class slots a week:"
+    },
+    "listSep": ", ",
+    "quote": "“{{text}}”",
+    "upcoming": "Upcoming"
   },
   "auth": {
     "network": "Can’t reach the account server. Check your connection — preview pages block this connection, so use local dev or the deployed site.",
@@ -960,15 +1049,14 @@ const en = {
   "imageImport": {
     "button": "Import photo",
     "title": "Import from a timetable screenshot",
-    "description": "Upload a screenshot or photo of your Tamkang timetable. AI reads each course’s day, periods and room, and nothing is added until you confirm.",
+    "description": "Upload a screenshot of the TKU course-selection timetable page (查詢選課課表). The app reads each course’s day, periods and room on your phone, and nothing is added until you confirm.",
     "choose": "Choose a timetable image or take a photo",
-    "chooseHint": "Screenshots and photos (JPEG, PNG, WebP)",
-    "privacy": "The image goes through our server to Google Gemini for recognition; we don’t store it. Crop out your name or student ID first if they’re visible.",
+    "chooseHint": "Capture the whole table including its grid lines — larger text reads better. JPEG, PNG or WebP",
+    "privacy": "The image is read on your phone and never uploaded to any server.",
     "useCsv": "Use CSV instead",
-    "needAccount": "Image recognition needs an account. You can use CSV import instead.",
     "reading": "Reading your timetable…",
-    "readingHint": "Takes about 10–30 seconds",
-    "reviewHint": "Check each course the AI found — rename, untick or remove time slots as needed.",
+    "readingHint": "The first time, the reader (about 5 MB) is downloaded — later runs are much faster",
+    "reviewHint": "On-device reading sometimes gets a character wrong (especially instructor names). Check each course — rename, untick or remove time slots as needed.",
     "found": "Found {{count}} course entries (lectures and TA sessions separated)",
     "skipped": "{{count}} cells are outside the period table (periods 1–14), so they weren’t added. Add them manually.",
     "includeName": "Add {{name}}",
@@ -981,12 +1069,10 @@ const en = {
     "addN": "Add {{count}} course entries",
     "groupNote": "Offered by: {{group}}",
     "err": {
-      "unavailable": "Image import works on the deployed site (the server isn’t set up here). Use CSV import for now.",
-      "auth": "Your session expired — sign in again and retry.",
-      "rate": "Too many attempts — try again in a minute.",
-      "not_timetable": "This doesn’t look like a timetable. Try a clearer screenshot.",
+      "engine": "Couldn’t load the reader — check your connection and retry (it’s downloaded on first use). You can also use CSV import.",
+      "not_timetable": "No timetable grid found. Use a full screenshot of the 查詢選課課表 page (with grid lines), or use CSV import.",
       "too_large": "The image is too large or unreadable — crop it and try again.",
-      "failed": "Couldn’t read the image. Try a clearer one, or use CSV import."
+      "failed": "Couldn’t read the image. Try a clearer screenshot, or use CSV import."
     }
   }
 } as const;

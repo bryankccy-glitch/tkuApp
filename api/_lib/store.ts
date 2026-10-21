@@ -9,7 +9,6 @@ export type ServerEnv = {
   supabaseServiceRoleKey: string;
   geminiApiKey: string;
   geminiModel: string;
-  geminiVisionModel: string;
   geminiEmbeddingModel: string;
   rateLimitPerMinute: number;
 };

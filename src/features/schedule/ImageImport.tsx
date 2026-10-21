@@ -1,11 +1,10 @@
 import { useMemo, useState, type ChangeEvent } from 'react';
+import type { ReadProgress } from '@/lib/ocr/readTimetable';
 import { AlertTriangle, ImagePlus, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import { Button } from '@/components/ui/Button';
-import { useAuth } from '@/app/AuthProvider';
 import { LoadingMark } from '@/components/brand/Logo';
 import { cellsToCourses, colorFor, type DraftCourse, type ImportCell } from '@/lib/timetableImport';
-import { fileToJpegDataUrl } from '@/lib/imageResize';
 import { conflictsFor } from '@/lib/schedule';
 import { WEEKDAY_LABELS } from '@/lib/labels';
 import { formatPeriods } from '@/lib/periods';
@@ -15,32 +14,27 @@ import type { Course } from '@/lib/types';
 import { cn } from '@/lib/cn';
 import { t } from '@/i18n/t';
 
-export type RecognizeError = 'unavailable' | 'auth' | 'rate' | 'not_timetable' | 'too_large' | 'failed';
+export type RecognizeError = 'engine' | 'not_timetable' | 'too_large' | 'failed';
 export class TimetableImportError extends Error {
   constructor(public kind: RecognizeError) { super(kind); }
 }
 
-/** Sends the downsized image to /api/timetable-import and returns the raw cells. */
-export async function recognizeTimetable(accessToken: string, image: string): Promise<ImportCell[]> {
-  let res: Response;
+/** Reads the screenshot on the device (no upload, no API key). */
+export async function recognizeOnDevice(file: File, onProgress?: (p: ReadProgress) => void): Promise<ImportCell[]> {
+  let mod: typeof import('@/lib/ocr/readTimetable');
   try {
-    res = await fetch('/api/timetable-import', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-      body: JSON.stringify({ image }),
-    });
+    mod = await import('@/lib/ocr/readTimetable');
   } catch {
-    throw new TimetableImportError('unavailable');
+    throw new TimetableImportError('engine');
   }
-  const type = res.headers.get('content-type') ?? '';
-  if (res.status === 404 || res.status === 503 || !type.includes('application/json')) throw new TimetableImportError('unavailable');
-  if (res.status === 401) throw new TimetableImportError('auth');
-  if (res.status === 429) throw new TimetableImportError('rate');
-  if (res.status === 422) throw new TimetableImportError('not_timetable');
-  if (res.status === 413) throw new TimetableImportError('too_large');
-  if (!res.ok) throw new TimetableImportError('failed');
-  const body = await res.json() as { cells?: ImportCell[] };
-  return Array.isArray(body.cells) ? body.cells : [];
+  try {
+    return await mod.readTimetableImage(file, onProgress);
+  } catch (e) {
+    if (e instanceof mod.NotATimetableError) throw new TimetableImportError('not_timetable');
+    // Engine download / WASM start-up failures (offline on first use, old browser).
+    if (e instanceof Error && /fetch|network|wasm|worker|load/i.test(e.message)) throw new TimetableImportError('engine');
+    throw new TimetableImportError('failed');
+  }
 }
 
 type Step = 'pick' | 'reading' | 'review';
@@ -48,7 +42,7 @@ interface Row extends DraftCourse { include: boolean; duplicate: boolean }
 
 const norm = (s: string) => s.normalize('NFKC').replace(/\s+/g, '').toLowerCase();
 
-export function ImageImport({ open, onClose, existing, onImport, importing, onUseCsv, recognize = recognizeTimetable }: {
+export function ImageImport({ open, onClose, existing, onImport, importing, onUseCsv, recognize = recognizeOnDevice }: {
   open: boolean;
   onClose: () => void;
   existing: Course[];
@@ -56,29 +50,29 @@ export function ImageImport({ open, onClose, existing, onImport, importing, onUs
   importing: boolean;
   onUseCsv: () => void;
   /** Injected in tests. */
-  recognize?: (token: string, image: string) => Promise<ImportCell[]>;
+  recognize?: (file: File, onProgress?: (p: ReadProgress) => void) => Promise<ImportCell[]>;
 }) {
-  const { session } = useAuth();
   const [step, setStep] = useState<Step>('pick');
   const [error, setError] = useState<RecognizeError | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [skipped, setSkipped] = useState(0);
+  const [progress, setProgress] = useState<ReadProgress | null>(null);
   const existingNames = useMemo(() => new Set(existing.map((c) => norm(c.name))), [existing]);
 
-  const reset = () => { setStep('pick'); setError(null); setRows([]); setSkipped(0); };
+  const reset = () => { setStep('pick'); setError(null); setRows([]); setSkipped(0); setProgress(null); };
   const close = () => { reset(); onClose(); };
 
   const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
-    if (!file || !session) return;
+    if (!file) return;
     setError(null);
     if (!file.type.startsWith('image/')) return setError('failed');
     if (file.size > 25 * 1024 * 1024) return setError('too_large');
     setStep('reading');
     try {
-      const image = await fileToJpegDataUrl(file).catch(() => { throw new TimetableImportError('too_large'); });
-      const cells = await recognize(session.access_token, image);
+      setProgress(null);
+      const cells = await recognize(file, setProgress);
       const result = cellsToCourses(cells);
       if (result.courses.length === 0) throw new TimetableImportError('not_timetable');
       setRows(result.courses.map((c) => {
@@ -123,15 +117,20 @@ export function ImageImport({ open, onClose, existing, onImport, importing, onUs
         <Button variant="secondary" className="flex-1" onClick={close}>{t('common.cancel')}</Button>
       )}
     >
-      {!session ? (
-        <div className="grid gap-3 text-center">
-          <p className="text-body text-ink">{t('imageImport.needAccount')}</p>
-          <Button variant="secondary" onClick={() => { close(); onUseCsv(); }}>{t('imageImport.useCsv')}</Button>
-        </div>
-      ) : step === 'reading' ? (
+      {step === 'reading' ? (
         <div className="py-6" aria-live="polite">
           <LoadingMark compact label={t('imageImport.reading')} />
-          <p className="mt-2 text-center text-caption text-muted">{t('imageImport.readingHint')}</p>
+          {progress && progress.total > 0 ? (
+            <div className="mx-auto mt-3 max-w-[16rem]">
+              <div className="h-1.5 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-valuemin={0} aria-valuemax={100}
+                aria-valuenow={Math.round((progress.done / progress.total) * 100)} aria-label={t('imageImport.reading')}>
+                <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${Math.round((progress.done / progress.total) * 100)}%` }} />
+              </div>
+              <p className="tabular mt-1.5 text-center text-label text-muted">{Math.round((progress.done / progress.total) * 100)}%</p>
+            </div>
+          ) : (
+            <p className="mt-2 text-center text-caption text-muted">{t('imageImport.readingHint')}</p>
+          )}
         </div>
       ) : step === 'pick' ? (
         <div className="grid gap-4">

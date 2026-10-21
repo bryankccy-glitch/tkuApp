@@ -19,7 +19,6 @@ const env: ServerEnv = {
   supabaseServiceRoleKey: 'service-test',
   geminiApiKey: 'gemini-test',
   geminiModel: 'gemini-3.5-flash-lite',
-  geminiVisionModel: 'gemini-3.5-flash-lite',
   geminiEmbeddingModel: 'gemini-embedding-001',
   rateLimitPerMinute: 10,
 };
@@ -140,7 +139,7 @@ describe('POST /api/chat', () => {
 
 describe('AI configuration and prompt injection boundaries', () => {
   it('uses server-side env names and provides safe defaults', () => {
-    expect(readServerEnv({ SUPABASE_URL: env.supabaseUrl, SUPABASE_ANON_KEY: env.supabaseAnonKey, SUPABASE_SERVICE_ROLE_KEY: env.supabaseServiceRoleKey, GEMINI_API_KEY: env.geminiApiKey })).toMatchObject({ geminiModel: 'gemini-3.5-flash-lite', geminiVisionModel: 'gemini-3.5-flash-lite', geminiEmbeddingModel: 'gemini-embedding-001', rateLimitPerMinute: 10 });
+    expect(readServerEnv({ SUPABASE_URL: env.supabaseUrl, SUPABASE_ANON_KEY: env.supabaseAnonKey, SUPABASE_SERVICE_ROLE_KEY: env.supabaseServiceRoleKey, GEMINI_API_KEY: env.geminiApiKey })).toMatchObject({ geminiModel: 'gemini-3.5-flash-lite', geminiEmbeddingModel: 'gemini-embedding-001', rateLimitPerMinute: 10 });
     expect(readServerEnv({ VITE_GEMINI_API_KEY: 'nope' })).toBeNull();
     expect(readServerEnv({ SUPABASE_URL: env.supabaseUrl, SUPABASE_ANON_KEY: env.supabaseAnonKey, SUPABASE_SERVICE_ROLE_KEY: env.supabaseServiceRoleKey, OPENAI_API_KEY: 'old-provider' })).toBeNull();
   });

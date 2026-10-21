@@ -177,7 +177,7 @@ export default function AssistantPage() {
         <div>
           <h1 className="text-h2 text-ink">{t('ai.title')}</h1>
           <p className={cn('mt-0.5 text-caption text-muted', typing && 'hidden')}>
-            {mode === 'cloud' ? t('ai.cloudHint') : t('ai.localHint')}
+            {mode === 'cloud' && [...messages].reverse().find((m) => m.role === 'assistant' && m.engine)?.engine === 'cloud' ? t('ai.cloudHint') : t('ai.localHint')}
           </p>
         </div>
         {messages.length > 0 && (

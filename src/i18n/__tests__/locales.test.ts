@@ -27,7 +27,8 @@ describe('translations', () => {
   });
   it('English strings contain no Chinese characters (except intentional bilingual labels)', () => {
     // settings.zh: language name; csv.help & placeNote.T quote Chinese text the user must type or see
-    const allowed = new Set(['settings.zh', 'csv.help', 'placeNote.T']);
+    // imageImport.*: the school page is only labelled in Chinese (查詢選課課表), so users must recognise that name.
+    const allowed = new Set(['settings.zh', 'csv.help', 'placeNote.T', 'imageImport.description', 'imageImport.err.not_timetable']);
     const bad = Object.entries(e).filter(([k, v]) => !allowed.has(k) && /[一-鿿]/.test(v)).map(([k]) => k);
     expect(bad).toEqual([]);
   });

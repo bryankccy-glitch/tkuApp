@@ -10,6 +10,8 @@ import i18n from '@/i18n';
 import type { ChatMessage, SourceRef } from './types';
 
 const KEY = 'tku.chat.v1';
+/** After the server says AI isn't available, answer on the device for a while without asking again. */
+let cloudOffUntil = 0;
 const MAX_HISTORY = 60;
 
 function load(): ChatMessage[] {
@@ -43,7 +45,7 @@ export function useChat() {
 
   const runLocal = useCallback(
     async (question: string, id: string) => {
-      const ans = answerLocally({ question, courses, tasks, events, now: new Date() });
+      const ans = answerLocally({ question, courses, tasks, events, now: new Date(), semester });
       // Reveal progressively so the UI behaves like a stream.
       const chars = [...ans.content];
       for (let i = 0; i < chars.length; i += 6) {
@@ -52,7 +54,7 @@ export function useChat() {
       }
       patch(id, (m) => ({ ...m, content: ans.content, sources: ans.sources, engine: 'local' }));
     },
-    [courses, tasks, events],
+    [courses, tasks, events, semester],
   );
 
   const runCloud = useCallback(async (question: string, id: string, history: ChatMessage[]) => {
@@ -73,9 +75,13 @@ export function useChat() {
         history: history.filter((m) => !m.error && m.content.trim()).slice(-8).map((m) => ({ role: m.role, content: m.content.slice(0, 2000) })),
       }),
     });
-    // 503 = server AI not configured; 404 / non-SSE = API not deployed yet (e.g. vite dev). Fall back to local engine.
-    if (res.status === 503 || res.status === 404 || (res.ok && !res.headers.get('content-type')?.includes('text/event-stream'))) return 'unavailable' as const;
-    if (res.status === 429) throw new Error(t('ai.rateLimited'));
+    // 503 = server AI not configured (no API key); 404 / non-SSE = API not deployed (e.g. vite dev);
+    // 429 / 5xx = quota or outage. In every case the on-device assistant answers instead.
+    if (res.status === 503 || res.status === 404 || (res.ok && !res.headers.get('content-type')?.includes('text/event-stream'))) {
+      cloudOffUntil = Date.now() + 10 * 60_000;
+      return 'unavailable' as const;
+    }
+    if (res.status === 429 || res.status >= 500) return 'unavailable' as const;
     if (!res.ok || !res.body) throw new Error(t('ai.unavailable', { status: res.status }));
     const reader = res.body.getReader();
     const dec = new TextDecoder();
@@ -110,8 +116,13 @@ export function useChat() {
       setMessages((ms) => [...ms.filter((m) => !m.error), user, reply]);
       setBusy(true);
       try {
-        if (mode === 'cloud') {
-          const r = await runCloud(question, reply.id, history);
+        if (mode === 'cloud' && Date.now() >= cloudOffUntil) {
+          const r = await runCloud(question, reply.id, history).catch((e: unknown) => {
+            if ((e as Error).name === 'AbortError') throw e;
+            // Network failure before any answer arrived: fall back instead of showing an error.
+            if (e instanceof TypeError) return 'unavailable' as const;
+            throw e;
+          });
           if (r === 'unavailable') await runLocal(question, reply.id);
         } else {
           await runLocal(question, reply.id);

@@ -39,7 +39,7 @@ npm run dev          # http://localhost:5173 ，未設定 Supabase 時為「本�
 2. **管理員**：在 SQL Editor 以 service role 執行 `update profiles set role='admin' where id='<user uuid>';`（使用者無法自行升級）。
 3. **Vercel**：匯入 GitHub repo（Framework：Vite）。設定環境變數（見 `.env.example`）：
    - 前端：`VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`
-   - 伺服器：`SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY`、`GEMINI_MODEL`、`GEMINI_VISION_MODEL`、`GEMINI_EMBEDDING_MODEL`、`AI_RATE_LIMIT_PER_MINUTE`
+   - 伺服器：`SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY`、`GEMINI_MODEL`、`GEMINI_EMBEDDING_MODEL`、`AI_RATE_LIMIT_PER_MINUTE`
 4. Deploy。`vercel.json` 已設定 SPA rewrite 與安全標頭。
 
 ⚠ Service Role Key 與 Gemini API Key 只能設為伺服器端變數，**不可**加 `VITE_` 前綴。

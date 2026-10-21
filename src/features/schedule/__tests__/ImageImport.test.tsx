@@ -8,7 +8,6 @@ const auth = vi.hoisted(() => ({
   onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: () => {} } } })),
 }));
 vi.mock('@/lib/supabase', () => ({ supabase: { auth }, isCloudConfigured: true }));
-vi.mock('@/lib/imageResize', () => ({ fileToJpegDataUrl: vi.fn(async () => 'data:image/jpeg;base64,AAAA') }));
 
 import { AuthProvider } from '@/app/AuthProvider';
 import { ImageImport, TimetableImportError } from '../ImageImport';
@@ -21,7 +20,7 @@ const existing: Course[] = [{
   slots: [{ id: 'x1', weekday: 2, startTime: '08:10', endTime: '10:00', room: 'B607' }],
 }];
 
-function setup(recognize: (token: string, image: string) => Promise<ImportCell[]>) {
+function setup(recognize: (file: File) => Promise<ImportCell[]>) {
   const onImport = vi.fn(async () => {});
   render(
     <QueryClientProvider client={new QueryClient()}>
@@ -34,14 +33,14 @@ function setup(recognize: (token: string, image: string) => Promise<ImportCell[]
 }
 
 const pick = async (user: ReturnType<typeof userEvent.setup>) => {
-  await screen.findByText('選擇課表圖片或拍照'); // session restored → picker shown
+  await screen.findByText('選擇課表圖片或拍照');
   const input = document.querySelector('input[type=file]') as HTMLInputElement;
   await user.upload(input, new File(['x'], 'timetable.png', { type: 'image/png' }));
 };
 
 describe('ImageImport', () => {
   it('reads an image, lets the user review and edit, and imports only the chosen courses', async () => {
-    const recognize = vi.fn(async () => [
+    const recognize = vi.fn(async (_file: File) => [
       cell(3, 3, '網路與通訊', '鄭培宇', 'B 217'),
       cell(3, 4, '網路與通訊', '鄭培宇', 'B 217'),
       cell(2, 1, '經濟學', '陳紹良', 'B 607'), // already in the timetable
@@ -51,7 +50,7 @@ describe('ImageImport', () => {
     const { onImport } = setup(recognize);
     await pick(user);
 
-    expect(recognize).toHaveBeenCalledWith('jwt', 'data:image/jpeg;base64,AAAA');
+    expect(recognize.mock.calls[0]![0]).toBeInstanceOf(File);
     expect(await screen.findByText('讀到 3 個課程項目（正課與助教課分開）')).toBeInTheDocument();
     expect(screen.getByText('課表裡已經有同名課程，預設不加入。')).toBeInTheDocument();
     expect(screen.getByText(/和「經濟學」時間衝突/)).toBeInTheDocument();
@@ -68,12 +67,29 @@ describe('ImageImport', () => {
     expect(list[1]).toMatchObject({ instructor: '鄭培宇', slots: [{ weekday: 3, startTime: '10:10', endTime: '12:00', room: 'B217' }] });
   });
 
-  it('explains when recognition is not available yet and offers CSV instead', async () => {
+  it('explains when the on-device reader cannot load and offers CSV instead', async () => {
     const user = userEvent.setup();
-    setup(async () => { throw new TimetableImportError('unavailable'); });
+    setup(async () => { throw new TimetableImportError('engine'); });
     await pick(user);
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('圖片辨識');
+    expect(alert).toHaveTextContent('辨識引擎載入失敗');
     expect(within(document.body).getByRole('button', { name: '改用 CSV 匯入' })).toBeInTheDocument();
+  });
+
+  it('says so when no timetable grid is found', async () => {
+    const user = userEvent.setup();
+    setup(async () => { throw new TimetableImportError('not_timetable'); });
+    await pick(user);
+    expect(await screen.findByRole('alert')).toHaveTextContent('找不到課表表格');
+  });
+
+  it('works without an account, since nothing is uploaded', async () => {
+    auth.getSession.mockResolvedValueOnce({ data: { session: null } } as never);
+    const recognize = vi.fn(async () => [cell(1, 1, '英文（二）', '李金安', 'SG 314')]);
+    const user = userEvent.setup();
+    setup(recognize);
+    expect(await screen.findByText('圖片只在你的手機上辨識，不會上傳到任何伺服器。')).toBeInTheDocument();
+    await pick(user);
+    expect(await screen.findByDisplayValue('英文（二）')).toBeInTheDocument();
   });
 });
