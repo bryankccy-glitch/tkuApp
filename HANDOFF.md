@@ -1,12 +1,14 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-21（Asia/Taipei, UTC+8）
+2026-10-22（Asia/Taipei, UTC+8）
 
 ## Updated By
-Claude Code（main）
+Codex（`codex/fix-push-reminders`；本輪只修正與測試，不合併／部署；保留 Claude Code 既有紀錄）
 
 ## Current Status
+2026-10-22 Codex：上課通知診斷與修正位於獨立 worktree／feature 分支。已證實線上 push_subscriptions 為 0 筆，舊版已 enabled 的本機設定不會自動補建訂閱；本機「測試通知」並未驗證伺服器推播。另經使用者明確授權手動呼叫一次現有排程，正式站回 401 unauthorized（非 Vercel 保護頁），Vault cron_secret 與正式站 CRON_SECRET 的驗證未通過。不能宣稱正式站通知已恢復。使用者要求先完成修正與測試、不部署；本輪不更換線上密鑰、不寫使用者課表／訂閱、不合併 main。
+
 2026-10-21：課表截圖匯入改為手機上 OCR、助理本機模式加強、翻譯快取優先；不再需要 Gemini 金鑰（見 Latest Changes）。lint、typecheck、170 單元、132 E2E 通過。
 
 收尾狀態（2026-10-19）：main 為正式版（Vercel 自動部署）。iOS 主畫面 App：滿版天氣、AI 助理收鍵盤自動恢復高度、啟動畫面依 App 外觀單色、自動更新、登入確認不會無限等待；校園活動已匯入 48 筆（快照，不自動更新）；桌面小工具（Scriptable 版）已上線待實機確認。lint、typecheck、138 單元、132 E2E 皆通過。
@@ -22,6 +24,9 @@ Claude Code（main）
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **Codex — 推播訂閱升級修正（2026-10-22）**：舊設定已開啟提醒且通知權限已授予的登入裝置，在 App 啟動／回到前景／網路恢復時補建或重存本人訂閱，不再只在切換開關時儲存；訂閱失敗保留本機備援，設定頁持續顯示錯誤及「重新連線推播提醒」。不自動要求系統通知權限。公開 VAPID key 改由 GET `/api/push` 取得，不依賴舊建置是否含 VITE_VAPID_PUBLIC_KEY。設定寫入事件同步 UI；避免非同步重連把使用者剛關閉的提醒再開啟。
+- **Codex — 真正的推播測試與重試**：登入裝置的測試按鈕改為伺服器推播測試；POST `/api/push` 用 getUser 驗證 JWT，再以 JWT/RLS client 讀本人 endpoint 的儲存訂閱，不接受客戶端提供任意推播密鑰；push_sent 原子 claim 每人每分鐘最多測試一次，錯誤不洩漏上游內容。訪客仍為本機測試。排程若所有裝置傳送失敗，釋放該次 claim 讓下一分鐘在 grace 內重試；部分裝置成功時保留 claim 防止重複。非去重的資料庫 claim 錯誤改為回報失敗，不再靜默略過。
+- **Codex — 線上診斷（未部署）**：只查統計／設定存在性；0 訂閱、0 push_sent；每分鐘 cron 在最近一小時成功執行 60 次，因無訂閱而未發 HTTP。Vault cron_secret 存在且只有一筆、非樣板、無首尾空白；Vercel Production 有 VAPID_PUBLIC_KEY、VAPID_PRIVATE_KEY、VITE_VAPID_PUBLIC_KEY、CRON_SECRET。使用者授權的一次手動排程實測回 401，API 回 unauthorized；沒有讀出或輸出任何秘密值，也沒有修改線上設定。此結果證明仍需修正正式站排程驗證設定，程式測試不能取代這項修復或真機收件確認。
 - **拿掉 API 金鑰依賴 — Claude Code（2026-10-21）**：學校合作沒談成，使用者不想自付 API 費用，目標是刪掉 `GEMINI_API_KEY` 但功能照舊。(1) **課表截圖匯入改在手機上辨識**：Tesseract.js 7（WASM）＋ `chi_tra` best_int 模型，專為選課系統「查詢選課課表」頁設計：以格線找出 9 條直線／15 條橫線（節次欄＋週一～日、第 1–14 節），逐格切行、去掉底線、藍色連結行＝課名，再解析班級／課名／教師_教室；教室碼數字修正（B1l8→B118）、「X 教」→助教、同課教師一字之差取多數、「體育一」→「體育－」；畫面若從第 N 節開始則讀節次欄判斷。以使用者提供的截圖（含姓名學號，只在本機測試、未提交）驗證：28 個有課格子的星期／節次／教室 100% 正確，課名字元錯誤率約 3–6%（主要是老師姓名），使用者在確認畫面可修改。引擎與模型由 `scripts/copy-ocr-assets.mjs` 在 dev/build 前從 node_modules 複製到 `public/ocr/`（不進 Git，約 5.5 MB／裝置，Service Worker 執行時快取）；CSP `script-src` 加 `'wasm-unsafe-eval'`，worker 同源。以正式建置＋相同 CSP 的 Chromium 跑過整個匯入流程（3.6 秒）。訪客也能用（不再需要登入）。刪除 `api/timetable-import.ts`、其測試、`src/lib/imageResize.ts`、`GEMINI_VISION_MODEL`。(2) **本機助理加強**（`src/features/ai/localEngine.ts`）：現在／下一堂課（倒數、下課後接什麼、Google 地圖連結）、幾點下課、空堂、單一課程（部分課名即可，例「經濟在哪」）的時間／教室／老師、某課的作業與考試、本週課表總覽、學期第幾週、今天日期、自我介紹；第五節等中文數字；簡體中文提問（字元對照轉繁）；建築回答附地圖連結。`/api/chat` 回 503（沒金鑰）時 10 分鐘內直接用本機，429／5xx／網路錯誤也改用本機回答；標題說明依實際回答來源。(3) **`/api/translate` 沒金鑰也能用**：先找同版本快取；否則用該語言最新的舊版快取＋新字串補英文（`mergeStale`），有金鑰時只翻缺的字串再存新版本；完全沒快取且沒金鑰回 503。線上 `ui_translations` 目前只有 ja。
 - **待辦**：使用者 push 後，若要保留 28 種機器翻譯語言，需在刪金鑰前把每種語言叫一次 `/api/translate?lang=xx` 產生快取（免費額度每分鐘有限，建議一分鐘一種）；之後即可在 Vercel 刪除 `GEMINI_API_KEY`（與誤建的 `AGEMINI_API_KEY`）。刪除後 AI 助理只剩本機模式，知識庫 RAG（本來就未建）不可用。
 - **部署失敗修正 — Claude Code（2026-10-21）**：`d6c1d04`、`f7abdc4`、`0f5b4c5` 三次部署都失敗：Vercel Hobby 方案每次部署最多 12 個 Serverless Functions，而 `api/` 底下每個 .ts（含 helper 與 *.test.ts）都被當成一個 function（共 16 個）。改為共用程式放 `api/_lib/`（chat-schema、gemini、sse、store）、測試放 `api/_tests/`，底線開頭資料夾不會部署成 function；現在只有 6 個 function。`scripts/ingest.ts`、`api/README.md` 已更新路徑。
@@ -39,6 +44,7 @@ Claude Code（main）
 - **首頁左右晃動 — Claude Code（2026-10-16）**：使用者要首頁置中、不能左右滑。`html, body` 加 `overflow-x: clip` 與 `overscroll-behavior-x: none`（clip 不會建立捲動容器，視窗捲動與 sticky 正常）；任何元素即使超寬 1px，頁面也不會被拖離中央。E2E「no horizontal page scroll」每頁加測：塞入 150vw 元素並 `scrollTo(80)` 後 `scrollX` 必須仍為 0（移除修正時此測試失敗、加上後通過）。模擬器因使用者當時在全螢幕 App 無法操作，未在 iOS 模擬器上手動驗證。
 
 ## Files Changed
+- Codex 推播修正：新增 `api/push.ts`、`api/_tests/push.test.ts`、`src/services/__tests__/pushSubscription.test.ts`、`src/hooks/__tests__/useReminderScheduler.test.tsx`；修改 `api/push-reminders.ts` 及其測試、`api/README.md`、`src/services/{pushSubscription,reminders}.ts`、`src/hooks/useReminderScheduler.ts`、`src/features/profile/ReminderSettings.tsx`、三個內建語系、`vite-dev-api.ts` 與交接文件。未改套件／lockfile／資料庫 schema。
 - Claude Code iOS 鍵盤高度：`src/lib/iosViewportFix.ts`（新）＋測試、刪除 `src/lib/iosViewportGap.ts`＋測試、`src/main.tsx`、`src/styles/index.css`、`src/components/layout/AppShell.tsx`、`src/features/ai/AssistantPage.tsx`（`data-keep-scroll`）、本檔。
 - Claude Code iOS 底部缺口：`src/lib/iosViewportGap.ts`（新）＋測試、`src/main.tsx`、`src/styles/index.css`、`src/components/layout/AppShell.tsx`、`src/features/ai/AssistantPage.tsx`、本檔。
 - Claude Code 捲動／色差：`src/lib/noZoom.ts`、`src/components/layout/AppShell.tsx`、`src/styles/index.css`、`src/features/ai/AssistantPage.tsx`、本檔。
@@ -86,6 +92,7 @@ Claude Code（main）
 - 其餘見 ARCHITECTURE.md
 
 ## Tests
+- Codex 推播（2026-10-22）：lint、typecheck、Vitest 38 files／184 tests、build 通過；新增／相關通知測試 18 項通過；兩支推播 handler 經 esbuild 打包後以純 Node ESM 載入成功。聚焦 `npx playwright test e2e/reminders.spec.ts --workers=1`：桌面／手機 2 項全通過（37.9 秒）。完整 E2E **未全通過**：首輪因同時執行一般 build，覆蓋 E2E 無雲端測試建置，手機測試被導向登入頁；85 通過、6 失敗、2 中斷、39 未執行（exit 130）。改為序列重跑後，`csp.spec.ts` 的 `/explore` 在 page.goto 等待 load 時超過 30 秒；保留失敗並停止完整矩陣，65 通過、1 失敗、2 中斷、64 未執行（exit 130）。未修改天氣、登入、CSP 或全域測試斷言掩蓋問題。npm ci 首次在 audit 相依查詢耗時，停止後以 `npm ci --no-audit --prefer-offline` 完成；未以此宣稱依賴漏洞已修復。
 - Claude Code iOS 鍵盤高度（2026-10-15）：lint ✅、Vitest 26 files／126 tests ✅、Playwright 132 passed ✅。Simulator iPhone 17 Pro 重現問題 ✅；第一版修法（切 display）部署後於模擬器驗證**無效**，經診斷面板改為聚焦／失焦唯讀欄位；最終版部署後的模擬器驗證結果見提交後紀錄。
 - Claude Code iOS 底部缺口（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 26 files／127 tests ✅（新增缺口量測 3 項）、Playwright 全套 132 passed ✅。
 - Claude Code 捲動／色差（2026-10-14）：`tsc -b` ✅、lint ✅、Vitest 25 files／124 tests ✅、Playwright 全套 132 passed ✅（含禁止縮放測試）。
@@ -135,6 +142,7 @@ Claude Code（main）
 - npm audit 有建置工具鏈警告，尚未處理
 
 ## Next Steps
+- **推播阻擋項（Codex 2026-10-22）**：先由開發者安全地把 Supabase Vault 的 cron_secret 與 Vercel Production CRON_SECRET 設為同一值（不要貼對話、Git 或文件；環境變數變更後須重新部署）。使用者本輪要求不部署，故沒有執行這項設定變更／發布。之後才合併此分支、部署、從已登入且通知權限已授予的主畫面 App 開啟以補建訂閱，確認訂閱數增加、cron HTTP 200，再點「伺服器推播測試」及真實到點上課通知；尚未做這些真機驗證。
 - **桌面小工具**：使用者在 iPhone 裝 Scriptable 實測後依截圖微調；第二階段 B（原生 App＋WidgetKit，需 Xcode 與 Apple Developer）尚未開始
 - **校園活動自動同步**：已實作；待開發者設 `CRON_SECRET` 後在 Vercel → Cron Jobs 手動 Run 一次，看 Logs 的 `sync-events {...}` 結果，並確認首頁活動
 - **AI 知識庫**：在有 GEMINI_API_KEY 的環境執行 `npm run ingest`（knowledge_documents 目前 0 筆）
@@ -149,6 +157,7 @@ Claude Code（main）
 - **開發者**：在 Supabase SQL Editor 套用 `supabase/migrations/20261012080231_ai_backend_security.sql`；在 Vercel 設定 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY`（以及可選 Gemini 模型/限流變數），再驗證線上 `/api/chat` 與執行 RLS SQL。
 
 ## Git Status
+- Codex 本輪：`../tkuApp-codex`／`codex/fix-push-reminders`，基於已 fetch 的 main／origin/main `0464d9d`；原 main 工作目錄維持乾淨。依使用者要求只在本機分支提交，不合併、不推送（避免 GitHub 自動觸發部署）、不部署。
 - Branch：`main`（Claude Code 直接在 main 提交，經使用者在自己電腦 `git push origin main` 推送，Vercel 自動部署）。
 - 工作流程：雲端工作區 commit → git bundle → 透過裝置連線 `git pull --ff-only` 到使用者電腦 `~/Desktop/tkuApp` → 使用者推送。
 - Remote：`origin`（GitHub `bryankccy-glitch/tkuApp`）。不可 force push。

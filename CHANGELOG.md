@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-22 — Codex：上課推播診斷與修正（未部署）
+- 查明線上沒有裝置訂閱；舊版只在切換開關時存訂閱，本機測試通知未驗證伺服器路徑。新增已授權裝置的自動補建／重連及真正伺服器測試。
+- 所有裝置傳送失敗時釋放 claim，保留下一輪重試機會；新增 JWT／RLS 所有人隔離及限流測試。
+- 使用者授權一次排程手動驗證，正式站實測 401 unauthorized；Vault／Vercel 排程驗證仍待開發者同步設定。依本輪指示不合併、不部署，不宣稱真機上課通知已恢復。
+
 ## 2026-10-14～10-17 — Claude Code（自 HANDOFF 移入）
 - **滿版天氣＋iOS 26 底部浮起的最終解 — Claude Code（2026-10-16）**：使用者要首頁／登入的天氣場景延伸到狀態列底下（滿版），同時 AI 助理收鍵盤後底部不能浮起。狀態列改回 `black-translucent`（滿版），WebKit 301108（收鍵盤後 `innerHeight` 874→812）改以 `src/lib/iosShortViewport.ts` 處理：(1) 偵測：主畫面模式、無輸入框聚焦、直向、`screen.height - innerHeight` 介於 20–120；(2) **把視窗捲 1px 再捲回來（`scrollNudge`），WebKit 會重算高度回 874**——在 iOS 26.3 模擬器 iPhone 17 Pro 實測，且不需要使用者手勢，收鍵盤後約 0.5 秒內自動恢復；每次最多試 3 次，下次點擊會再試；(3) 恢復前的過渡期以 `html.vp-short`／`--safe-bottom` 收掉底部安全區、`html.app-ready` 底色＝導覽列色，不會出現色塊。同場以診斷面板比較：改 viewport meta（4 種）、聚焦唯讀 input 在此情境無效。診斷面板（`vpDebug.ts`）已移除。另修：AI 輸入框空白時不再量高度（冷啟動偶爾量到折行的 placeholder 變成三行高）。**iOS 只在加入主畫面時讀狀態列設定：從不透明版（`d758a84`）升級的手機要刪除主畫面 App 再重新加入**。後續修正：使用者回報新版「上方卡住、底部選單太低、整體卡頓」——舊安裝仍是不透明狀態列時 `screen.height - innerHeight` 本來就是狀態列高度，被誤判為缺口：底部安全區被收掉（選單太低）、每次點擊都做捲動＋聚焦修正（卡頓）。現在先量 `env(safe-area-inset-top)`，為 0（頁面在不透明狀態列下方）就完全不處理；點擊時的修正每個情境最多 4 次。另：使用者回報部署後手機一直停在舊版——原本只靠外掛自動插入的 `registerSW.js` 註冊 Service Worker，不會主動檢查更新也不會重新載入。新增 `src/lib/pwaUpdate.ts`（`virtual:pwa-register`）：App 回到前景時與每 30 分鐘檢查新版，新版啟用後自動重新載入一次。
 - **iOS 26 主畫面 App 底部空白條的真正原因 — Claude Code（2026-10-15）**：使用者回報 `a9e963d` 後兩個問題（鍵盤收起後底部被抬高、淺色啟動時紅色下方白條）仍在。查到根因是 `apple-mobile-web-app-status-bar-style=black-translucent`：iOS 26 主畫面 App 會把頁面從螢幕頂端開始畫、卻少算一個狀態列高度，底部留下 CSS 畫不到的空白條（WebKit bug 301108；其他專案同樣以改為不透明狀態列解決）。改為 `default`（不透明），並移除先前所有繞道修法（`iosViewportFix.ts` 聚焦／失焦、底部偏移；在不透明狀態列下 `screen.height - innerHeight` 本來就等於狀態列高度，會誤判）。**iOS 只在「加入主畫面」時讀這個設定：既有安裝必須從主畫面刪除 App 再重新加入**。之前幾版的修法（88c107b／d3ab56e／edfd83e／398b23a／a9e963d）都只治標，已被取代。

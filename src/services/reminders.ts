@@ -42,6 +42,7 @@ export function readPrefs(): ReminderPrefs {
 export function writePrefs(p: ReminderPrefs) {
   try {
     localStorage.setItem(PREFS_KEY, JSON.stringify(p));
+    window.dispatchEvent(new Event('tku-reminders-change'));
   } catch {
     /* ignore */
   }

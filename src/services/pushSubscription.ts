@@ -6,10 +6,8 @@ import type { ReminderPrefs } from './reminders';
  * app, Android, desktop). The subscription and reminder settings are saved to push_subscriptions;
  * /api/push-reminders sends the notifications. Needs VITE_VAPID_PUBLIC_KEY at build time.
  */
-const VAPID = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-
 export function pushAvailable(): boolean {
-  return Boolean(VAPID && supabase && typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window);
+  return Boolean(supabase && typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window);
 }
 
 function keyBytes(base64url: string): Uint8Array<ArrayBuffer> {
@@ -28,11 +26,17 @@ async function registration(): Promise<ServiceWorkerRegistration> {
 }
 
 /** Subscribes (or reuses the existing subscription) and saves it with the current settings. */
-export async function savePushSubscription(userId: string, prefs: ReminderPrefs): Promise<void> {
+export async function savePushSubscription(userId: string, prefs: ReminderPrefs): Promise<string> {
   if (!pushAvailable() || !supabase) throw new Error('push unavailable');
+  // Fetch at runtime: old installs/builds may not contain VITE_VAPID_PUBLIC_KEY.
+  const response = await fetch('/api/push', { signal: AbortSignal.timeout(8000), cache: 'no-store' });
+  const config = await response.json() as { configured?: boolean; publicKey?: string };
+  if (!response.ok || !config.configured || !config.publicKey) throw new Error('push not configured');
+  const key = keyBytes(config.publicKey);
+  if (key.length !== 65 || key[0] !== 4) throw new Error('invalid public key');
   const reg = await registration();
   const sub = (await reg.pushManager.getSubscription())
-    ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID!) }));
+    ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }));
   const json = sub.toJSON() as { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
   if (!json.endpoint || !json.keys?.p256dh || !json.keys.auth) throw new Error('incomplete subscription');
   const { error } = await supabase.from('push_subscriptions').upsert({
@@ -44,6 +48,17 @@ export async function savePushSubscription(userId: string, prefs: ReminderPrefs)
     tasks: prefs.tasks,
   }, { onConflict: 'endpoint' });
   if (error) throw new Error(error.message);
+  return json.endpoint;
+}
+
+/** Tests the same server → push service → service worker path as scheduled reminders. */
+export async function testPushSubscription(userId: string, prefs: ReminderPrefs): Promise<void> {
+  const endpoint = await savePushSubscription(userId, prefs);
+  const session = await supabase!.auth.getSession();
+  const token = session.data.session?.access_token;
+  if (!token) throw new Error('not signed in');
+  const response = await fetch('/api/push', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint }), signal: AbortSignal.timeout(15000) });
+  if (!response.ok) throw new Error('push test failed');
 }
 
 /** Removes this device's subscription (server row first, then the browser subscription). */

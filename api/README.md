@@ -41,6 +41,11 @@ Status：503 未設定 AI/Supabase（前端自動改用本機助理）、401 tok
 
 聊天仍依既有合約將使用者/assistant 訊息與 sources 存在 Supabase（使用者 JWT/RLS）；API 執行環境不另外保存對話檔案或內容日誌。Google 對傳入資料的處理依其服務條款，不能將無本機保存等同於供應商不留存。
 
+## 推播提醒診斷 `/api/push`
+- GET：回 `{ configured, publicKey }`；只有公開 VAPID key，不包含 private key、CRON_SECRET 或 Supabase credentials。訂閱時讀取此執行期設定，不再依賴前端建置時的 VITE_VAPID_PUBLIC_KEY。
+- POST：使用 Supabase JWT 驗證，body `{ endpoint }`；只能讀取 RLS 下本人已儲存的該裝置訂閱，不能提交任意推播密鑰。伺服器以既有 VAPID 設定傳送測試通知；push_sent 原子 claim 限制每使用者每分鐘一次。401 未登入／token 無效、404 非本人或不存在訂閱、429 測試過頻、503 未設定完整、502 上游傳送失敗，錯誤不回傳上游細節。
+- 已開啟本機提醒的舊裝置：登入且通知權限已授予時自動補建訂閱；回到 App／網路恢復時重新檢查，不自動要求通知權限。失敗保留本機提醒並顯示重新連線入口。「伺服器已送出」不代表已驗證真機顯示或 OS 通知設定。
+
 ## Verification
 `npm run lint && npm run typecheck && npm run test && npm run build`。API 測試使用 mock fetch 覆蓋 Gemini 串流、function call→工具→回答、上游 429/5xx，以及傳給 Google 的請求不夾帶 Supabase 金鑰或 JWT。
 

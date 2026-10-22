@@ -117,11 +117,14 @@ export async function runPushReminders(db: SupabaseClient, send: (sub: Sub, msg:
     for (const msg of msgs) {
       // Claim first: a concurrent or repeated run can't send the same reminder twice.
       const { error: claimErr } = await db.from('push_sent').insert({ user_id: userId, reminder_id: msg.id });
-      if (claimErr) continue; // already sent (primary key) or table error — skip
+      if (claimErr?.code === '23505') continue; // another run already claimed it
+      if (claimErr) throw new Error('Unable to claim reminder');
+      let delivered = false;
       for (const sub of userSubs) {
         try {
           await send(sub, msg);
           result.sent += 1;
+          delivered = true;
         } catch (e) {
           const status = (e as { statusCode?: number }).statusCode;
           if (status === 404 || status === 410) {
@@ -131,6 +134,12 @@ export async function runPushReminders(db: SupabaseClient, send: (sub: Sub, msg:
             result.failed += 1;
           }
         }
+      }
+      // A transient provider/network failure is not a delivery. Allow the next minute's cron
+      // to retry within GRACE_MS; retain the claim if any device succeeded to avoid duplicates.
+      if (!delivered) {
+        const { error: releaseError } = await db.from('push_sent').delete().eq('user_id', userId).eq('reminder_id', msg.id);
+        if (releaseError) throw new Error('Unable to release failed reminder');
       }
     }
   }

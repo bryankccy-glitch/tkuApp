@@ -30,6 +30,32 @@ describe('push reminder timing', () => {
 });
 
 describe('runPushReminders', () => {
+  it('releases an all-failed delivery for the next cron retry, but retains successful claims', async () => {
+    const sub: Sub = { endpoint: 'https://push/a', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: false };
+    let claimed = false;
+    const db = { from: (table: string) => {
+      let remove = false;
+      const q: Record<string, unknown> = {};
+      for (const name of ['select', 'eq', 'in', 'or', 'gte']) q[name] = () => q;
+      q.delete = () => { remove = true; return q; };
+      q.insert = async () => { if (claimed) return { error: { code: '23505' } }; claimed = true; return { error: null }; };
+      q.then = (resolve: (value: unknown) => void) => {
+        if (remove) { claimed = false; resolve({ error: null }); return; }
+        const data = table === 'push_subscriptions' ? [sub]
+          : table === 'schedule_entries' ? [{ weekday: 1, start_time: '08:10:00', end_time: '09:00:00', room: 'B217', user_courses: { name: '統計學', semester_id: 's1' } }]
+          : table === 'semesters' ? [{ id: 's1', start_date: '2026-09-01', end_date: '2027-01-31' }] : [];
+        resolve({ data, error: null });
+      };
+      return q;
+    } } as never;
+    const failed = await runPushReminders(db, async () => { throw new Error('network failure'); }, at('08:00'));
+    expect(failed.failed).toBe(1);
+    expect(claimed).toBe(false);
+    const retry = await runPushReminders(db, async () => {}, at('08:01'));
+    expect(retry.sent).toBe(1);
+    expect(claimed).toBe(true);
+    expect((await runPushReminders(db, async () => { throw new Error('must not resend'); }, at('08:02'))).sent).toBe(0);
+  });
   it('sends each reminder once to every device and drops dead subscriptions', async () => {
     const subs: Sub[] = [
       { endpoint: 'https://push/a', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: true },

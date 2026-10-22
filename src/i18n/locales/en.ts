@@ -782,7 +782,7 @@ const en = {
     "enabled": "Class and deadline reminders are on",
     "testTitle": "TKU Campus OS test reminder",
     "testBody": "If you see this, reminders are set up.",
-    "testFailed": "Couldn’t show a notification — check permissions",
+    "testFailed": "Test failed. Check notification permission and your connection, then retry (server tests are limited to once per minute).",
     "title": "Class & deadline reminders",
     "subtitle": "System notifications on this device.",
     "toggle": "Turn on reminders",
@@ -796,6 +796,9 @@ const en = {
     "notePush": "Push is on: reminders arrive even when the app is closed (iPhone needs iOS 16.4+ and the Home Screen app).",
     "noteCanPush": "Turning this on uses push, so reminders arrive even when the app is closed.",
     "pushFailed": "Couldn't turn on push — reminders only while the app is open for now",
+    "reconnect": "Reconnect push reminders",
+    "testPush": "Send a server push test",
+    "testSent": "Server push sent. Check your system notifications.",
     "note": "In guest mode reminders only arrive while the app is open; sign in and turn reminders on to get push notifications even when it is closed. You can also use “Add reminder” to save items to your phone calendar."
   },
   "about": {

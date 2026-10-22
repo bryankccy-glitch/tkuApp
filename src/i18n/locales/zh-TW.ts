@@ -782,7 +782,7 @@ const zh = {
     "enabled": "已開啟上課與截止提醒",
     "testTitle": "TKU Campus OS 提醒測試",
     "testBody": "收到這則通知，表示提醒已設定完成。",
-    "testFailed": "無法顯示通知，請檢查通知權限",
+    "testFailed": "測試未成功，請確認通知權限與網路，稍後再試（伺服器推播每分鐘最多測試一次）",
     "title": "上課與截止提醒",
     "subtitle": "在這台裝置上用系統通知提醒你。",
     "toggle": "開啟提醒",
@@ -796,6 +796,9 @@ const zh = {
     "notePush": "已開啟推播：就算 App 完全關閉，時間到也會跳通知（iPhone 需 iOS 16.4 以上、從主畫面開啟的 App）。",
     "noteCanPush": "開啟後會改用推播，App 關閉也會提醒。",
     "pushFailed": "無法開啟推播，暫時只在 App 開著時提醒",
+    "reconnect": "重新連線推播提醒",
+    "testPush": "傳送伺服器推播測試",
+    "testSent": "伺服器已送出測試推播，請查看系統通知",
     "note": "訪客模式只會在 App 開著時提醒；登入帳號後開啟提醒，就能在 App 關閉時也收到推播。也可以在課程或待辦上用「加入提醒」存進手機行事曆。"
   },
   "about": {
