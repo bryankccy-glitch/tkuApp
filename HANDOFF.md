@@ -4,10 +4,10 @@
 2026-10-22（Asia/Taipei, UTC+8）
 
 ## Updated By
-Codex（`codex/fix-push-reminders`；本輪只修正與測試，不合併／部署；保留 Claude Code 既有紀錄）
+Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
 
 ## Current Status
-2026-10-22 Codex：上課通知診斷與修正位於獨立 worktree／feature 分支。已證實線上 push_subscriptions 為 0 筆，舊版已 enabled 的本機設定不會自動補建訂閱；本機「測試通知」並未驗證伺服器推播。另經使用者明確授權手動呼叫一次現有排程，正式站回 401 unauthorized（非 Vercel 保護頁），Vault cron_secret 與正式站 CRON_SECRET 的驗證未通過。不能宣稱正式站通知已恢復。使用者要求先完成修正與測試、不部署；本輪不更換線上密鑰、不寫使用者課表／訂閱、不合併 main。
+2026-10-22 Codex：上課通知診斷與修正已提交 `76b6f07`。已證實線上 push_subscriptions 為 0 筆，舊版已 enabled 的本機設定不會自動補建訂閱；本機「測試通知」並未驗證伺服器推播。另經使用者明確授權手動呼叫一次現有排程，正式站回 401 unauthorized（非 Vercel 保護頁），Vault cron_secret 與正式站 CRON_SECRET 的驗證未通過。不能宣稱正式站通知已恢復。使用者先要求只測試，之後明確改為「部署」；本輪已重新檢查 main／工作目錄乾淨，lint、typecheck、184 tests、build 通過，準備 fast-forward 合併並發布。未更換線上密鑰，未改使用者課表／訂閱；正式發布結果以後續 READY 與線上驗證紀錄為準。
 
 2026-10-21：課表截圖匯入改為手機上 OCR、助理本機模式加強、翻譯快取優先；不再需要 Gemini 金鑰（見 Latest Changes）。lint、typecheck、170 單元、132 E2E 通過。
 
@@ -24,6 +24,7 @@ Codex（`codex/fix-push-reminders`；本輪只修正與測試，不合併／部�
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **Codex — 正式發布準備（2026-10-22）**：使用者最新授權部署；已 fetch，main／origin/main 同為 `0464d9d`，與 `76b6f07` 無分歧。發布前重新執行 lint、typecheck、Vitest、build 全通過；沿用同程式版本的提醒桌面／手機 2 項 E2E 通過證據，不宣稱完整 E2E 全過。部署只沿用既有環境變數，不讀取或更換密鑰值。
 - **Codex — 推播訂閱升級修正（2026-10-22）**：舊設定已開啟提醒且通知權限已授予的登入裝置，在 App 啟動／回到前景／網路恢復時補建或重存本人訂閱，不再只在切換開關時儲存；訂閱失敗保留本機備援，設定頁持續顯示錯誤及「重新連線推播提醒」。不自動要求系統通知權限。公開 VAPID key 改由 GET `/api/push` 取得，不依賴舊建置是否含 VITE_VAPID_PUBLIC_KEY。設定寫入事件同步 UI；避免非同步重連把使用者剛關閉的提醒再開啟。
 - **Codex — 真正的推播測試與重試**：登入裝置的測試按鈕改為伺服器推播測試；POST `/api/push` 用 getUser 驗證 JWT，再以 JWT/RLS client 讀本人 endpoint 的儲存訂閱，不接受客戶端提供任意推播密鑰；push_sent 原子 claim 每人每分鐘最多測試一次，錯誤不洩漏上游內容。訪客仍為本機測試。排程若所有裝置傳送失敗，釋放該次 claim 讓下一分鐘在 grace 內重試；部分裝置成功時保留 claim 防止重複。非去重的資料庫 claim 錯誤改為回報失敗，不再靜默略過。
 - **Codex — 線上診斷（未部署）**：只查統計／設定存在性；0 訂閱、0 push_sent；每分鐘 cron 在最近一小時成功執行 60 次，因無訂閱而未發 HTTP。Vault cron_secret 存在且只有一筆、非樣板、無首尾空白；Vercel Production 有 VAPID_PUBLIC_KEY、VAPID_PRIVATE_KEY、VITE_VAPID_PUBLIC_KEY、CRON_SECRET。使用者授權的一次手動排程實測回 401，API 回 unauthorized；沒有讀出或輸出任何秘密值，也沒有修改線上設定。此結果證明仍需修正正式站排程驗證設定，程式測試不能取代這項修復或真機收件確認。
@@ -157,7 +158,7 @@ Codex（`codex/fix-push-reminders`；本輪只修正與測試，不合併／部�
 - **開發者**：在 Supabase SQL Editor 套用 `supabase/migrations/20261012080231_ai_backend_security.sql`；在 Vercel 設定 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY`（以及可選 Gemini 模型/限流變數），再驗證線上 `/api/chat` 與執行 RLS SQL。
 
 ## Git Status
-- Codex 本輪：`../tkuApp-codex`／`codex/fix-push-reminders`，基於已 fetch 的 main／origin/main `0464d9d`；原 main 工作目錄維持乾淨。依使用者要求只在本機分支提交，不合併、不推送（避免 GitHub 自動觸發部署）、不部署。
+- Codex 本輪：`../tkuApp-codex`／`codex/fix-push-reminders`，基於已 fetch 的 main／origin/main `0464d9d`。使用者最新改指示部署，允許本輪 fast-forward 整合及一般推送；不 force push、不覆寫其他修改。
 - Branch：`main`（Claude Code 直接在 main 提交，經使用者在自己電腦 `git push origin main` 推送，Vercel 自動部署）。
 - 工作流程：雲端工作區 commit → git bundle → 透過裝置連線 `git pull --ff-only` 到使用者電腦 `~/Desktop/tkuApp` → 使用者推送。
 - Remote：`origin`（GitHub `bryankccy-glitch/tkuApp`）。不可 force push。
