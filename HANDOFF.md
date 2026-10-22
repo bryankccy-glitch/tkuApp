@@ -7,7 +7,7 @@
 Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
 
 ## Current Status
-2026-10-22 Codex：上課通知診斷與修正已提交 `76b6f07`。已證實線上 push_subscriptions 為 0 筆，舊版已 enabled 的本機設定不會自動補建訂閱；本機「測試通知」並未驗證伺服器推播。另經使用者明確授權手動呼叫一次現有排程，正式站回 401 unauthorized（非 Vercel 保護頁），Vault cron_secret 與正式站 CRON_SECRET 的驗證未通過。不能宣稱正式站通知已恢復。使用者先要求只測試，之後明確改為「部署」；本輪已重新檢查 main／工作目錄乾淨，lint、typecheck、184 tests、build 通過，準備 fast-forward 合併並發布。未更換線上密鑰，未改使用者課表／訂閱；正式發布結果以後續 READY 與線上驗證紀錄為準。
+2026-10-22 Codex：推播訂閱補建／重連與伺服器推播測試修正（程式提交 `76b6f07`）已依使用者最新「部署」指示 fast-forward 合併 main 並發布至正式站。正式 GET `/api/push` 回 200、configured=true、含公開 key；未帶 token 的 POST 回 401「請先登入」。瀏覽器經 PWA 重新載入後確認最新版設定頁與資源版本；此瀏覽器的提醒開關原為關閉，沒有替使用者開啟權限或新增訂閱。先前線上 0 訂閱與手動排程 401 unauthorized 的問題仍待設定／真機驗證；部署成功不能視為上課通知已恢復。未更換線上密鑰、未修改使用者課表。
 
 2026-10-21：課表截圖匯入改為手機上 OCR、助理本機模式加強、翻譯快取優先；不再需要 Gemini 金鑰（見 Latest Changes）。lint、typecheck、170 單元、132 E2E 通過。
 
@@ -24,6 +24,7 @@ Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的�
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **部署設定 — Codex（2026-10-22）**：main 從 `0464d9d` fast-forward 至 `5eacf5e`，一般推送 main 與 feature 分支，沒有 force push。正式部署 `dpl_J6d6bYUpoEd4FDawKR5DV7t5t5yV`（來源 main／`5eacf5e`）READY，alias `https://tku-app.vercel.app`。實測 GET `/api/push` HTTP 200／configured=true，POST 無 token HTTP 401；只檢查公開 key 是否存在，不輸出其值或任何秘密。瀏覽器 `/me` 已載入 `/assets/index-BURZhrzU.js`，顯示新版推播說明；未切換該瀏覽器原本關閉的提醒開關。本段後續為純文件提交，需再發布最終提交以與 GitHub 對齊。Vercel npm ci／build 成功，仍報既有 34 項依賴漏洞（2 critical），未升級。
 - **Codex — 正式發布準備（2026-10-22）**：使用者最新授權部署；已 fetch，main／origin/main 同為 `0464d9d`，與 `76b6f07` 無分歧。發布前重新執行 lint、typecheck、Vitest、build 全通過；沿用同程式版本的提醒桌面／手機 2 項 E2E 通過證據，不宣稱完整 E2E 全過。部署只沿用既有環境變數，不讀取或更換密鑰值。
 - **Codex — 推播訂閱升級修正（2026-10-22）**：舊設定已開啟提醒且通知權限已授予的登入裝置，在 App 啟動／回到前景／網路恢復時補建或重存本人訂閱，不再只在切換開關時儲存；訂閱失敗保留本機備援，設定頁持續顯示錯誤及「重新連線推播提醒」。不自動要求系統通知權限。公開 VAPID key 改由 GET `/api/push` 取得，不依賴舊建置是否含 VITE_VAPID_PUBLIC_KEY。設定寫入事件同步 UI；避免非同步重連把使用者剛關閉的提醒再開啟。
 - **Codex — 真正的推播測試與重試**：登入裝置的測試按鈕改為伺服器推播測試；POST `/api/push` 用 getUser 驗證 JWT，再以 JWT/RLS client 讀本人 endpoint 的儲存訂閱，不接受客戶端提供任意推播密鑰；push_sent 原子 claim 每人每分鐘最多測試一次，錯誤不洩漏上游內容。訪客仍為本機測試。排程若所有裝置傳送失敗，釋放該次 claim 讓下一分鐘在 grace 內重試；部分裝置成功時保留 claim 防止重複。非去重的資料庫 claim 錯誤改為回報失敗，不再靜默略過。
@@ -143,7 +144,7 @@ Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的�
 - npm audit 有建置工具鏈警告，尚未處理
 
 ## Next Steps
-- **推播阻擋項（Codex 2026-10-22）**：先由開發者安全地把 Supabase Vault 的 cron_secret 與 Vercel Production CRON_SECRET 設為同一值（不要貼對話、Git 或文件；環境變數變更後須重新部署）。使用者本輪要求不部署，故沒有執行這項設定變更／發布。之後才合併此分支、部署、從已登入且通知權限已授予的主畫面 App 開啟以補建訂閱，確認訂閱數增加、cron HTTP 200，再點「伺服器推播測試」及真實到點上課通知；尚未做這些真機驗證。
+- **推播阻擋項（Codex 2026-10-22）**：程式已發布；開發者仍需安全地把 Supabase Vault 的 cron_secret 與 Vercel Production CRON_SECRET 設為同一值（不要貼對話、Git 或文件；環境變數變更後須重新部署）。本輪部署沒有更換這些秘密，也沒有再使用一次性手動驗證授權。從已登入且通知權限已授予的主畫面 App 開啟以補建訂閱，確認訂閱數增加、cron HTTP 200，再點「伺服器推播測試」及確認真實到點上課通知；尚未做這些真機驗證。
 - **桌面小工具**：使用者在 iPhone 裝 Scriptable 實測後依截圖微調；第二階段 B（原生 App＋WidgetKit，需 Xcode 與 Apple Developer）尚未開始
 - **校園活動自動同步**：已實作；待開發者設 `CRON_SECRET` 後在 Vercel → Cron Jobs 手動 Run 一次，看 Logs 的 `sync-events {...}` 結果，並確認首頁活動
 - **AI 知識庫**：在有 GEMINI_API_KEY 的環境執行 `npm run ingest`（knowledge_documents 目前 0 筆）
@@ -158,7 +159,7 @@ Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的�
 - **開發者**：在 Supabase SQL Editor 套用 `supabase/migrations/20261012080231_ai_backend_security.sql`；在 Vercel 設定 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY`（以及可選 Gemini 模型/限流變數），再驗證線上 `/api/chat` 與執行 RLS SQL。
 
 ## Git Status
-- Codex 本輪：`../tkuApp-codex`／`codex/fix-push-reminders`，基於已 fetch 的 main／origin/main `0464d9d`。使用者最新改指示部署，允許本輪 fast-forward 整合及一般推送；不 force push、不覆寫其他修改。
+- Codex 本輪：`../tkuApp-codex`／`codex/fix-push-reminders`，基於 main `0464d9d`。使用者最新改指示部署，已 fast-forward 整合並一般推送 main 與 feature 分支；保留 worktree，不 force push、不覆寫其他修改。
 - Branch：`main`（Claude Code 直接在 main 提交，經使用者在自己電腦 `git push origin main` 推送，Vercel 自動部署）。
 - 工作流程：雲端工作區 commit → git bundle → 透過裝置連線 `git pull --ff-only` 到使用者電腦 `~/Desktop/tkuApp` → 使用者推送。
 - Remote：`origin`（GitHub `bryankccy-glitch/tkuApp`）。不可 force push。
