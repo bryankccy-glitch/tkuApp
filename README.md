@@ -39,10 +39,10 @@ npm run dev          # http://localhost:5173 ，未設定 Supabase 時為「本�
 2. **管理員**：在 SQL Editor 以 service role 執行 `update profiles set role='admin' where id='<user uuid>';`（使用者無法自行升級）。
 3. **Vercel**：匯入 GitHub repo（Framework：Vite）。設定環境變數（見 `.env.example`）：
    - 前端：`VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`
-   - 伺服器：`SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`GEMINI_API_KEY`、`GEMINI_MODEL`、`GEMINI_EMBEDDING_MODEL`、`AI_RATE_LIMIT_PER_MINUTE`
+   - 伺服器：`SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`VAPID_PUBLIC_KEY`、`VAPID_PRIVATE_KEY`、`CRON_SECRET`（不需要任何 AI 或翻譯 API 金鑰）
 4. Deploy。`vercel.json` 已設定 SPA rewrite 與安全標頭。
 
-⚠ Service Role Key 與 Gemini API Key 只能設為伺服器端變數，**不可**加 `VITE_` 前綴。
+⚠ Service Role Key、VAPID private key 與 CRON_SECRET 只能設為伺服器端變數，**不可**加 `VITE_` 前綴。
 
 ## 文件
 - `HANDOFF.md` 開發交接（每次工作前後必讀/更新）
@@ -50,7 +50,7 @@ npm run dev          # http://localhost:5173 ，未設定 Supabase 時為「本�
 - `ARCHITECTURE.md` 架構與決策
 - `docs/DESIGN_SYSTEM.md` 設計系統
 - `ROADMAP.md` 路線圖與待查核清單
-- `api/README.md` `/api/chat` 介面合約
+- `api/README.md` 伺服器函式（推播、活動同步、小工具）
 
 ## 資料來源
 節次時間：淡江德文系 113-1 課程表；建築代碼：學生社群整理（待核對）；校園位置：Wikipedia；地圖：© OpenStreetMap contributors。詳見 App 內「關於與隱私」。

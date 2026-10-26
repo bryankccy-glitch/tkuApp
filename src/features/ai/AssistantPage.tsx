@@ -9,8 +9,11 @@ import { useChat } from './useChat';
 import type { ChatMessage, SourceRef } from './types';
 import { cn } from '@/lib/cn';
 import { t } from '@/i18n/t';
+import i18n from '@/i18n';
 
 const QUICK = [1, 2, 3, 4, 5, 6].map((i) => `ai.quick.${i}`);
+/** Languages the on-device assistant understands when typed. */
+const engineSpeaks = () => i18n.language.startsWith('zh') || i18n.language === 'en';
 
 function SourceCard({ s }: { s: SourceRef }) {
   const Icon = s.kind === 'personal' ? UserRound : s.kind === 'campus' ? MapPin : FileText;
@@ -99,7 +102,7 @@ function Message({ m, last, busy, onRetry }: { m: ChatMessage; last: boolean; bu
 }
 
 export default function AssistantPage() {
-  const { messages, busy, send, retry, stop, clear, mode } = useChat();
+  const { messages, busy, send, retry, stop, clear } = useChat();
   const [params, setParams] = useSearchParams();
   const [text, setText] = useState('');
   const [confirmClear, setConfirmClear] = useState(false);
@@ -177,7 +180,7 @@ export default function AssistantPage() {
         <div>
           <h1 className="text-h2 text-ink">{t('ai.title')}</h1>
           <p className={cn('mt-0.5 text-caption text-muted', typing && 'hidden')}>
-            {mode === 'cloud' && [...messages].reverse().find((m) => m.role === 'assistant' && m.engine)?.engine === 'cloud' ? t('ai.cloudHint') : t('ai.localHint')}
+            {t('ai.localHint')}
           </p>
         </div>
         {messages.length > 0 && (
@@ -193,10 +196,12 @@ export default function AssistantPage() {
             <p className="text-h3 text-ink">{t('ai.emptyTitle')}</p>
             <p className="mt-1 text-caption text-muted">{t('ai.emptyBody')}</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              {QUICK.map((k) => t(k)).map((q) => (
-                <button key={q} type="button" onClick={() => send(q)} className="rounded-full border border-line bg-surface px-3.5 py-2 text-caption font-medium text-ink hover:border-primary/40">{q}</button>
+              {QUICK.map((k) => (
+                // The on-device assistant understands Chinese and English; other languages ask the English question.
+                <button key={k} type="button" onClick={() => send(t(k), engineSpeaks() ? undefined : i18n.getFixedT('en')(k))} className="rounded-full border border-line bg-surface px-3.5 py-2 text-caption font-medium text-ink hover:border-primary/40">{t(k)}</button>
               ))}
             </div>
+            {!engineSpeaks() && <p className="mt-3 text-label text-muted">{t('ai.langHint')}</p>}
           </div>
         ) : (
           <div className="grid gap-5">

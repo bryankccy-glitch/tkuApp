@@ -10,23 +10,21 @@ export const resources = { 'zh-TW': { translation: zhTW }, 'zh-CN': { translatio
 /** Any code from LANGUAGES. */
 export type AppLanguage = string;
 const KEY = 'tku.lang';
-const PACK = (lng: string) => `tku.lang.pack.${lng}`;
 
-/** Language packs fetched from /api/translate, cached per browser. */
-interface Pack { version: string; data: Record<string, unknown> }
-function readPack(lng: string): Pack | null {
-  try {
-    const raw = localStorage.getItem(PACK(lng));
-    return raw ? (JSON.parse(raw) as Pack) : null;
-  } catch {
-    return null;
-  }
-}
+/**
+ * Translations for the other languages ship with the app as static files (src/i18n/packs/*.ts),
+ * loaded on demand — no translation service, no API key. Missing strings fall back to English.
+ */
+const PACKS = import.meta.glob<{ default: Record<string, unknown> }>('./packs/*.ts');
+const packLoader = (code: string) => PACKS[`./packs/${code}.ts`];
+export const hasPack = (code: string) => Boolean(packLoader(code));
 
 function initialLanguage(): AppLanguage {
   try {
+    // Packs cached by older versions (machine translation from a server) are no longer used.
+    for (const k of Object.keys(localStorage)) if (k.startsWith('tku.lang.pack.')) localStorage.removeItem(k);
     const v = localStorage.getItem(KEY);
-    if (v && isSupported(v) && (isBuiltIn(v) || readPack(v))) return v;
+    if (v && isSupported(v) && (isBuiltIn(v) || hasPack(v))) return v;
   } catch {
     /* ignore */
   }
@@ -34,16 +32,25 @@ function initialLanguage(): AppLanguage {
 }
 
 const lng = initialLanguage();
-const cached = isBuiltIn(lng) ? null : readPack(lng);
 
 void i18n.use(initReactI18next).init({
-  resources: cached ? { ...resources, [lng]: { translation: cached.data } } : resources,
+  resources,
   lng,
-  // Machine-translated packs fall back to English; Simplified to Traditional Chinese.
+  // Other languages fall back to English; Simplified to Traditional Chinese.
   fallbackLng: (code: string) => (code === 'zh-TW' ? [] : code === 'zh-CN' ? ['zh-TW'] : ['en', 'zh-TW']),
   interpolation: { escapeValue: false }, // React escapes
   returnNull: false,
 });
+
+async function loadPack(code: string): Promise<void> {
+  if (isBuiltIn(code) || i18n.hasResourceBundle(code, 'translation')) return;
+  const load = packLoader(code);
+  if (!load) throw new Error(`no translation for ${code}`);
+  const mod = await load();
+  i18n.addResourceBundle(code, 'translation', mod.default, true, true);
+}
+// A saved non-built-in language: English shows for a moment until its pack has loaded.
+if (!isBuiltIn(lng)) void loadPack(lng).then(() => i18n.changeLanguage(lng)).catch(() => i18n.changeLanguage('zh-TW'));
 
 /** Intl locale for dates/numbers in the current language. */
 export function intlLocale(code: string = i18n.language): string {
@@ -68,39 +75,11 @@ i18n.on('languageChanged', (code) => {
   syncDocumentLang(code);
 });
 
-/**
- * Switches language, downloading the machine-translated pack first when needed.
- * Throws if the pack can't be loaded (the language stays unchanged).
- */
+/** Switches language, loading its translation file first when needed (throws if it can't be loaded). */
 export async function setLanguage(code: string): Promise<void> {
   if (!isSupported(code)) throw new Error(`unsupported language ${code}`);
-  if (!isBuiltIn(code) && !i18n.hasResourceBundle(code, 'translation')) {
-    const local = readPack(code);
-    const res = await fetch(`/api/translate?lang=${encodeURIComponent(code)}`, { headers: { Accept: 'application/json' } }).catch(() => null);
-    let pack: Pack | null = local;
-    if (res?.ok) {
-      pack = (await res.json()) as Pack;
-      try { localStorage.setItem(PACK(code), JSON.stringify(pack)); } catch { /* storage full: still usable this session */ }
-    }
-    if (!pack) throw new Error('translation unavailable');
-    i18n.addResourceBundle(code, 'translation', pack.data, true, true);
-  }
+  await loadPack(code);
   await i18n.changeLanguage(code);
-}
-
-/** Refresh a cached machine-translated pack in the background (new app version → new strings). */
-export async function refreshLanguagePack(code: string = i18n.language): Promise<void> {
-  if (isBuiltIn(code)) return;
-  try {
-    const res = await fetch(`/api/translate?lang=${encodeURIComponent(code)}`, { headers: { Accept: 'application/json' } });
-    if (!res.ok) return;
-    const pack = (await res.json()) as Pack;
-    if (pack.version === readPack(code)?.version) return;
-    localStorage.setItem(PACK(code), JSON.stringify(pack));
-    i18n.addResourceBundle(code, 'translation', pack.data, true, true);
-  } catch {
-    /* offline */
-  }
 }
 
 export default i18n;

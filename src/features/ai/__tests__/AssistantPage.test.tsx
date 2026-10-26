@@ -19,6 +19,23 @@ describe('AssistantPage', () => {
     expect(screen.getByRole('button', { name: '複製回答' })).toBeInTheDocument();
   });
 
+  it('in another language, quick questions show translated but ask the engine in English', async () => {
+    const { setLanguage, default: i18n } = await import('@/i18n');
+    await setLanguage('ja');
+    try {
+      const spy = vi.spyOn(engine, 'answerLocally');
+      const user = userEvent.setup();
+      renderApp(routes, '/assistant');
+      expect(await screen.findByText(/英語または中国語/)).toBeInTheDocument();
+      await user.click(await screen.findByRole('button', { name: 'B217はどこ？' }));
+      await waitFor(() => expect(spy).toHaveBeenCalled());
+      expect(spy.mock.calls[0]![0].question).toBe('Where is B217?');
+      expect(await screen.findByText('B217はどこ？', { selector: 'p, div, span' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('zh-TW');
+    }
+  });
+
   it('runs a question passed from the home screen (?q=) and keeps history until cleared', async () => {
     const user = userEvent.setup();
     renderApp(routes, `/assistant?q=${encodeURIComponent('第 5 節是幾點？')}`);
@@ -39,7 +56,7 @@ describe('AssistantPage', () => {
     const input = await screen.findByLabelText('輸入問題');
     await user.type(input, '第 1 節是幾點？{Enter}');
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('助理暫時無法回應（測試）');
+    expect(alert).toHaveTextContent('回答時發生錯誤');
     await user.click(within(alert).getByRole('button', { name: '重試' }));
     await waitFor(() => expect(screen.getByRole('button', { name: '複製回答' })).toBeInTheDocument(), { timeout: 4000 });
     expect(screen.getByText('08:10–09:00', { exact: false })).toBeInTheDocument();

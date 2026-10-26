@@ -11,6 +11,8 @@ export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  /** What the engine was asked, when it differs from the shown text (quick questions in other languages). */
+  asked?: string;
   sources?: SourceRef[];
   error?: boolean;
   /** Which engine answered */

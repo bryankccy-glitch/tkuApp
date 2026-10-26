@@ -10,13 +10,20 @@ Browser (React SPA, PWA)
  │        └─ supabaseRepo.ts 雲端模式（Supabase + RLS）
  └─ src/data           已查核的靜態資料（建築代碼、官方連結）＋查核狀態
 
-Vercel Functions (api/)     ← Codex 負責
- └─ /api/chat   SSE；驗證 JWT → 速率限制 → tools(RLS) + RAG(pgvector) → Gemini → 來源引用
+Vercel Functions (api/)     ← 不使用 AI／翻譯 API
+ ├─ /api/push, /api/push-reminders   Web Push 提醒（pg_cron 每分鐘）
+ ├─ /api/sync-events                 每日同步校園活動（Vercel Cron）
+ └─ /api/widget                      iPhone 小工具資料
+
+On device（不上傳、不需金鑰）
+ ├─ AI 助理      src/features/ai/localEngine.ts（規則式）
+ ├─ 課表截圖辨識  src/lib/ocr/（Tesseract.js WASM，public/ocr/）
+ └─ 介面翻譯      src/i18n/locales（繁中／简中／English）＋ src/i18n/packs（其他語言，預先翻譯）
 
 Supabase
  ├─ Postgres + RLS（supabase/migrations）
  ├─ Auth（Email + 密碼）
- └─ pgvector（knowledge_chunks）
+ └─ pgvector（knowledge_chunks，目前未使用）
 ```
 
 ## 兩種執行模式
@@ -25,7 +32,7 @@ Supabase
 | 觸發 | 未設定 `VITE_SUPABASE_URL` | 已設定 Supabase 環境變數 |
 | 登入 | 不需要 | Supabase Auth |
 | 資料 | 此瀏覽器 localStorage | Postgres，RLS 隔離 |
-| AI 助理 | `localEngine.ts`（規則式，不需 API Key） | `/api/chat`；回 503/404 時自動退回本機助理 |
+| AI 助理 | `localEngine.ts`（規則式，不需 API Key） | 同左（不使用雲端 AI） |
 | 活動 | 不顯示（無可信來源） | `campus_events` 中 `status='published'` |
 
 ## 重要決策
@@ -33,13 +40,12 @@ Supabase
 - **Repository 抽象**：UI 不直接呼叫 Supabase（活動、收藏、回饋除外），方便測試與兩種模式切換。
 - **課表資料模型**：`user_courses`（個人課程）＋ `schedule_entries`（時段）。`courses` 為管理員維護的課程目錄，預留未來對應。
 - **semesters**：`user_id IS NULL` 為共用學期（管理員），否則為個人學期。
-- **不使用校務系統帳密**：課表只能手動輸入或 CSV 匯入。
+- **不使用校務系統帳密**：課表手動輸入、CSV 匯入，或在手機上辨識選課系統課表截圖。
+- **不使用付費 API**（2026-10-26，學校合作未成、開發者不自付費用）：助理、截圖辨識、翻譯都在裝置上完成。
 - **地圖**：Leaflet + OpenStreetMap。只標記座標已查核的地點（目前僅校園中心）；導航用 Google Maps 名稱搜尋連結，不捏造座標。
 - **提醒**：MVP 以 `.ics` 行事曆檔（含 VALARM）實作「加入提醒」，可跨裝置使用；Web Push 列入 Roadmap。
 - **CSV 安全**：匯出時中和公式注入（`=`,`+`,`-`,`@` 開頭加 `'`），匯入在本機解析、限制 512KB。
 
-## /api/chat 合約（前端已實作呼叫端：`src/features/ai/useChat.ts`）
-見 `api/README.md`。
 
 ## 首頁像素場景（淡江大橋）
 ```

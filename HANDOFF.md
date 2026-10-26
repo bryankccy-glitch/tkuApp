@@ -4,9 +4,11 @@
 2026-10-26（Asia/Taipei, UTC+8）
 
 ## Updated By
-Claude Code（2026-10-26 收尾檢查）；先前：Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
+Claude Code（2026-10-26 上線版：完全不需 API 金鑰）；先前：Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
 
 ## Current Status
+2026-10-26 上線版：App 不再使用任何 AI／翻譯 API。助理（本機規則引擎）、課表截圖辨識（Tesseract.js）、介面翻譯（預先翻好的語言檔）都在手機上執行；伺服器只剩推播、活動同步、小工具。Vercel 的 `GEMINI_API_KEY`（與誤建的 `AGEMINI_API_KEY`）可以刪除。lint、typecheck、171 單元、132 E2E 通過。
+
 2026-10-22 Codex：推播訂閱補建／重連與伺服器推播測試修正（程式提交 `76b6f07`）已依使用者最新「部署」指示 fast-forward 合併 main 並發布至正式站。正式 GET `/api/push` 回 200、configured=true、含公開 key；未帶 token 的 POST 回 401「請先登入」。瀏覽器經 PWA 重新載入後確認最新版設定頁與資源版本；此瀏覽器的提醒開關原為關閉，沒有替使用者開啟權限或新增訂閱。先前線上 0 訂閱與手動排程 401 unauthorized 的問題仍待設定／真機驗證；部署成功不能視為上課通知已恢復。未更換線上密鑰、未修改使用者課表。
 
 2026-10-21：課表截圖匯入改為手機上 OCR、助理本機模式加強、翻譯快取優先；不再需要 Gemini 金鑰（見 Latest Changes）。lint、typecheck、170 單元、132 E2E 通過。
@@ -24,6 +26,7 @@ Claude Code（2026-10-26 收尾檢查）；先前：Codex（`codex/fix-push-remi
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **上線版：移除所有 AI／翻譯 API — Claude Code（2026-10-26）**：使用者要求翻譯不要用 AI（會需要 API），直接翻好，並整理成可上線版本。(1) 介面語言改為隨 App 附帶的預先翻譯檔 `src/i18n/packs/{ja,ko,vi,th,id,es}.ts`（每個 893/896 字串，其餘 3 個為語言名稱與空字串，退回英文），依需要動態載入、Service Worker 預先快取，可離線；語言選單只列有檔案的語言（原本 28 種機器翻譯語言縮為這 6 種＋繁中／简中／English；之後要加語言就新增檔案並加進 `languages.ts`）。測試檢查每個檔案只含英文既有的 key、佔位符一致、涵蓋率 >97%、切換語言不發網路請求。舊版存在瀏覽器的 `tku.lang.pack.*` 會清掉。(2) 刪除 `api/chat.ts`、`api/translate.ts`、`api/_lib/{gemini,chat-schema,sse,store}.ts`、對應測試、`scripts/ingest.ts`、`npm run ingest`；`useChat` 只用本機引擎；隱私說明改為「提問與圖片都不會上傳」；`.env.example`、README、ARCHITECTURE、`api/README.md` 同步。資料庫裡舊的 AI 相關資料表與 `ui_translations` 保留不動、不再使用。(3) 助理在日韓越泰印西語介面：快速問題顯示當地語言、實際以英文問引擎，並提示「打字請用中文或英文」（引擎只懂中英文）。(4) 修正過時文字：課表空白提示提到截圖匯入、節次說明改 1–14 節、地圖說明改為 OSM 位置。
 - **收尾檢查 — Claude Code（2026-10-26）**：線上狀態確認：推播排程每分鐘 200、1 個訂閱、push_sent 有紀錄；校園活動每日同步有在跑（最後更新 10/25 20:16 UTC，未來活動 54 筆）；正式站 `/ocr/*` 正常提供、CSP 含 `'wasm-unsafe-eval'`；在正式站以合成課表圖跑完整匯入流程成功（首次含下載約 32 秒）。修正：(1) 匯入確認畫面教室可直接修改（合成圖測到 OCR 把 B 118 讀成 B18；新增 `imageImport.room/roomFor`）。(2) `/api/translate`：有金鑰時若已存的語言包仍有英文片語（翻譯時某些區塊被額度擋下，例如 ko 只翻約 68%）會補翻缺的部分並更新（`untranslatedPhrases`）；所有 Gemini 等待最多 45 秒（`withDeadline`），避免超過函式時限。(3) 助理「課表是空的」提示改為提到截圖匯入。Supabase 建議：pg_net 在 public（低風險，維持）、密碼外洩保護未開（Auth 設定，需開發者自行決定）；SECURITY DEFINER 好友函式為刻意設計。Vercel MCP 目前對此專案回 403／找不到專案（連線授權問題），無法讀部署紀錄與執行錯誤。
 - **部署設定 — Codex（2026-10-22）**：main 從 `0464d9d` fast-forward 至 `5eacf5e`，一般推送 main 與 feature 分支，沒有 force push。正式部署 `dpl_J6d6bYUpoEd4FDawKR5DV7t5t5yV`（來源 main／`5eacf5e`）READY，alias `https://tku-app.vercel.app`。實測 GET `/api/push` HTTP 200／configured=true，POST 無 token HTTP 401；只檢查公開 key 是否存在，不輸出其值或任何秘密。瀏覽器 `/me` 已載入 `/assets/index-BURZhrzU.js`，顯示新版推播說明；未切換該瀏覽器原本關閉的提醒開關。本段後續為純文件提交，需再發布最終提交以與 GitHub 對齊。Vercel npm ci／build 成功，仍報既有 34 項依賴漏洞（2 critical），未升級。
 - **Codex — 正式發布準備（2026-10-22）**：使用者最新授權部署；已 fetch，main／origin/main 同為 `0464d9d`，與 `76b6f07` 無分歧。發布前重新執行 lint、typecheck、Vitest、build 全通過；沿用同程式版本的提醒桌面／手機 2 項 E2E 通過證據，不宣稱完整 E2E 全過。部署只沿用既有環境變數，不讀取或更換密鑰值。

@@ -13,8 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
-    "test:e2e": "playwright test",
-    "ingest": "tsx scripts/ingest.ts"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
