@@ -54,7 +54,11 @@ describe('ImageImport', () => {
     expect(await screen.findByText('讀到 3 個課程項目（正課與助教課分開）')).toBeInTheDocument();
     expect(screen.getByText('課表裡已經有同名課程，預設不加入。')).toBeInTheDocument();
     expect(screen.getByText(/和「經濟學」時間衝突/)).toBeInTheDocument();
-    expect(screen.getByText(/10:10–12:00 · B217/)).toBeInTheDocument(); // periods 3–4 merged
+    expect(screen.getByText(/10:10–12:00/)).toBeInTheDocument(); // periods 3–4 merged
+    // Rooms can be corrected before importing (OCR may misread a digit).
+    const room = screen.getByDisplayValue('B217');
+    await user.clear(room);
+    await user.type(room, 'b218');
 
     const nameField = screen.getByDisplayValue('網路與通訊');
     await user.clear(nameField);
@@ -64,7 +68,7 @@ describe('ImageImport', () => {
     expect(onImport).toHaveBeenCalledTimes(1);
     const list = (onImport.mock.calls[0] as unknown as [{ name: string; instructor?: string; slots: unknown[] }[]])[0];
     expect(list.map((c) => c.name)).toEqual(['Python程式語言', '網路與通訊實務']);
-    expect(list[1]).toMatchObject({ instructor: '鄭培宇', slots: [{ weekday: 3, startTime: '10:10', endTime: '12:00', room: 'B217' }] });
+    expect(list[1]).toMatchObject({ instructor: '鄭培宇', slots: [{ weekday: 3, startTime: '10:10', endTime: '12:00', room: 'B218' }] });
   });
 
   it('explains when the on-device reader cannot load and offers CSV instead', async () => {

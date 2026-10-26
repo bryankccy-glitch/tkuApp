@@ -1,10 +1,10 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-22（Asia/Taipei, UTC+8）
+2026-10-26（Asia/Taipei, UTC+8）
 
 ## Updated By
-Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
+Claude Code（2026-10-26 收尾檢查）；先前：Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
 
 ## Current Status
 2026-10-22 Codex：推播訂閱補建／重連與伺服器推播測試修正（程式提交 `76b6f07`）已依使用者最新「部署」指示 fast-forward 合併 main 並發布至正式站。正式 GET `/api/push` 回 200、configured=true、含公開 key；未帶 token 的 POST 回 401「請先登入」。瀏覽器經 PWA 重新載入後確認最新版設定頁與資源版本；此瀏覽器的提醒開關原為關閉，沒有替使用者開啟權限或新增訂閱。先前線上 0 訂閱與手動排程 401 unauthorized 的問題仍待設定／真機驗證；部署成功不能視為上課通知已恢復。未更換線上密鑰、未修改使用者課表。
@@ -24,6 +24,7 @@ Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的�
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **收尾檢查 — Claude Code（2026-10-26）**：線上狀態確認：推播排程每分鐘 200、1 個訂閱、push_sent 有紀錄；校園活動每日同步有在跑（最後更新 10/25 20:16 UTC，未來活動 54 筆）；正式站 `/ocr/*` 正常提供、CSP 含 `'wasm-unsafe-eval'`；在正式站以合成課表圖跑完整匯入流程成功（首次含下載約 32 秒）。修正：(1) 匯入確認畫面教室可直接修改（合成圖測到 OCR 把 B 118 讀成 B18；新增 `imageImport.room/roomFor`）。(2) `/api/translate`：有金鑰時若已存的語言包仍有英文片語（翻譯時某些區塊被額度擋下，例如 ko 只翻約 68%）會補翻缺的部分並更新（`untranslatedPhrases`）；所有 Gemini 等待最多 45 秒（`withDeadline`），避免超過函式時限。(3) 助理「課表是空的」提示改為提到截圖匯入。Supabase 建議：pg_net 在 public（低風險，維持）、密碼外洩保護未開（Auth 設定，需開發者自行決定）；SECURITY DEFINER 好友函式為刻意設計。Vercel MCP 目前對此專案回 403／找不到專案（連線授權問題），無法讀部署紀錄與執行錯誤。
 - **部署設定 — Codex（2026-10-22）**：main 從 `0464d9d` fast-forward 至 `5eacf5e`，一般推送 main 與 feature 分支，沒有 force push。正式部署 `dpl_J6d6bYUpoEd4FDawKR5DV7t5t5yV`（來源 main／`5eacf5e`）READY，alias `https://tku-app.vercel.app`。實測 GET `/api/push` HTTP 200／configured=true，POST 無 token HTTP 401；只檢查公開 key 是否存在，不輸出其值或任何秘密。瀏覽器 `/me` 已載入 `/assets/index-BURZhrzU.js`，顯示新版推播說明；未切換該瀏覽器原本關閉的提醒開關。本段後續為純文件提交，需再發布最終提交以與 GitHub 對齊。Vercel npm ci／build 成功，仍報既有 34 項依賴漏洞（2 critical），未升級。
 - **Codex — 正式發布準備（2026-10-22）**：使用者最新授權部署；已 fetch，main／origin/main 同為 `0464d9d`，與 `76b6f07` 無分歧。發布前重新執行 lint、typecheck、Vitest、build 全通過；沿用同程式版本的提醒桌面／手機 2 項 E2E 通過證據，不宣稱完整 E2E 全過。部署只沿用既有環境變數，不讀取或更換密鑰值。
 - **Codex — 推播訂閱升級修正（2026-10-22）**：舊設定已開啟提醒且通知權限已授予的登入裝置，在 App 啟動／回到前景／網路恢復時補建或重存本人訂閱，不再只在切換開關時儲存；訂閱失敗保留本機備援，設定頁持續顯示錯誤及「重新連線推播提醒」。不自動要求系統通知權限。公開 VAPID key 改由 GET `/api/push` 取得，不依賴舊建置是否含 VITE_VAPID_PUBLIC_KEY。設定寫入事件同步 UI；避免非同步重連把使用者剛關閉的提醒再開啟。

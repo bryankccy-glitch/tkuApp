@@ -555,7 +555,7 @@ const en = {
     "paren": " ({{text}})",
     "and": " and ",
     "schedule": {
-      "empty": "Your schedule is empty, so I can’t look up classes yet. Add courses or import a CSV in Schedule.",
+      "empty": "Your schedule is empty, so I can’t look up classes yet. In Schedule, add courses or import a timetable screenshot or CSV.",
       "dateLabel": "{{label}} ({{date}})",
       "none": "No classes {{date}}.",
       "building": " ({{name}})",
@@ -1059,7 +1059,7 @@ const en = {
     "useCsv": "Use CSV instead",
     "reading": "Reading your timetable…",
     "readingHint": "The first time, the reader (about 5 MB) is downloaded — later runs are much faster",
-    "reviewHint": "On-device reading sometimes gets a character wrong (especially instructor names). Check each course — rename, untick or remove time slots as needed.",
+    "reviewHint": "On-device reading sometimes gets a character wrong (especially instructor names and room numbers). Check each course — edit names and rooms, untick or remove time slots as needed.",
     "found": "Found {{count}} course entries (lectures and TA sessions separated)",
     "skipped": "{{count}} cells are outside the period table (periods 1–14), so they weren’t added. Add them manually.",
     "includeName": "Add {{name}}",
@@ -1076,7 +1076,9 @@ const en = {
       "not_timetable": "No timetable grid found. Use a full screenshot of the 查詢選課課表 page (with grid lines), or use CSV import.",
       "too_large": "The image is too large or unreadable — crop it and try again.",
       "failed": "Couldn’t read the image. Try a clearer screenshot, or use CSV import."
-    }
+    },
+    "room": "Room",
+    "roomFor": "Room for {{slot}}"
   }
 } as const;
 export default en;

@@ -555,7 +555,7 @@ const zhCN = {
     "paren": "（{{text}}）",
     "and": "与",
     "schedule": {
-      "empty": "你的课表目前是空的，我没办法查询上课资讯。可以到「课表」新增课程或汇入 CSV。",
+      "empty": "你的课表目前是空的，我没办法查询上课资讯。可以到「课表」新增课程，或用课表截图、CSV 汇入。",
       "dateLabel": "{{label}}（{{date}}）",
       "none": "{{date}}没有排课。",
       "building": "（{{name}}）",
@@ -782,7 +782,7 @@ const zhCN = {
     "enabled": "已开启上课与截止提醒",
     "testTitle": "TKU Campus OS 提醒测试",
     "testBody": "收到这则通知，表示提醒已设定完成。",
-    "testFailed": "测试未成功，请确认通知权限与网络，稍后再试（服务器推播每分钟最多测试一次）",
+    "testFailed": "测试未成功，请确认通知权限与网路，稍后再试（伺服器推播每分钟最多测试一次）",
     "title": "上课与截止提醒",
     "subtitle": "在这台装置上用系统通知提醒你。",
     "toggle": "开启提醒",
@@ -796,9 +796,9 @@ const zhCN = {
     "notePush": "已开启推播：就算 App 完全关闭，时间到也会跳通知（iPhone 需 iOS 16.4 以上、从主画面开启的 App）。",
     "noteCanPush": "开启后会改用推播，App 关闭也会提醒。",
     "pushFailed": "无法开启推播，暂时只在 App 开著时提醒",
-    "reconnect": "重新连接推播提醒",
-    "testPush": "发送服务器推播测试",
-    "testSent": "服务器已发送测试推播，请查看系统通知",
+    "reconnect": "重新连线推播提醒",
+    "testPush": "传送伺服器推播测试",
+    "testSent": "伺服器已送出测试推播，请查看系统通知",
     "note": "访客模式只会在 App 开著时提醒；登入帐号后开启提醒，就能在 App 关闭时也收到推播。也可以在课程或待办上用「加入提醒」存进手机行事历。"
   },
   "about": {
@@ -1059,7 +1059,7 @@ const zhCN = {
     "useCsv": "改用 CSV 汇入",
     "reading": "正在辨识课表…",
     "readingHint": "第一次使用需要下载约 5 MB 的辨识引擎，之后会快很多",
-    "reviewHint": "手机辨识偶尔会认错字（尤其是老师姓名），请逐一确认，可以修改名称、取消勾选或移除时段。",
+    "reviewHint": "手机辨识偶尔会认错字（尤其是老师姓名与教室号码），请逐一确认，可以修改名称、教室、取消勾选或移除时段。",
     "found": "读到 {{count}} 个课程项目（正课与助教课分开）",
     "skipped": "有 {{count}} 格不在节次表（第 1–14 节）范围内，没有自动加入，请手动新增。",
     "includeName": "加入 {{name}}",
@@ -1076,7 +1076,9 @@ const zhCN = {
       "not_timetable": "找不到课表表格。请使用选课系统「查询选课课表」的完整截图（含格线），或改用 CSV 汇入。",
       "too_large": "图片太大或无法读取，请裁切后再试。",
       "failed": "辨识失败，请换一张更清楚的截图，或改用 CSV 汇入。"
-    }
+    },
+    "room": "教室",
+    "roomFor": "{{slot}} 的教室"
   }
 } as const;
 export default zhCN;

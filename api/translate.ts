@@ -60,6 +60,18 @@ export function mergeStale(old: Record<string, unknown>): { flat: Flat; missing:
   return { flat, missing };
 }
 
+/** Strings that are real English phrases (≥ 2 words) — the ones a finished translation must not leave in English. */
+const isPhrase = (en: string) => /[A-Za-z]{2,}[\s’'-]+[A-Za-z]{2,}/.test(en.replace(/\{\{[^}]*\}\}/g, ''));
+/** Phrases still in English in a stored pack (a chunk failed, e.g. on a rate limit). */
+export function untranslatedPhrases(flat: Record<string, unknown>): string[] {
+  return Object.keys(SOURCE).filter((k) => isPhrase(SOURCE[k]!) && (flat[k] === undefined || flat[k] === SOURCE[k]));
+}
+
+/** Resolves with the work's result, or null after `ms` (serverless functions have a time limit). */
+export function withDeadline<T>(work: Promise<T>, ms: number): Promise<T | null> {
+  return Promise.race([work.catch(() => null), new Promise<null>((r) => setTimeout(() => r(null), ms))]);
+}
+
 export function promptFor(language: string, chunk: Flat): string {
   return `Translate the user-interface strings of "TKU Campus OS", a student-made campus app for Tamkang University (淡江大學, Taiwan), from English into ${language}.
 Rules:
@@ -111,10 +123,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   try {
     const { data: hit, error } = await db.from('ui_translations').select('data').eq('lang', lang).eq('version', VERSION).maybeSingle();
     if (error) throw new Error(error.message);
-    if (hit) return send((hit as { data: Flat }).data, VERSION, 86400);
-
-    const { data: prev } = await db.from('ui_translations').select('version,data').eq('lang', lang).order('created_at', { ascending: false }).limit(1).maybeSingle();
-    const stale = prev ? mergeStale((prev as { data: Record<string, unknown> }).data) : null;
     const call = apiKey ? async (prompt: string) => {
       const r = await geminiFetch(apiKey, model, 'generateContent', {
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -125,8 +133,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       return (j.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? '').join('');
     } : null;
 
+    if (hit) {
+      const data = (hit as { data: Flat }).data;
+      // A pack stored with some chunks still in English is completed while a key is available.
+      const todo = call ? untranslatedPhrases(data) : [];
+      if (call && todo.length > 10) {
+        const fresh = await withDeadline(translateAll(info.english, call, todo), 45_000);
+        const done = fresh ? Object.keys(fresh).filter((k) => fresh[k] !== SOURCE[k]) : [];
+        if (done.length) {
+          const merged = { ...data, ...Object.fromEntries(done.map((k) => [k, fresh![k]!])) };
+          await db.from('ui_translations').update({ data: merged }).eq('lang', lang).eq('version', VERSION);
+          // Some still missing (rate limit): let the CDN ask again soon; otherwise cache for a day.
+          return send(merged, VERSION, done.length < todo.length * 0.9 ? 600 : 86400);
+        }
+        // Timed out → retry soon; the model kept them in English (names, codes) → stop asking.
+        return send(data, VERSION, fresh ? 86400 : 600);
+      }
+      return send(data, VERSION, 86400);
+    }
+
+    const { data: prev } = await db.from('ui_translations').select('version,data').eq('lang', lang).order('created_at', { ascending: false }).limit(1).maybeSingle();
+    const stale = prev ? mergeStale((prev as { data: Record<string, unknown> }).data) : null;
     if (call) {
-      const fresh = await translateAll(info.english, call, stale?.missing).catch(() => null);
+      const fresh = await withDeadline(translateAll(info.english, call, stale?.missing), 45_000);
       const flat = { ...(stale?.flat ?? {}), ...(fresh ?? {}) } as Flat;
       const translated = Object.keys(SOURCE).filter((k) => flat[k] && flat[k] !== SOURCE[k]).length;
       // Don't cache a run where the model failed almost entirely (quota, outage) — try again next time.

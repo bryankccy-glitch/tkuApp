@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SOURCE, VERSION, acceptTranslation, flatten, mergeStale, translateAll, unflatten } from '../translate.js';
+import { SOURCE, VERSION, acceptTranslation, flatten, mergeStale, translateAll, unflatten, untranslatedPhrases, withDeadline } from '../translate.js';
 
 describe('translate', () => {
   it('round-trips nested strings', () => {
@@ -51,5 +51,20 @@ describe('translate', () => {
     const out = await translateAll('Japanese', async () => { calls += 1; return '{}'; }, only);
     expect(Object.keys(out)).toEqual(only);
     expect(calls).toBe(1);
+  });
+
+  it('finds English phrases left in a stored pack, ignoring names and codes', () => {
+    const all = Object.fromEntries(Object.keys(SOURCE).map((k) => [k, `XX ${SOURCE[k]}`]));
+    expect(untranslatedPhrases(all)).toEqual([]);
+    const phraseKey = Object.keys(SOURCE).find((k) => /^[A-Z][a-z]+ [a-z]+/.test(SOURCE[k]!))!;
+    expect(untranslatedPhrases({ ...all, [phraseKey]: SOURCE[phraseKey] })).toEqual([phraseKey]);
+    const single = Object.keys(SOURCE).find((k) => /^[A-Za-z]+$/.test(SOURCE[k]!))!;
+    expect(untranslatedPhrases({ ...all, [single]: SOURCE[single] })).toEqual([]);
+  });
+
+  it('gives up waiting after the deadline', async () => {
+    expect(await withDeadline(new Promise(() => {}), 10)).toBeNull();
+    expect(await withDeadline(Promise.resolve(1), 1000)).toBe(1);
+    expect(await withDeadline(Promise.reject(new Error('x')), 1000)).toBeNull();
   });
 });

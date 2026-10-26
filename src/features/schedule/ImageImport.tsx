@@ -173,8 +173,13 @@ export function ImageImport({ open, onClose, existing, onImport, importing, onUs
                           <li key={i} className="flex items-center gap-1.5 text-caption text-ink">
                             <span className="tabular min-w-0 flex-1 truncate">
                               {WEEKDAY_LABELS[s.weekday]} {formatPeriods(Array.from({ length: s.toPeriod - s.fromPeriod + 1 }, (_, k) => s.fromPeriod + k))}
-                              <span className="text-muted"> {s.startTime}–{s.endTime}{s.room ? ` · ${roomWithBuilding(s.room)}` : ''}</span>
+                              <span className="text-muted"> {s.startTime}–{s.endTime}</span>
                             </span>
+                            {/* Room codes come from on-device OCR: editable, with the building as a check. */}
+                            <input className="field h-8 w-[5.5rem] shrink-0 px-2 text-caption uppercase" value={s.room} maxLength={20}
+                              aria-label={t('imageImport.roomFor', { slot: `${WEEKDAY_LABELS[s.weekday]} ${s.startTime}` })} placeholder={t('imageImport.room')}
+                              title={s.room ? roomWithBuilding(s.room) : undefined}
+                              onChange={(e) => update(r.key, { slots: r.slots.map((x, k) => (k === i ? { ...x, room: e.target.value.replace(/\s+/g, '').toUpperCase() } : x)) })} />
                             {r.slots.length > 1 && (
                               <button type="button" aria-label={t('imageImport.removeSlot')} className="rounded-xs p-1 text-muted hover:text-danger"
                                 onClick={() => update(r.key, { slots: r.slots.filter((_, k) => k !== i) })}>
