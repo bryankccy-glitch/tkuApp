@@ -69,7 +69,34 @@ const pack = {
       "title": "Chào buổi tối",
       "line": "Hôm nay bạn đã vất vả rồi."
     },
-    "withName": "{{greeting}}, {{name}}"
+    "withName": "{{greeting}}, {{name}}",
+    "cheer": {
+      "examToday": "{{time}} thi \"{{title}}\". Hít thở sâu, bạn làm được!",
+      "examDone": "Xong \"{{title}}\" rồi! Tự thưởng cho mình một chút nhé.",
+      "workNow": "Đang làm thêm, cố lên đến {{end}} là xong!",
+      "midtermTomorrow": "Mai là \"{{title}}\". Ngủ sớm nhé, thi giữa kỳ cố lên! 🦆",
+      "midtermSoon": "Còn {{days}} ngày đến \"{{title}}\". Nước rút giữa kỳ, cố lên! 🦆",
+      "finalTomorrow": "Mai là \"{{title}}\". Chặng cuối rồi, thi cuối kỳ cố lên! 🦆",
+      "finalSoon": "Còn {{days}} ngày đến \"{{title}}\". Qua là được nghỉ rồi!",
+      "quizTomorrow": "Mai có kiểm tra \"{{title}}\". Ôn một chút tối nay là ổn.",
+      "dueOne": "\"{{title}}\" hạn nộp hôm nay. Làm xong nó trước nhé!",
+      "dueMany": "Hôm nay còn {{count}} việc phải nộp. Làm cái gấp nhất trước, bạn làm được!",
+      "workLater": "{{time}} đi làm thêm. Nhớ ăn no trước khi đi nhé.",
+      "club": "{{time}} có \"{{title}}\". Tận hưởng giờ câu lạc bộ nhé!",
+      "appointment": "{{time}} có hẹn \"{{title}}\". Đừng quên giờ nhé.",
+      "study": "{{time}} có \"{{title}}\". Bạn thật kỷ luật!",
+      "workAndClassesDone": "Học {{count}} tiết rồi còn đi làm thêm, hôm nay vất vả rồi, nghỉ ngơi nhé.",
+      "workDone": "Xong ca làm rồi. Hôm nay vất vả rồi, nghỉ ngơi nhé.",
+      "fridayDone": "Tuần này học xong rồi. Cuối tuần vui vẻ!",
+      "longDayDone": "Xong {{count}} tiết học, hôm nay vất vả rồi, nghỉ ngơi nhé.",
+      "classesDone": "Hôm nay học xong hết rồi, vất vả rồi!",
+      "weekend": "Cuối tuần vui vẻ, nạp lại năng lượng nhé!",
+      "longDayAhead": "Hôm nay có {{count}} tiết. Kín lịch nhưng bạn làm được!",
+      "overdue": "Có {{count}} bài đã quá hạn. Tìm lúc làm bù nhé.",
+      "schoolMidterm": "Mùa thi giữa kỳ đến rồi, thi tốt nhé! 🦆",
+      "schoolFinalSoon": "Còn {{days}} ngày nữa là tuần đánh giá cuối kỳ, cố lên! 🦆",
+      "schoolFinal": "Tuần đánh giá cuối kỳ. Cố qua là được nghỉ rồi! 🦆"
+    }
   },
   "weather": {
     "place": "Đạm Thủy",

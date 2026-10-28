@@ -69,7 +69,34 @@ const pack = {
       "title": "좋은 저녁이에요",
       "line": "오늘도 수고했어요."
     },
-    "withName": "{{greeting}}, {{name}}님"
+    "withName": "{{greeting}}, {{name}}님",
+    "cheer": {
+      "examToday": "{{time}}에 「{{title}}」 시험. 심호흡하고, 충분히 할 수 있어요!",
+      "examDone": "「{{title}}」 끝! 오늘은 자신에게 작은 선물을.",
+      "workNow": "아르바이트 중. {{end}}까지 조금만 더 힘내요!",
+      "midtermTomorrow": "내일은 「{{title}}」. 일찍 자고, 중간고사 화이팅! 🦆",
+      "midtermSoon": "「{{title}}」까지 {{days}}일. 중간고사 막판 스퍼트! 🦆",
+      "finalTomorrow": "내일은 「{{title}}」. 마지막 한 걸음, 기말고사 화이팅! 🦆",
+      "finalSoon": "「{{title}}」까지 {{days}}일. 버티면 방학이에요!",
+      "quizTomorrow": "내일 쪽지시험 「{{title}}」. 오늘 밤 조금만 복습하면 돼요.",
+      "dueOne": "「{{title}}」 오늘 마감이에요. 이것부터 끝내요!",
+      "dueMany": "오늘 마감이 {{count}}개 남았어요. 급한 것부터, 할 수 있어요!",
+      "workLater": "{{time}}에 아르바이트. 나가기 전에 꼭 챙겨 먹어요.",
+      "club": "{{time}}에 「{{title}}」. 동아리 시간 즐겨요!",
+      "appointment": "{{time}}에 「{{title}}」 약속. 시간 잊지 마세요.",
+      "study": "{{time}}에 「{{title}}」. 스스로 챙기는 당신 최고!",
+      "workAndClassesDone": "수업 {{count}}개에 아르바이트까지, 정말 수고했어요. 푹 쉬어요.",
+      "workDone": "아르바이트 끝! 오늘 수고했어요, 푹 쉬어요.",
+      "fridayDone": "이번 주 수업 끝! 즐거운 주말 보내요!",
+      "longDayDone": "수업 {{count}}개 끝, 오늘 수고했어요. 푹 쉬어요.",
+      "classesDone": "오늘 수업 모두 끝, 수고했어요!",
+      "weekend": "즐거운 주말, 충전 잘 해요!",
+      "longDayAhead": "오늘 수업 {{count}}개. 꽉 찬 하루도 해낼 수 있어요!",
+      "overdue": "마감이 지난 과제가 {{count}}개 있어요. 시간 내서 마무리해요.",
+      "schoolMidterm": "중간고사 시즌이 왔어요. 시험 화이팅! 🦆",
+      "schoolFinalSoon": "{{days}}일 후 기말 평가 주간이에요. 기말 화이팅! 🦆",
+      "schoolFinal": "기말 평가 주간. 버티면 방학이에요, 화이팅! 🦆"
+    }
   },
   "weather": {
     "place": "단수이",

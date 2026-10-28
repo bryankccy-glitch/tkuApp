@@ -68,7 +68,34 @@ const en = {
       "title": "Good evening",
       "line": "You worked hard today."
     },
-    "withName": "{{greeting}}, {{name}}"
+    "withName": "{{greeting}}, {{name}}",
+    "cheer": {
+      "examToday": "\"{{title}}\" at {{time}}. Take a deep breath, you've got this!",
+      "examDone": "\"{{title}}\" is done! Treat yourself a little.",
+      "workNow": "On shift until {{end}}. Hang in there!",
+      "midtermTomorrow": "\"{{title}}\" is tomorrow. Get some sleep, good luck on your midterm! 🦆",
+      "midtermSoon": "{{days}} days until \"{{title}}\". Midterm push, you can do it! 🦆",
+      "finalTomorrow": "\"{{title}}\" is tomorrow. Last stretch, good luck on your final! 🦆",
+      "finalSoon": "{{days}} days until \"{{title}}\". Finish strong, the break is close!",
+      "quizTomorrow": "Quiz tomorrow: \"{{title}}\". A quick review tonight and you're set.",
+      "dueOne": "\"{{title}}\" is due today. Knock it out first!",
+      "dueMany": "{{count}} things due today. Start with the most urgent, you've got this!",
+      "workLater": "Work at {{time}}. Eat something before you head out.",
+      "club": "\"{{title}}\" at {{time}}. Enjoy your club time!",
+      "appointment": "\"{{title}}\" at {{time}}. Don't lose track of time.",
+      "study": "\"{{title}}\" at {{time}}. Love the discipline!",
+      "workAndClassesDone": "{{count}} classes and a shift, what a day. Get some rest.",
+      "workDone": "Shift's over. You worked hard today, get some rest.",
+      "fridayDone": "Classes are done for the week. Happy weekend!",
+      "longDayDone": "{{count}} classes done. You worked hard today, get some rest.",
+      "classesDone": "All classes done for today. Nice work!",
+      "weekend": "Enjoy the weekend and recharge!",
+      "longDayAhead": "{{count}} classes today. A full day, but you can do it!",
+      "overdue": "{{count}} tasks are past due. Find a moment to catch up.",
+      "schoolMidterm": "Midterm season is here. Good luck on your exams! 🦆",
+      "schoolFinalSoon": "Final assessment weeks start in {{days}} days. You can do it! 🦆",
+      "schoolFinal": "Final assessment weeks. Push through, the break is almost here! 🦆"
+    }
   },
   "weather": {
     "place": "Tamsui",

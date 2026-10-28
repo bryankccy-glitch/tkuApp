@@ -68,7 +68,34 @@ const zh = {
       "title": "晚安",
       "line": "今天辛苦了。"
     },
-    "withName": "{{greeting}}，{{name}}"
+    "withName": "{{greeting}}，{{name}}",
+    "cheer": {
+      "examToday": "{{time}} 要考「{{title}}」，深呼吸，你準備好了！",
+      "examDone": "「{{title}}」考完了！先好好犒賞自己一下。",
+      "workNow": "打工中，撐到 {{end}} 就下班了，加油！",
+      "midtermTomorrow": "明天就是「{{title}}」，早點睡，期中考加油鴨！🦆",
+      "midtermSoon": "期中考倒數 {{days}} 天（{{title}}），衝刺加油鴨！🦆",
+      "finalTomorrow": "明天就是「{{title}}」，最後一哩路，期末考加油鴨！🦆",
+      "finalSoon": "期末考倒數 {{days}} 天（{{title}}），撐過去就放假了！",
+      "quizTomorrow": "明天有小考「{{title}}」，今晚複習一下就穩了。",
+      "dueOne": "「{{title}}」今天要交，先把它搞定吧！",
+      "dueMany": "今天還有 {{count}} 項要交，從最急的開始，你可以的！",
+      "workLater": "{{time}} 還要打工，記得先吃飽再出門。",
+      "club": "{{time}} 有「{{title}}」，好好享受社團時光！",
+      "appointment": "{{time}} 約了「{{title}}」，別忘了時間喔。",
+      "study": "{{time}} 排了「{{title}}」，自律的你最棒！",
+      "workAndClassesDone": "上完 {{count}} 堂課又去打工，今天真的辛苦了，好好休息。",
+      "workDone": "打工結束了，今天辛苦了，好好休息。",
+      "fridayDone": "這週的課都上完了，週末快樂！",
+      "longDayDone": "上完 {{count}} 堂課，今天辛苦了，好好休息吧。",
+      "classesDone": "今天的課都上完了，辛苦了！",
+      "weekend": "週末愉快，好好充電！",
+      "longDayAhead": "今天有 {{count}} 堂課，滿堂也撐得過去，加油！",
+      "overdue": "有 {{count}} 項作業過了期限，找時間補上吧。",
+      "schoolMidterm": "期中考季到了，段考加油鴨！🦆",
+      "schoolFinalSoon": "再 {{days}} 天就是期末評量週，期末加油鴨！🦆",
+      "schoolFinal": "期末評量週，撐過去就放假了，加油鴨！🦆"
+    }
   },
   "weather": {
     "place": "淡水",

@@ -69,7 +69,34 @@ const pack = {
       "title": "Selamat malam",
       "line": "Kamu sudah bekerja keras hari ini."
     },
-    "withName": "{{greeting}}, {{name}}"
+    "withName": "{{greeting}}, {{name}}",
+    "cheer": {
+      "examToday": "Ujian \"{{title}}\" pukul {{time}}. Tarik napas, kamu pasti bisa!",
+      "examDone": "\"{{title}}\" selesai! Beri hadiah kecil untuk dirimu.",
+      "workNow": "Lagi kerja paruh waktu. Bertahan sampai {{end}}, semangat!",
+      "midtermTomorrow": "Besok \"{{title}}\". Tidur lebih awal, semangat UTS! 🦆",
+      "midtermSoon": "{{days}} hari lagi menuju \"{{title}}\". Sprint UTS, semangat! 🦆",
+      "finalTomorrow": "Besok \"{{title}}\". Langkah terakhir, semangat UAS! 🦆",
+      "finalSoon": "{{days}} hari lagi menuju \"{{title}}\". Lewati ini, liburan menanti!",
+      "quizTomorrow": "Besok kuis \"{{title}}\". Sedikit belajar malam ini sudah aman.",
+      "dueOne": "\"{{title}}\" tenggatnya hari ini. Selesaikan itu dulu!",
+      "dueMany": "Masih ada {{count}} tugas tenggat hari ini. Mulai dari yang paling mendesak, kamu bisa!",
+      "workLater": "Kerja pukul {{time}}. Jangan lupa makan sebelum berangkat.",
+      "club": "\"{{title}}\" pukul {{time}}. Nikmati waktu klubmu!",
+      "appointment": "Janji \"{{title}}\" pukul {{time}}. Jangan lupa waktunya.",
+      "study": "\"{{title}}\" pukul {{time}}. Disiplinmu keren!",
+      "workAndClassesDone": "{{count}} kelas lalu kerja paruh waktu, hari yang berat. Istirahatlah.",
+      "workDone": "Kerja selesai. Kamu sudah bekerja keras hari ini, istirahatlah.",
+      "fridayDone": "Kelas minggu ini selesai. Selamat berakhir pekan!",
+      "longDayDone": "{{count}} kelas selesai. Kamu sudah bekerja keras, istirahatlah.",
+      "classesDone": "Semua kelas hari ini selesai. Kerja bagus!",
+      "weekend": "Selamat berakhir pekan, isi ulang energimu!",
+      "longDayAhead": "{{count}} kelas hari ini. Hari yang padat, tapi kamu bisa!",
+      "overdue": "{{count}} tugas sudah lewat tenggat. Cari waktu untuk menyusul.",
+      "schoolMidterm": "Musim UTS sudah tiba. Semangat ujiannya! 🦆",
+      "schoolFinalSoon": "{{days}} hari lagi minggu evaluasi akhir semester. Semangat! 🦆",
+      "schoolFinal": "Minggu evaluasi akhir semester. Bertahan, liburan sudah dekat! 🦆"
+    }
   },
   "weather": {
     "place": "Tamsui",

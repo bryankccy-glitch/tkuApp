@@ -69,7 +69,34 @@ const pack = {
       "title": "こんばんは",
       "line": "今日もお疲れさまでした。"
     },
-    "withName": "{{greeting}}、{{name}}さん"
+    "withName": "{{greeting}}、{{name}}さん",
+    "cheer": {
+      "examToday": "{{time}}から「{{title}}」。深呼吸して、きっと大丈夫！",
+      "examDone": "「{{title}}」おつかれさま！少し自分にご褒美を。",
+      "workNow": "バイト中。{{end}}まであと少し、がんばって！",
+      "midtermTomorrow": "明日は「{{title}}」。早めに寝て、中間試験がんばって！🦆",
+      "midtermSoon": "「{{title}}」まであと{{days}}日。中間試験ラストスパート！🦆",
+      "finalTomorrow": "明日は「{{title}}」。あと一歩、期末試験がんばって！🦆",
+      "finalSoon": "「{{title}}」まであと{{days}}日。乗り切れば休みだ！",
+      "quizTomorrow": "明日は小テスト「{{title}}」。今夜少し復習すれば安心。",
+      "dueOne": "「{{title}}」は今日が締め切り。まずはこれを片付けよう！",
+      "dueMany": "今日の締め切りがあと{{count}}件。急ぎのものから、きっとできる！",
+      "workLater": "{{time}}からバイト。出かける前にしっかり食べてね。",
+      "club": "{{time}}から「{{title}}」。サークルの時間を楽しんで！",
+      "appointment": "{{time}}に「{{title}}」の約束。時間を忘れずに。",
+      "study": "{{time}}から「{{title}}」。自分を律するあなたは最高！",
+      "workAndClassesDone": "{{count}}コマの授業にバイトまで。本当におつかれさま、ゆっくり休んで。",
+      "workDone": "バイトおつかれさま。今日はゆっくり休んで。",
+      "fridayDone": "今週の授業はすべて終了。よい週末を！",
+      "longDayDone": "{{count}}コマの授業おつかれさま。ゆっくり休んでね。",
+      "classesDone": "今日の授業はすべて終了。おつかれさま！",
+      "weekend": "よい週末を。しっかり充電しよう！",
+      "longDayAhead": "今日は{{count}}コマ。満員の一日でもきっと乗り切れる！",
+      "overdue": "期限切れの課題が{{count}}件。時間を見つけて片付けよう。",
+      "schoolMidterm": "中間試験シーズン到来。試験がんばって！🦆",
+      "schoolFinalSoon": "あと{{days}}日で期末評価週間。期末がんばって！🦆",
+      "schoolFinal": "期末評価週間。乗り切れば休みだ、がんばって！🦆"
+    }
   },
   "weather": {
     "place": "淡水",

@@ -1,10 +1,10 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-26（Asia/Taipei, UTC+8）
+2026-10-28（Asia/Taipei, UTC+8）
 
 ## Updated By
-Claude Code（2026-10-26 上線版：完全不需 API 金鑰）；先前：Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
+Claude Code（2026-10-28 首頁個人化鼓勵語）；先前 Claude Code（2026-10-26 上線版：完全不需 API 金鑰）；先前：Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
 
 ## Current Status
 2026-10-26 上線版：App 不再使用任何 AI／翻譯 API。助理（本機規則引擎）、課表截圖辨識（Tesseract.js）、介面翻譯（預先翻好的語言檔）都在手機上執行；伺服器只剩推播、活動同步、小工具。Vercel 的 `GEMINI_API_KEY`（與誤建的 `AGEMINI_API_KEY`）可以刪除。lint、typecheck、171 單元、132 E2E 通過。
@@ -26,6 +26,9 @@ Claude Code（2026-10-26 上線版：完全不需 API 金鑰）；先前：Codex
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **學校考試期間加進首頁鼓勵語 — Claude Code（2026-10-28）**：使用者要求查學校期中考週，一學期讀一次即可。查核來源：教務處行事曆頁 `https://www.acad.tku.edu.tw/get_page?t=rtdoc&rtdoc_id=OAA201&lang=tw`，並與官方 PDF `https://fkwx-at.azurewebsites.net/at/115calendar.pdf`（SHA-256 600f753a…）交叉比對。**淡江 115 學年度行事曆沒有統一的期中考週**，只有「期中評量成績上傳」（第1學期 11/9–11/30、第2學期 4/19–5/10）。期末有官方「期末多元評量週」：12/28–1/10、6/7–6/20（畢業班 5/31–6/6 另計）。新增 `src/data/academicCalendar.ts`，收 115-1、115-2 兩學期日期、來源與 PDF 雜湊；行事曆一次涵蓋整學年，每年學校公布新行事曆時要補下一學年。`pickCheer` 新增 `schoolExamCheer()`：成績上傳開放前 14 天顯示「期中考季到了，段考加油鴨！🦆」（文案刻意不寫成「期中考週」），期末評量週前 7 天與期間另有兩句。優先順序排在個人考試、今天到期作業、稍後打工社團等之後，在「課上完」類之前。`src/data/sources.ts` 加入行事曆來源，供關於頁與本機助理引用。字串 3 個，8 個語言都已補，zh-CN 由腳本重新產生。測試共 11 項：既有個人化測試以 `terms: []` 隔離學校日期。驗證：lint、typecheck、Vitest 37 檔 182 項、build 都通過。本機無個人資料時，今天（10/28）首頁顯示「期中考季到了，段考加油鴨！🦆」。未 commit。
+  - **Next Step**：116 學年度行事曆公布後，依同一頁面補 `ACADEMIC_TERMS`。
+- **首頁個人化鼓勵語 — Claude Code（2026-10-28）**：使用者要求首頁問候下方那句（原本只依時段，例如晚上一律「今天辛苦了」）改成依個人行程給不同鼓勵，期中考前一週要說「段考加油鴨」。新增 `src/lib/encouragement.ts` `pickCheer()`，只用使用者自己的資料：作業考試（小考、期中、期末）、行事曆私人行程（打工、社團、約會、讀書，含每週重複）、今天的課數與剩餘數。優先順序：今天考試 → 今天剛考完 → 打工中 → 7 天內期中或期末（明天另有文案）→ 明天小考 → 今天到期作業 → 稍後打工、社團、約會、讀書 → 打工結束 → 週五課上完、上完 4 堂以上、課上完 → 週末 → 今天 4 堂以上還沒上 → 7 天內逾期作業；都不符合時用原本的時段句。`DashboardPage` 多讀 `useCalendarEvents()`（讀取失敗就忽略行程），`Hero` 新增 `cheer` prop。字串 `greeting.cheer.*` 共 22 個：zh-TW、en 與 6 個語言檔已補，zh-CN 用 `scripts/make-zh-cn.py` 重新產生（diff 只有新增）。**期中考週的判斷依據是使用者自己新增的「期中考」類型待辦，不是學校行事曆**：App 內沒有官方期中考週資料，未查核前不填。新增 `src/lib/__tests__/encouragement.test.ts`（9 項）。驗證：lint、typecheck、Vitest 37 檔 180 項、build 都通過。本機裝置模式 390px 實測：新增 5 天後的期中考，首頁顯示「期中考倒數 5 天（微積分期中考），衝刺加油鴨！🦆」。E2E 未重跑。另外：本機 node_modules 原本缺 `web-push`、`tesseract.js`（與 package.json 不同步），已 `npm ci`。未 commit。
 - **上線版：移除所有 AI／翻譯 API — Claude Code（2026-10-26）**：使用者要求翻譯不要用 AI（會需要 API），直接翻好，並整理成可上線版本。(1) 介面語言改為隨 App 附帶的預先翻譯檔 `src/i18n/packs/{ja,ko,vi,th,id,es}.ts`（每個 893/896 字串，其餘 3 個為語言名稱與空字串，退回英文），依需要動態載入、Service Worker 預先快取，可離線；語言選單只列有檔案的語言（原本 28 種機器翻譯語言縮為這 6 種＋繁中／简中／English；之後要加語言就新增檔案並加進 `languages.ts`）。測試檢查每個檔案只含英文既有的 key、佔位符一致、涵蓋率 >97%、切換語言不發網路請求。舊版存在瀏覽器的 `tku.lang.pack.*` 會清掉。(2) 刪除 `api/chat.ts`、`api/translate.ts`、`api/_lib/{gemini,chat-schema,sse,store}.ts`、對應測試、`scripts/ingest.ts`、`npm run ingest`；`useChat` 只用本機引擎；隱私說明改為「提問與圖片都不會上傳」；`.env.example`、README、ARCHITECTURE、`api/README.md` 同步。資料庫裡舊的 AI 相關資料表與 `ui_translations` 保留不動、不再使用。(3) 助理在日韓越泰印西語介面：快速問題顯示當地語言、實際以英文問引擎，並提示「打字請用中文或英文」（引擎只懂中英文）。(4) 修正過時文字：課表空白提示提到截圖匯入、節次說明改 1–14 節、地圖說明改為 OSM 位置。
 - **收尾檢查 — Claude Code（2026-10-26）**：線上狀態確認：推播排程每分鐘 200、1 個訂閱、push_sent 有紀錄；校園活動每日同步有在跑（最後更新 10/25 20:16 UTC，未來活動 54 筆）；正式站 `/ocr/*` 正常提供、CSP 含 `'wasm-unsafe-eval'`；在正式站以合成課表圖跑完整匯入流程成功（首次含下載約 32 秒）。修正：(1) 匯入確認畫面教室可直接修改（合成圖測到 OCR 把 B 118 讀成 B18；新增 `imageImport.room/roomFor`）。(2) `/api/translate`：有金鑰時若已存的語言包仍有英文片語（翻譯時某些區塊被額度擋下，例如 ko 只翻約 68%）會補翻缺的部分並更新（`untranslatedPhrases`）；所有 Gemini 等待最多 45 秒（`withDeadline`），避免超過函式時限。(3) 助理「課表是空的」提示改為提到截圖匯入。Supabase 建議：pg_net 在 public（低風險，維持）、密碼外洩保護未開（Auth 設定，需開發者自行決定）；SECURITY DEFINER 好友函式為刻意設計。Vercel MCP 目前對此專案回 403／找不到專案（連線授權問題），無法讀部署紀錄與執行錯誤。
 - **部署設定 — Codex（2026-10-22）**：main 從 `0464d9d` fast-forward 至 `5eacf5e`，一般推送 main 與 feature 分支，沒有 force push。正式部署 `dpl_J6d6bYUpoEd4FDawKR5DV7t5t5yV`（來源 main／`5eacf5e`）READY，alias `https://tku-app.vercel.app`。實測 GET `/api/push` HTTP 200／configured=true，POST 無 token HTTP 401；只檢查公開 key 是否存在，不輸出其值或任何秘密。瀏覽器 `/me` 已載入 `/assets/index-BURZhrzU.js`，顯示新版推播說明；未切換該瀏覽器原本關閉的提醒開關。本段後續為純文件提交，需再發布最終提交以與 GitHub 對齊。Vercel npm ci／build 成功，仍報既有 34 項依賴漏洞（2 critical），未升級。

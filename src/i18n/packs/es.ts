@@ -69,7 +69,34 @@ const pack = {
       "title": "Buenas noches",
       "line": "Hoy has trabajado mucho."
     },
-    "withName": "{{greeting}}, {{name}}"
+    "withName": "{{greeting}}, {{name}}",
+    "cheer": {
+      "examToday": "\"{{title}}\" a las {{time}}. Respira hondo, ¡tú puedes!",
+      "examDone": "¡\"{{title}}\" terminado! Date un pequeño premio.",
+      "workNow": "En el turno hasta las {{end}}. ¡Ánimo!",
+      "midtermTomorrow": "Mañana es \"{{title}}\". Duerme temprano, ¡suerte en el parcial! 🦆",
+      "midtermSoon": "Faltan {{days}} días para \"{{title}}\". ¡Recta final del parcial, ánimo! 🦆",
+      "finalTomorrow": "Mañana es \"{{title}}\". Último esfuerzo, ¡suerte en el final! 🦆",
+      "finalSoon": "Faltan {{days}} días para \"{{title}}\". ¡Aguanta, que vienen las vacaciones!",
+      "quizTomorrow": "Mañana hay prueba: \"{{title}}\". Un repaso esta noche y listo.",
+      "dueOne": "\"{{title}}\" se entrega hoy. ¡Termínalo primero!",
+      "dueMany": "Te quedan {{count}} entregas hoy. Empieza por la más urgente, ¡tú puedes!",
+      "workLater": "Trabajo a las {{time}}. Come algo antes de salir.",
+      "club": "\"{{title}}\" a las {{time}}. ¡Disfruta tu club!",
+      "appointment": "\"{{title}}\" a las {{time}}. No pierdas la hora.",
+      "study": "\"{{title}}\" a las {{time}}. ¡Qué disciplina!",
+      "workAndClassesDone": "{{count}} clases y además el turno, qué día. Descansa.",
+      "workDone": "Turno terminado. Trabajaste duro hoy, descansa.",
+      "fridayDone": "Terminaste las clases de la semana. ¡Feliz fin de semana!",
+      "longDayDone": "{{count}} clases terminadas. Trabajaste duro hoy, descansa.",
+      "classesDone": "Terminaste las clases de hoy. ¡Buen trabajo!",
+      "weekend": "¡Disfruta el fin de semana y recarga energía!",
+      "longDayAhead": "{{count}} clases hoy. Un día lleno, ¡pero tú puedes!",
+      "overdue": "Tienes {{count}} tareas atrasadas. Busca un momento para ponerte al día.",
+      "schoolMidterm": "Llegó la temporada de parciales. ¡Mucha suerte! 🦆",
+      "schoolFinalSoon": "Faltan {{days}} días para las semanas de evaluación final. ¡Ánimo! 🦆",
+      "schoolFinal": "Semanas de evaluación final. ¡Aguanta, que ya vienen las vacaciones! 🦆"
+    }
   },
   "weather": {
     "place": "Tamsui",

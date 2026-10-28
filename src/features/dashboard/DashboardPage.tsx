@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Page } from '@/components/layout/AppShell';
-import { useCourses, useNow, useProfile, useTasks } from '@/lib/hooks';
+import { useCalendarEvents, useCourses, useNow, useProfile, useTasks } from '@/lib/hooks';
+import { pickCheer } from '@/lib/encouragement';
 import { useSemester } from '@/app/SemesterProvider';
 import { findNextClass, occurrencesOn } from '@/lib/schedule';
 import { weekdayOf } from '@/lib/time';
@@ -19,6 +20,7 @@ export default function DashboardPage() {
   const profile = useProfile();
   const courses = useCourses(semester?.id);
   const tasks = useTasks();
+  const events = useCalendarEvents();
 
   // Show the hero (scene + weather) immediately; only the personal sections wait for data.
   if (courses.isLoading || tasks.isLoading || profile.isLoading) {
@@ -40,10 +42,12 @@ export default function DashboardPage() {
   const remaining = today.filter((o) => o.slot.endTime > `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`);
   const dueToday = filterTasks(taskList, 'today', now).length;
   const next = findNextClass(courseList, now);
+  // Calendar events are optional here: if they fail to load the line just ignores shifts and clubs.
+  const cheer = pickCheer({ now, classes: { total: today.length, remaining: remaining.length }, tasks: taskList, events: events.data ?? [] });
 
   return (
     <>
-      <Hero name={profile.data?.displayName ?? t('defaults.studentName')} summary={{ total: today.length, remaining: remaining.length, dueToday }} />
+      <Hero name={profile.data?.displayName ?? t('defaults.studentName')} summary={{ total: today.length, remaining: remaining.length, dueToday }} cheer={cheer} />
       <QuickActions />
       <Page className="pt-5">
         <div className="grid gap-6">

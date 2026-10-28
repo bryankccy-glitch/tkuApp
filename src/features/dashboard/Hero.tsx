@@ -10,6 +10,7 @@ import type { DayPhase, SceneState, SceneWeather } from '@/components/campus-sce
 import { useCampusWeather } from '@/hooks/useCampusWeather';
 import { useTimeOfDay } from '@/hooks/useTimeOfDay';
 import { WEATHER_SOURCE } from '@/services/weatherService';
+import type { Cheer } from '@/lib/encouragement';
 
 export interface HeroSummary {
   total: number;
@@ -38,7 +39,7 @@ function applyOverride(scene: SceneState, raw: string | null): SceneState {
 }
 
 /** `name` / `summary` are undefined while the user's data is still loading: the scene and weather show right away. */
-export function Hero({ name, summary }: { name?: string; summary?: HeroSummary }) {
+export function Hero({ name, summary, cheer }: { name?: string; summary?: HeroSummary; cheer?: Cheer | null }) {
   const { t, i18n } = useTranslation();
   const [params] = useSearchParams();
   const { weather, loading, stale, error, online } = useCampusWeather();
@@ -75,7 +76,7 @@ export function Hero({ name, summary }: { name?: string; summary?: HeroSummary }
           <h1 id="hero-greeting" className="mt-1 text-[1.625rem] font-bold leading-tight tracking-tight">
             {name ? t('greeting.withName', { greeting: t(`greeting.${g}.title`), name }) : t(`greeting.${g}.title`)}
           </h1>
-          <p className="mt-1 text-body text-white/90">{t(`greeting.${g}.line`)}</p>
+          <p className="mt-1 text-body text-white/90">{cheer ? t(`greeting.cheer.${cheer.key}`, cheer.vars) : t(`greeting.${g}.line`)}</p>
           {summaryText !== undefined ? (
             <p className="mt-2 text-caption text-white/80">{summaryText}</p>
           ) : (

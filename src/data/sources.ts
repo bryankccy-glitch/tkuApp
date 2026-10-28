@@ -121,6 +121,17 @@ export const OFFICIAL_SOURCES: OfficialSource[] = [
     titleEn: 'Student Affairs System (leave, scholarships, clubs)',
     kind: 'service',
   },
+  {
+    id: 'academic-calendar',
+    title: '淡江大學 115 學年度行事曆',
+    publisher: '淡江大學教務處',
+    url: 'https://www.acad.tku.edu.tw/get_page?t=rtdoc&rtdoc_id=OAA201&lang=tw',
+    updated: '2026-10-28 查核（PDF SHA-256 600f753a…）',
+    keywords: ['行事曆', '校曆', '期中考', '期中', '期末考', '期末', '段考', '評量週', '放假', '開學'],
+    keywordsEn: ['academic calendar', 'midterm', 'final exam', 'exam week', 'holiday', 'semester start'],
+    titleEn: 'Academic calendar, academic year 115 (exam periods, holidays)',
+    kind: 'reference',
+  },
 ];
 
 export const QUICK_SERVICES = ['tku-sso', 'tku-sis', 'tku-home', 'library', 'handbook-114', 'leave-rules', 'space-rental', 'tkutimes']
