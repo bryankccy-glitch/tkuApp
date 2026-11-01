@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSemester } from '@/app/SemesterProvider';
+import { useAuth } from '@/app/AuthProvider';
 import { useCourses, useTasks } from '@/lib/hooks';
 import { useCampusEvents } from '@/lib/events';
 import { uid } from '@/lib/id';
@@ -7,12 +8,14 @@ import { answerLocally } from './localEngine';
 import { t } from '@/i18n/t';
 import type { ChatMessage } from './types';
 
-const KEY = 'tku.chat.v1';
+const LEGACY_KEY = 'tku.chat.v1';
 const MAX_HISTORY = 60;
 
-function load(): ChatMessage[] {
+function load(key: string): ChatMessage[] {
   try {
-    return JSON.parse(localStorage.getItem(KEY) ?? '[]') as ChatMessage[];
+    // The shared history has no known owner, so discard it without reading it.
+    localStorage.removeItem(LEGACY_KEY);
+    return JSON.parse(localStorage.getItem(key) ?? '[]') as ChatMessage[];
   } catch {
     return [];
   }
@@ -23,21 +26,31 @@ function load(): ChatMessage[] {
  * nothing uploaded. Answers come from the user's own schedule / tasks and verified campus data.
  */
 export function useChat() {
+  const { session } = useAuth();
+  const key = `tku.chat.v2:${session?.user.id ?? 'guest'}`;
   const { semester } = useSemester();
   const { data: courses = [] } = useCourses(semester?.id);
   const { data: tasks = [] } = useTasks();
   const { data: events = null } = useCampusEvents();
-  const [messages, setMessages] = useState<ChatMessage[]>(load);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => load(key));
+  const [historyKey, setHistoryKey] = useState(key);
   const [busy, setBusy] = useState(false);
   const stopped = useRef(false);
 
+  // Reset before committing so the previous identity is never displayed or persisted
+  // under the new identity's key.
+  if (historyKey !== key) {
+    setHistoryKey(key);
+    setMessages(load(key));
+  }
+
   useEffect(() => {
     try {
-      localStorage.setItem(KEY, JSON.stringify(messages.filter((m) => !m.error).slice(-MAX_HISTORY)));
+      localStorage.setItem(key, JSON.stringify(messages.filter((m) => !m.error).slice(-MAX_HISTORY)));
     } catch {
       /* ignore */
     }
-  }, [messages]);
+  }, [key, messages]);
 
   const patch = (id: string, fn: (m: ChatMessage) => ChatMessage) => setMessages((ms) => ms.map((m) => (m.id === id ? fn(m) : m)));
 

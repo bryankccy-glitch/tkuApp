@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
 import { buildingFromRoom } from '../src/data/places.js';
 import { loadEntries, taipeiClock, type EntryRow } from './widget.js';
+import { isPushEndpoint } from './_pushHosts.js';
 
 /**
  * GET /api/push-reminders — called every minute by Supabase pg_cron (migration 20261020120000).
@@ -83,10 +84,17 @@ export interface RunResult { users: number; sent: number; failed: number; remove
 export async function runPushReminders(db: SupabaseClient, send: (sub: Sub, msg: PushMessage) => Promise<void>, now = new Date()): Promise<RunResult> {
   const { data, error } = await db.from('push_subscriptions').select('endpoint,user_id,p256dh,auth,class_minutes,tasks');
   if (error) throw new Error(error.message);
-  const subs = (data ?? []) as Sub[];
+  const stored = (data ?? []) as Sub[];
+  const subs = stored.filter((s) => isPushEndpoint(s.endpoint));
   const byUser = new Map<string, Sub[]>();
   for (const s of subs) byUser.set(s.user_id, [...(byUser.get(s.user_id) ?? []), s]);
   const result: RunResult = { users: byUser.size, sent: 0, failed: 0, removed: 0 };
+  // Never contact an address that is not a push provider, and do not keep it for the next run.
+  for (const s of stored) {
+    if (subs.includes(s)) continue;
+    await db.from('push_subscriptions').delete().eq('endpoint', s.endpoint);
+    result.removed += 1;
+  }
   const { date } = taipeiClock(now);
 
   for (const [userId, userSubs] of byUser) {

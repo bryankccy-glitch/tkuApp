@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
 import { z } from 'zod';
+import { isPushEndpoint } from './_pushHosts.js';
 
 /** Public key only; never expose private VAPID, cron, or Supabase credentials. */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
@@ -33,7 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   try {
     const { data: auth, error: authError } = await client.auth.getUser(token);
     if (authError || !auth.user) { res.status(401).json({ error: '請重新登入。' }); return; }
-    const body = z.object({ endpoint: z.string().url().max(4096).startsWith('https://') }).safeParse(req.body);
+    const body = z.object({ endpoint: z.string().url().max(4096).refine(isPushEndpoint) }).safeParse(req.body);
     if (!body.success) { res.status(400).json({ error: '推播訂閱格式不正確。' }); return; }
     // RLS and an explicit owner predicate: never accept push keys supplied by the request.
     const { data: sub, error } = await client.from('push_subscriptions').select('endpoint,p256dh,auth')

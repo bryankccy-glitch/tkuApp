@@ -31,7 +31,7 @@ describe('push reminder timing', () => {
 
 describe('runPushReminders', () => {
   it('releases an all-failed delivery for the next cron retry, but retains successful claims', async () => {
-    const sub: Sub = { endpoint: 'https://push/a', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: false };
+    const sub: Sub = { endpoint: 'https://fcm.googleapis.com/a', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: false };
     let claimed = false;
     const db = { from: (table: string) => {
       let remove = false;
@@ -58,8 +58,9 @@ describe('runPushReminders', () => {
   });
   it('sends each reminder once to every device and drops dead subscriptions', async () => {
     const subs: Sub[] = [
-      { endpoint: 'https://push/a', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: true },
-      { endpoint: 'https://push/gone', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: true },
+      { endpoint: 'https://fcm.googleapis.com/a', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: true },
+      { endpoint: 'https://fcm.googleapis.com/gone', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: true },
+      { endpoint: 'https://evil.example/x', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: true },
     ];
     const sentIds = new Set<string>();
     const deleted: string[] = [];
@@ -84,15 +85,16 @@ describe('runPushReminders', () => {
     const db = { from: q } as never;
     const delivered: string[] = [];
     const send = async (s: Sub, m: PushMessage) => {
+      expect(s.endpoint).not.toContain('evil.example');
       if (s.endpoint.endsWith('gone')) throw Object.assign(new Error('gone'), { statusCode: 410 });
       delivered.push(`${s.endpoint}|${m.id}`);
     };
     const first = await runPushReminders(db, send, at('08:00'));
-    expect(first).toMatchObject({ users: 1, sent: 1, removed: 1 });
-    expect(deleted).toEqual(['https://push/gone']);
+    expect(first).toMatchObject({ users: 1, sent: 1, removed: 2 });
+    expect(deleted).toEqual(['https://evil.example/x', 'https://fcm.googleapis.com/gone']);
     const again = await runPushReminders(db, send, at('08:01'));
     expect(again.sent).toBe(0); // already sent
-    expect(delivered).toEqual(['https://push/a|class:2026-10-19:08:10:統計學']);
+    expect(delivered).toEqual(['https://fcm.googleapis.com/a|class:2026-10-19:08:10:統計學']);
   });
 });
 

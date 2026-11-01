@@ -4,7 +4,7 @@ const m = vi.hoisted(() => ({ getUser: vi.fn(), maybeSingle: vi.fn(), insert: vi
 vi.mock('@supabase/supabase-js', () => ({ createClient: () => ({ auth: { getUser: m.getUser }, from: () => ({ select: () => ({ eq: m.eq }), insert: m.insert }) }) }));
 vi.mock('web-push', () => ({ default: { setVapidDetails: vi.fn(), sendNotification: m.send } }));
 import handler from '../push';
-async function request(method = 'POST', token = 'Bearer jwt', body: unknown = { endpoint: 'https://push.example/owned' }) {
+async function request(method = 'POST', token = 'Bearer jwt', body: unknown = { endpoint: 'https://fcm.googleapis.com/owned' }) {
   const res = { setHeader: vi.fn(), status: vi.fn(), json: vi.fn() };
   res.status.mockReturnValue(res);
   await handler({ method, headers: { authorization: token }, body } as VercelRequest, res as unknown as VercelResponse);
@@ -15,7 +15,7 @@ describe('push config and owned-device test', () => {
     for (const key of ['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY', 'CRON_SECRET']) vi.stubEnv(key, key);
     m.getUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
     m.eq.mockReturnValue({ eq: m.eq, maybeSingle: m.maybeSingle });
-    m.maybeSingle.mockResolvedValue({ data: { endpoint: 'https://push.example/owned', p256dh: 'p', auth: 'a' }, error: null });
+    m.maybeSingle.mockResolvedValue({ data: { endpoint: 'https://fcm.googleapis.com/owned', p256dh: 'p', auth: 'a' }, error: null });
     m.insert.mockResolvedValue({ error: null });
     m.send.mockResolvedValue({});
   });
@@ -31,6 +31,11 @@ describe('push config and owned-device test', () => {
     expect((await request('GET')).json).toHaveBeenCalledWith({ configured: false, publicKey: null });
     expect((await request()).status).toHaveBeenCalledWith(503);
   });
+  it('refuses an endpoint that is not a push provider before touching the database', async () => {
+    expect((await request('POST', 'Bearer jwt', { endpoint: 'https://169.254.169.254/x' })).status).toHaveBeenCalledWith(400);
+    expect(m.maybeSingle).not.toHaveBeenCalled();
+    expect(m.send).not.toHaveBeenCalled();
+  });
   it('rejects missing/invalid JWT and another owner’s endpoint', async () => {
     expect((await request('POST', '')).status).toHaveBeenCalledWith(401);
     m.getUser.mockResolvedValueOnce({ data: { user: null }, error: null });
@@ -43,7 +48,7 @@ describe('push config and owned-device test', () => {
     expect((await request('POST', 'Bearer jwt', { endpoint: 'http://bad' })).status).toHaveBeenCalledWith(400);
     expect((await request()).status).toHaveBeenCalledWith(200);
     expect(m.eq).toHaveBeenCalledWith('user_id', 'u1');
-    expect(m.send).toHaveBeenCalledWith({ endpoint: 'https://push.example/owned', keys: { p256dh: 'p', auth: 'a' } }, expect.any(String), expect.any(Object));
+    expect(m.send).toHaveBeenCalledWith({ endpoint: 'https://fcm.googleapis.com/owned', keys: { p256dh: 'p', auth: 'a' } }, expect.any(String), expect.any(Object));
     m.insert.mockResolvedValueOnce({ error: { code: '23505' } });
     expect((await request()).status).toHaveBeenCalledWith(429);
   });
