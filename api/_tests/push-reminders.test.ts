@@ -9,14 +9,19 @@ const at = (hhmm: string) => new Date(`2026-10-19T${hhmm}:00+08:00`);
 describe('push reminder timing', () => {
   const rows = [e(1, '08:10', '09:00', '統計學'), e(1, '09:10', '10:00', '統計學'), e(1, '13:10', '14:00', '英文', 'FL105'), e(2, '08:10', '09:00', '會計')];
 
+  it('names the room in the title and keeps the plain title when there is none', () => {
+    expect(dueClassReminders([e(1, '08:10', '09:00', '統計學', 'B217')], 10, at('08:00'))[0]?.title).toBe('10 分鐘後在 B217 上課：統計學');
+    expect(dueClassReminders([e(1, '08:10', '09:00', '統計學', '')], 10, at('08:00'))[0]?.title).toBe('10 分鐘後上課：統計學');
+  });
+
   it('fires a class reminder at start − minutes, once per back-to-back block', () => {
     expect(dueClassReminders(rows, 10, at('07:59'))).toEqual([]);
     const due = dueClassReminders(rows, 10, at('08:00'));
     expect(due).toHaveLength(1);
-    expect(due[0]).toMatchObject({ id: 'class:2026-10-19:08:10:統計學', title: '10 分鐘後上課：統計學' });
-    expect(due[0]!.body).toContain('B217（商管大樓）');
+    expect(due[0]).toMatchObject({ id: 'class:2026-10-19:08:10:統計學', title: '10 分鐘後在 B217 上課：統計學' });
+    expect(due[0]!.body).toBe('商管大樓　08:10–09:00');
     expect(dueClassReminders(rows, 10, at('09:00'))).toEqual([]); // continuation of 統計學
-    expect(dueClassReminders(rows, 10, at('13:02'))[0]?.title).toBe('10 分鐘後上課：英文'); // 2 min late still ok
+    expect(dueClassReminders(rows, 10, at('13:02'))[0]?.title).toBe('10 分鐘後在 FL105 上課：英文'); // 2 min late still ok
     expect(dueClassReminders(rows, 10, at('13:06'))).toEqual([]); // too late
     expect(dueClassReminders(rows, 0, at('08:00'))).toEqual([]);
   });
@@ -57,12 +62,12 @@ describe('runPushReminders', () => {
     const send = async (sub: Sub, msg: PushMessage) => { delivered.push(`${sub.endpoint.split('/').pop()}|${msg.title}`); };
     expect((await runPushReminders(db, send, at('08:00'))).sent).toBe(5);
     expect(delivered).toEqual([
-      'ten|10 分鐘後上課：統計學', 'five|待辦即將截止：Task',
+      'ten|10 分鐘後在 B217 上課：統計學', 'five|待辦即將截止：Task',
       'off|新的好友邀請', 'ten|新的好友邀請', 'five|新的好友邀請',
     ]);
     expect((await runPushReminders(db, send, at('08:01'))).sent).toBe(0);
     expect((await runPushReminders(db, send, at('08:05'))).sent).toBe(1);
-    expect(delivered[5]).toBe('five|5 分鐘後上課：統計學');
+    expect(delivered[5]).toBe('five|5 分鐘後在 B217 上課：統計學');
     expect((await runPushReminders(db, send, at('08:06'))).sent).toBe(0);
     expect(delivered).toHaveLength(6);
   });

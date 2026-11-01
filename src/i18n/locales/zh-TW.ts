@@ -295,6 +295,7 @@ const zh = {
     "end": "結束日期"
   },
   "reminder": {
+    "classRoomTitle": "{{minutes}} 分鐘後在 {{room}} 上課：{{course}}",
     "classTitle": "{{minutes}} 分鐘後上課：{{course}}",
     "taskTitle": "{{kind}}即將截止：{{title}}",
     "taskBody": "截止時間 {{time}}"

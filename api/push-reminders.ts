@@ -42,8 +42,8 @@ export function dueClassReminders(entries: EntryRow[], classMinutes: number, now
     const b = e.room ? buildingFromRoom(e.room) : undefined;
     out.push({
       id: `class:${date}:${hm(e.start_time)}:${e.name}`,
-      title: `${classMinutes} 分鐘後上課：${e.name}`,
-      body: [e.room && `${e.room}${b ? `（${b.name}）` : ''}`, `${hm(e.start_time)}–${hm(e.end_time)}`].filter(Boolean).join('　'),
+      title: e.room ? `${classMinutes} 分鐘後在 ${e.room} 上課：${e.name}` : `${classMinutes} 分鐘後上課：${e.name}`,
+      body: [b?.name, `${hm(e.start_time)}–${hm(e.end_time)}`].filter(Boolean).join('　'),
       url: '/schedule',
     });
   }

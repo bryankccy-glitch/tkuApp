@@ -295,6 +295,7 @@ const zhCN = {
     "end": "结束日期"
   },
   "reminder": {
+    "classRoomTitle": "{{minutes}} 分钟后在 {{room}} 上课：{{course}}",
     "classTitle": "{{minutes}} 分钟后上课：{{course}}",
     "taskTitle": "{{kind}}即将截止：{{title}}",
     "taskBody": "截止时间 {{time}}"

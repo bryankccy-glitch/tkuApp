@@ -295,6 +295,7 @@ const en = {
     "end": "End date"
   },
   "reminder": {
+    "classRoomTitle": "Class in {{room}} in {{minutes}} min: {{course}}",
     "classTitle": "Class in {{minutes}} min: {{course}}",
     "taskTitle": "{{kind}} due soon: {{title}}",
     "taskBody": "Due {{time}}"

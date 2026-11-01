@@ -64,8 +64,10 @@ export function remindersBetween(courses: Course[], tasks: Task[], prefs: Remind
           out.push({
             id: `class:${slot.id}:${start}`,
             at,
-            title: i18n.t('reminder.classTitle', { minutes: prefs.classMinutes, course: course.name }),
-            body: [slot.room && `${slot.room}${b ? `（${b.name}）` : ''}`, `${slot.startTime}–${slot.endTime}`, course.instructor].filter(Boolean).join('　'),
+            title: slot.room
+              ? i18n.t('reminder.classRoomTitle', { minutes: prefs.classMinutes, room: slot.room, course: course.name })
+              : i18n.t('reminder.classTitle', { minutes: prefs.classMinutes, course: course.name }),
+            body: [b?.name, `${slot.startTime}–${slot.endTime}`, course.instructor].filter(Boolean).join('　'),
             url: `/schedule/course/${course.id}`,
           });
         }

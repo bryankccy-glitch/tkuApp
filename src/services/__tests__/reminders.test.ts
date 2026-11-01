@@ -20,8 +20,8 @@ describe('remindersBetween', () => {
     const [a, b] = window(0, 10);
     const r = remindersBetween([course], [], on, a, b);
     expect(r).toHaveLength(1);
-    expect(r[0]!.title).toBe('10 分鐘後上課：資料結構');
-    expect(r[0]!.body).toContain('E304（工學大樓）');
+    expect(r[0]!.title).toBe('10 分鐘後在 E304 上課：資料結構');
+    expect(r[0]!.body).toContain('工學大樓');
     expect(new Date(r[0]!.at).getHours() * 60 + new Date(r[0]!.at).getMinutes()).toBe(10 * 60);
   });
 
