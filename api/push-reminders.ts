@@ -8,7 +8,7 @@ import { isPushEndpoint } from './_pushHosts.js';
 /**
  * GET /api/push-reminders — called every minute by Supabase pg_cron (migration 20261020120000).
  * Sends Web Push notifications for class starts and task deadlines to every stored subscription,
- * so reminders arrive even when the app is closed. Each reminder is recorded in push_sent once.
+ * so reminders arrive even when the app is closed. Each reminder is claimed per endpoint in push_sent.
  * Auth: "Authorization: Bearer $CRON_SECRET". Needs VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY.
  */
 
@@ -98,16 +98,23 @@ export async function runPushReminders(db: SupabaseClient, send: (sub: Sub, msg:
   const { date } = taipeiClock(now);
 
   for (const [userId, userSubs] of byUser) {
-    const classMinutes = Math.max(...userSubs.map((s) => s.class_minutes));
+    const classMinutes = [...new Set(userSubs.map((s) => s.class_minutes).filter((minutes) => minutes > 0))];
     const wantTasks = userSubs.some((s) => s.tasks);
-    const msgs: PushMessage[] = [];
-    if (classMinutes > 0) msgs.push(...dueClassReminders(await loadEntries(db, userId, date, true), classMinutes, now));
+    const deliveries: { msg: PushMessage; recipients: Sub[] }[] = [];
+    if (classMinutes.length) {
+      const entries = await loadEntries(db, userId, date, true);
+      for (const minutes of classMinutes) {
+        const recipients = userSubs.filter((s) => s.class_minutes === minutes);
+        deliveries.push(...dueClassReminders(entries, minutes, now).map((msg) => ({ msg, recipients })));
+      }
+    }
     if (wantTasks) {
       const { data: tasks, error: tErr } = await db.from('tasks').select('id,title,kind,due_at,remind_minutes_before')
         .eq('user_id', userId).eq('completed', false).not('remind_minutes_before', 'is', null)
         .gte('due_at', now.toISOString()).lte('due_at', new Date(now.getTime() + 15 * 86_400_000).toISOString());
       if (tErr) throw new Error(tErr.message);
-      msgs.push(...dueTaskReminders((tasks ?? []) as TaskRow[], now));
+      const recipients = userSubs.filter((s) => s.tasks);
+      deliveries.push(...dueTaskReminders((tasks ?? []) as TaskRow[], now).map((msg) => ({ msg, recipients })));
     }
     {
       const since = new Date(now.getTime() - 10 * 60_000).toISOString();
@@ -119,16 +126,17 @@ export async function runPushReminders(db: SupabaseClient, send: (sub: Sub, msg:
         const others = [...new Set(rows.map((r) => (r.requester === userId ? r.addressee : r.requester)))];
         const { data: profs } = await db.from('profiles').select('id,display_name').in('id', others);
         const names = new Map(((profs ?? []) as { id: string; display_name: string }[]).map((p) => [p.id, p.display_name]));
-        msgs.push(...dueFriendNotices(rows, names, userId, now));
+        deliveries.push(...dueFriendNotices(rows, names, userId, now).map((msg) => ({ msg, recipients: userSubs })));
       }
     }
-    for (const msg of msgs) {
-      // Claim first: a concurrent or repeated run can't send the same reminder twice.
-      const { error: claimErr } = await db.from('push_sent').insert({ user_id: userId, reminder_id: msg.id });
-      if (claimErr?.code === '23505') continue; // another run already claimed it
-      if (claimErr) throw new Error('Unable to claim reminder');
-      let delivered = false;
-      for (const sub of userSubs) {
+    for (const { msg, recipients } of deliveries) {
+      for (const sub of recipients) {
+        // Encode the reminder and endpoint unambiguously in the existing claim column.
+        const reminderId = JSON.stringify([msg.id, sub.endpoint]);
+        const { error: claimErr } = await db.from('push_sent').insert({ user_id: userId, reminder_id: reminderId });
+        if (claimErr?.code === '23505') continue;
+        if (claimErr) throw new Error('Unable to claim reminder');
+        let delivered = false;
         try {
           await send(sub, msg);
           result.sent += 1;
@@ -142,12 +150,11 @@ export async function runPushReminders(db: SupabaseClient, send: (sub: Sub, msg:
             result.failed += 1;
           }
         }
-      }
-      // A transient provider/network failure is not a delivery. Allow the next minute's cron
-      // to retry within GRACE_MS; retain the claim if any device succeeded to avoid duplicates.
-      if (!delivered) {
-        const { error: releaseError } = await db.from('push_sent').delete().eq('user_id', userId).eq('reminder_id', msg.id);
-        if (releaseError) throw new Error('Unable to release failed reminder');
+        // Retry only the failed device; successful devices retain their claims.
+        if (!delivered) {
+          const { error: releaseError } = await db.from('push_sent').delete().eq('user_id', userId).eq('reminder_id', reminderId);
+          if (releaseError) throw new Error('Unable to release failed reminder');
+        }
       }
     }
   }

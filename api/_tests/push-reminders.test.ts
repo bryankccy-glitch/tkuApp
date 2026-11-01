@@ -30,6 +30,42 @@ describe('push reminder timing', () => {
 });
 
 describe('runPushReminders', () => {
+  it('honors each device’s class lead time and task setting without repeat deliveries', async () => {
+    const subs: Sub[] = [
+      { endpoint: 'https://fcm.googleapis.com/off', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 0, tasks: false },
+      { endpoint: 'https://fcm.googleapis.com/ten', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: false },
+      { endpoint: 'https://fcm.googleapis.com/five', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 5, tasks: true },
+    ];
+    const claims = new Set<string>();
+    const db = { from: (table: string) => {
+      const q: Record<string, unknown> = {};
+      for (const method of ['select', 'eq', 'in', 'or', 'gte', 'lte', 'not']) q[method] = () => q;
+      q.insert = async (row: { reminder_id: string }) => {
+        if (claims.has(row.reminder_id)) return { error: { code: '23505' } };
+        claims.add(row.reminder_id);
+        return { error: null };
+      };
+      q.then = (resolve: (value: unknown) => void) => resolve({ error: null, data:
+        table === 'push_subscriptions' ? subs :
+        table === 'schedule_entries' ? [{ weekday: 1, start_time: '08:10:00', end_time: '09:00:00', room: 'B217', user_courses: { name: '統計學', semester_id: 's1' } }] :
+        table === 'semesters' ? [{ id: 's1', start_date: '2026-09-01', end_date: '2027-01-31' }] :
+        table === 'tasks' ? [{ id: 't1', title: 'Task', kind: 'personal', due_at: '2026-10-19T08:10:00+08:00', remind_minutes_before: 10 }] :
+        table === 'friendships' ? [{ id: 'f1', requester: 'u2', addressee: 'u1', status: 'pending', created_at: at('08:00').toISOString(), updated_at: at('08:00').toISOString() }] : [] });
+      return q;
+    } } as never;
+    const delivered: string[] = [];
+    const send = async (sub: Sub, msg: PushMessage) => { delivered.push(`${sub.endpoint.split('/').pop()}|${msg.title}`); };
+    expect((await runPushReminders(db, send, at('08:00'))).sent).toBe(5);
+    expect(delivered).toEqual([
+      'ten|10 分鐘後上課：統計學', 'five|待辦即將截止：Task',
+      'off|新的好友邀請', 'ten|新的好友邀請', 'five|新的好友邀請',
+    ]);
+    expect((await runPushReminders(db, send, at('08:01'))).sent).toBe(0);
+    expect((await runPushReminders(db, send, at('08:05'))).sent).toBe(1);
+    expect(delivered[5]).toBe('five|5 分鐘後上課：統計學');
+    expect((await runPushReminders(db, send, at('08:06'))).sent).toBe(0);
+    expect(delivered).toHaveLength(6);
+  });
   it('releases an all-failed delivery for the next cron retry, but retains successful claims', async () => {
     const sub: Sub = { endpoint: 'https://fcm.googleapis.com/a', user_id: 'u1', p256dh: 'k', auth: 'a', class_minutes: 10, tasks: false };
     let claimed = false;
@@ -79,7 +115,21 @@ describe('runPushReminders', () => {
         sentIds.add(row.reminder_id);
         return { error: null };
       };
-      chain.delete = () => ({ eq: async (_c: string, v: string) => { deleted.push(v); return { error: null }; } });
+      chain.delete = () => {
+        const removal = {
+          eq: (column: string, value: string) => {
+            if (table === 'push_subscriptions' && column === 'endpoint') {
+              deleted.push(value);
+              const index = subs.findIndex((sub) => sub.endpoint === value);
+              if (index >= 0) subs.splice(index, 1);
+            }
+            if (table === 'push_sent' && column === 'reminder_id') sentIds.delete(value);
+            return removal;
+          },
+          then: (resolve: (value: unknown) => void) => resolve({ error: null }),
+        };
+        return removal;
+      };
       return chain;
     };
     const db = { from: q } as never;
