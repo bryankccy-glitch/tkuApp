@@ -116,14 +116,19 @@ export class SupabaseRepository implements DataRepository {
         .upsert({ id: c.id, user_id: this.userId, semester_id: c.semesterId, name: c.name, code: c.code ?? null, instructor: c.instructor ?? null, color: c.color, notes: c.notes ?? null })
         .select('id').single(),
     );
-    // Replace slots: simplest correct approach for small per-course lists.
-    ok(await this.db.from('schedule_entries').delete().eq('user_course_id', row.id));
+    // Insert the new slots before removing the old ones: if this fails, the timetable stays intact.
+    const existing = check(
+      await this.db.from('schedule_entries').select('id').eq('user_course_id', row.id),
+    ) as unknown as { id: string }[];
     if (c.slots.length) {
       ok(
         await this.db.from('schedule_entries').insert(
           c.slots.map((s) => ({ user_id: this.userId, user_course_id: row.id, weekday: s.weekday, start_time: s.startTime, end_time: s.endTime, room: s.room })),
         ),
       );
+    }
+    if (existing.length) {
+      ok(await this.db.from('schedule_entries').delete().in('id', existing.map((e) => e.id)));
     }
     const full = check(
       await this.db.from('user_courses')

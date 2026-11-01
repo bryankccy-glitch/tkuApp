@@ -121,15 +121,19 @@ export async function loadEntries(db: SupabaseClient, userId: string, today: str
 async function loadTask(db: SupabaseClient, userId: string, now: Date): Promise<WidgetPayload['task']> {
   const { data, error } = await db
     .from('tasks')
-    .select('title,kind,due_at,user_courses(name)')
+    .select('title,kind,due_at,user_courses(name,user_id)')
     .eq('user_id', userId)
     .eq('completed', false)
     .gte('due_at', now.toISOString())
     .order('due_at')
     .limit(1);
   if (error) throw new Error(error.message);
-  const t = (data ?? [])[0] as { title: string; kind: string; due_at: string; user_courses: { name: string } | { name: string }[] | null } | undefined;
-  return t ? { title: t.title, kind: t.kind, course: rel(t.user_courses)?.name ?? null, dueAt: t.due_at } : null;
+  type Course = { name: string; user_id: string };
+  const t = (data ?? [])[0] as { title: string; kind: string; due_at: string; user_courses: Course | Course[] | null } | undefined;
+  if (!t) return null;
+  // This client bypasses RLS, so a task pointing at someone else's course must not reveal its name.
+  const course = rel(t.user_courses);
+  return { title: t.title, kind: t.kind, course: course?.user_id === userId ? course.name : null, dueAt: t.due_at };
 }
 
 function bearer(header: string | string[] | undefined): string | null {
