@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 import { COURSE_COLORS } from '@/lib/types';
 import { toMinutes } from '@/lib/time';
 import i18n from '@/i18n';
@@ -28,3 +28,4 @@ export const courseSchema = z.object({
 });
 
 export type CourseFormValues = z.infer<typeof courseSchema>;
+export type CourseFormInput = z.input<typeof courseSchema>;

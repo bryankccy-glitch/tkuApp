@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import { Button } from '@/components/ui/Button';
-import { courseSchema, type CourseFormValues } from './courseSchema';
+import { courseSchema, type CourseFormInput, CourseFormValues } from './courseSchema';
 import { COURSE_COLORS, type Course, type Weekday } from '@/lib/types';
 import { COURSE_COLOR_STYLES, WEEKDAY_LABELS } from '@/lib/labels';
 import { TKU_PERIODS, periodRangeToTimes } from '@/lib/periods';
@@ -24,7 +24,7 @@ export function CourseForm({
   onSubmit: (v: CourseFormValues) => void;
   saving?: boolean;
 }) {
-  const form = useForm<CourseFormValues>({
+  const form = useForm<CourseFormInput, unknown, CourseFormValues>({
     resolver: zodResolver(courseSchema),
     defaultValues: { name: '', code: '', instructor: '', color: 'navy', notes: '', slots: [blankSlot] },
   });

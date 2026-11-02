@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 import { Eye, EyeOff } from 'lucide-react';
 import { LogoMark } from '@/components/brand/Logo';
 import { PixelCampusScene } from '@/components/campus-scene/PixelCampusScene';

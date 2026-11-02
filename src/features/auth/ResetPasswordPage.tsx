@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 import { Wordmark } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/app/AuthProvider';

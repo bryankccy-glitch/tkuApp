@@ -57,6 +57,7 @@ export default defineConfig({
           react: ['react', 'react-dom', 'react-router-dom'],
           supabase: ['@supabase/supabase-js'],
           vendor: ['@tanstack/react-query', 'i18next', 'react-i18next', 'tailwind-merge'],
+          forms: ['zod', 'react-hook-form', '@hookform/resolvers'], // only pages with a form load these
         },
       },
     },
