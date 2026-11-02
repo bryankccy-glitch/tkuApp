@@ -6,6 +6,8 @@ import { useCampusEvents } from '@/lib/events';
 import { uid } from '@/lib/id';
 import { answerLocally } from './localEngine';
 import { t } from '@/i18n/t';
+import i18n, { prepareLanguage, withLanguage } from '@/i18n';
+import { detectLanguage, toEngineQuestion } from './questionLanguage';
 import type { ChatMessage } from './types';
 
 const LEGACY_KEY = 'tku.chat.v1';
@@ -65,7 +67,11 @@ export function useChat() {
       setMessages((ms) => [...ms.filter((m) => !m.error), user, reply]);
       setBusy(true);
       try {
-        const ans = answerLocally({ question: asked ?? question, courses, tasks, events, now: new Date(), semester });
+        // Answer in the language of the question as written, not the language of the interface.
+        const asks = detectLanguage(question, i18n.language, courses);
+        const language = await prepareLanguage(asks).then(() => asks, () => i18n.language);
+        const engineQuestion = asked ?? toEngineQuestion(question, language);
+        const ans = withLanguage(language, () => answerLocally({ question: engineQuestion, courses, tasks, events, now: new Date(), semester }));
         // Reveal progressively so the answer reads like it is being typed.
         const chars = [...ans.content];
         for (let i = 0; i < chars.length && !stopped.current; i += 6) {

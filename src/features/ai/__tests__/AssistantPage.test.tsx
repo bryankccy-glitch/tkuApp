@@ -19,6 +19,14 @@ describe('AssistantPage', () => {
     expect(screen.getByRole('button', { name: '複製回答' })).toBeInTheDocument();
   });
 
+  it('answers in the language of the question, not of the interface', async () => {
+    const user = userEvent.setup();
+    renderApp(routes, '/assistant');
+    await user.type(await screen.findByRole('textbox'), 'Who are you and what can you do?{Enter}');
+    expect(await screen.findByText(/I’m the campus assistant/, undefined, { timeout: 4000 })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '清除對話' })).toBeInTheDocument();
+  });
+
   it('in another language, quick questions show translated but ask the engine in English', async () => {
     const { setLanguage, default: i18n } = await import('@/i18n');
     await setLanguage('ja');

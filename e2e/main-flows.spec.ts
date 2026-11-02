@@ -64,7 +64,7 @@ test('campus explorer finds the building for a room code', async ({ page }) => {
   await expect(page.getByRole('link', { name: '在 Google 地圖導航' })).toHaveAttribute('href', /google\.com\/maps/);
 });
 
-test('AI assistant cites an official document', async ({ page }) => {
+test('campus assistant cites an official document', async ({ page }) => {
   await page.goto('/assistant');
   await page.getByRole('button', { name: '淡江病假怎麼請？' }).click();
   await expect(page.getByRole('link', { name: /淡江大學學生請假規則/ })).toBeVisible();
@@ -76,4 +76,18 @@ test('dark mode toggle persists across reloads', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+});
+
+test('campus assistant answers in the language of the question', async ({ page }) => {
+  await page.goto('/assistant');
+  await expect(page.getByRole('heading', { name: '校園助理' }).first()).toBeVisible();
+  const box = page.getByRole('textbox').first();
+  await box.fill('What can you do?');
+  await box.press('Enter');
+  await expect(page.getByText(/I’m the campus assistant/)).toBeVisible({ timeout: 8000 });
+  await expect(page.getByRole('button', { name: '複製回答' })).toBeVisible({ timeout: 8000 }); // answer finished
+  await box.fill('こんにちは');
+  await box.press('Enter');
+  await expect(page.getByText(/キャンパスアシスタントです/)).toBeVisible({ timeout: 8000 });
+  await expect(page.locator('html')).toHaveAttribute('lang', 'zh-Hant-TW');
 });

@@ -14,7 +14,7 @@ import type { SourceRef } from './types';
  * 本機校園助理（不需 API Key）：
  * 只根據使用者自己的課表/待辦、已查核的建築代碼與官方文件清單回答。
  * 不會生成校規內容；找不到可靠資料時明確說明。
- * Understands Chinese and English questions; answers in the current UI language.
+ * Reads Chinese and English questions; `withLanguage` picks the language of the answer.
  */
 export interface EngineInput {
   question: string;
@@ -35,6 +35,7 @@ const personalTasks = (): SourceRef => ({ title: t('ai.src.tasks'), kind: 'perso
 
 // Simplified → Traditional for the characters the patterns below look for, so 简体 questions work too.
 const S2T: Record<string, string> = Object.fromEntries([...'课节几点里这试业办报讲奖学赛实习楼馆么时间后结东门还没吗现开帮图书请规则选补证费厅样怎为个们说对边从网络经济资计设统数据题线总'].map((c, i) => [c, '課節幾點裡這試業辦報講獎學賽實習樓館麼時間後結東門還沒嗎現開幫圖書請規則選補證費廳樣怎為個們說對邊從網絡經濟資計設統數據題線總'[i]!]));
+export const SIMPLIFIED_CHARS = new Set(Object.keys(S2T));
 export function normalizeQuestion(q: string): string {
   return [...q.normalize('NFKC')].map((c) => S2T[c] ?? c).join('').replace(/周([一二三四五六日天])/g, '週$1').trim();
 }

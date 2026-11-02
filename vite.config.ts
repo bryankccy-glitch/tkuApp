@@ -22,7 +22,7 @@ export default defineConfig({
       manifest: {
         name: 'TKU Campus OS 淡江智慧校園',
         short_name: '淡江校園',
-        description: '淡江學生的課表、待辦、校園探索與 AI 校園助理。學生自主開發，非淡江大學官方 App。',
+        description: '淡江學生的課表、待辦、校園探索與校園助理。學生自主開發，非淡江大學官方 App。',
         lang: 'zh-Hant-TW',
         theme_color: '#B3262D',
         background_color: '#B3262D', // matches the boot splash, so the system launch screen doesn't flash off-white

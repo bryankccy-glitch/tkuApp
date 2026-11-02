@@ -88,6 +88,25 @@ i18n.on('languageChanged', (code) => {
   syncDocumentLang(code);
 });
 
+/** Loads a language without switching the interface to it. */
+export const prepareLanguage = loadLanguage;
+
+/**
+ * Runs `fn` with one language for text, dates and labels, leaving the interface as it is.
+ * `fn` must be synchronous and the language loaded. React does not render meanwhile.
+ */
+export function withLanguage<T>(code: string, fn: () => T): T {
+  const { language, t: translate } = i18n;
+  i18n.language = code;
+  i18n.t = ((key: string, options?: Record<string, unknown>) => translate(key, { lng: code, ...options })) as typeof i18n.t;
+  try {
+    return fn();
+  } finally {
+    i18n.language = language;
+    i18n.t = translate;
+  }
+}
+
 /** Switches language, loading its translation file first when needed (throws if it can't be loaded). */
 export async function setLanguage(code: string): Promise<void> {
   if (!isSupported(code)) throw new Error(`unsupported language ${code}`);
