@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import i18n from '@/i18n';
 import { useAuth } from '@/app/AuthProvider';
 import { SocialError } from './supabaseSocial';
-import type { MarketPostInput, MarketStatus, ReportReason, SocialApi } from './types';
+import { MARKET_RULES_VERSION, type MarketPostInput, type MarketStatus, type ReportReason, type ReportTarget, type SocialApi } from './types';
 
 /** The signed-in user's social API, or null in 本機/訪客模式. */
 export function useSocial(): SocialApi | null {
@@ -21,6 +21,8 @@ const k = {
   posts: (u: string) => [u, 'market', 'posts'] as const,
   post: (u: string, id: string) => [u, 'market', 'post', id] as const,
   comments: (u: string, id: string) => [u, 'market', 'comments', id] as const,
+  rules: (u: string) => [u, 'market', 'rules'] as const,
+  blocked: (u: string) => [u, 'social', 'blocked'] as const,
 };
 
 /** Friendly, translated message for any social/market error. */
@@ -30,6 +32,10 @@ export function socialErrorMessage(e: unknown): string {
     if (e.code === 'closed') return i18n.t('market.err.closed');
     if (e.code === 'duplicate') return i18n.t('market.err.alreadyReported');
     if (e.code === 'not_found') return i18n.t('social.err.notFound');
+    if (e.code === 'rules_required') return i18n.t('safety.err.rules');
+    if (e.code === 'blocked_term') return i18n.t('safety.err.term');
+    if (e.code === 'suspended') return i18n.t('safety.err.suspended');
+    if (e.code === 'blocked') return i18n.t('safety.err.blocked');
   }
   return i18n.t('social.err.generic');
 }
@@ -100,6 +106,24 @@ export function useMarketMutations() {
     remove: useMutation({ mutationFn: (id: string) => need(s).deleteMarketPost(id), onSuccess: refresh }),
     comment: useMutation({ mutationFn: (v: { postId: string; body: string }) => need(s).addComment(v.postId, v.body), onSuccess: refresh }),
     removeComment: useMutation({ mutationFn: (id: string) => need(s).deleteComment(id), onSuccess: refresh }),
-    report: useMutation({ mutationFn: (v: { postId: string; reason: ReportReason; note?: string }) => need(s).reportPost(v.postId, v.reason, v.note) }),
+    report: useMutation({ mutationFn: (v: { target: ReportTarget; reason: ReportReason; note?: string }) => need(s).report(v.target, v.reason, v.note) }),
+    block: useMutation({ mutationFn: (userId: string) => need(s).blockUser(userId), onSuccess: () => qc.invalidateQueries({ queryKey: [u] }) }),
+    acceptRules: useMutation({ mutationFn: () => need(s).acceptRules(MARKET_RULES_VERSION), onSuccess: () => qc.setQueryData(k.rules(u), true) }),
   };
+}
+
+export function useRulesAccepted() {
+  const s = useSocial();
+  return useQuery({ queryKey: k.rules(s?.userId ?? ''), queryFn: () => need(s).hasAcceptedRules(MARKET_RULES_VERSION), enabled: Boolean(s), staleTime: Infinity });
+}
+
+export function useBlockedUsers() {
+  const s = useSocial();
+  return useQuery({ queryKey: k.blocked(s?.userId ?? ''), queryFn: () => need(s).listBlocked(), enabled: Boolean(s) });
+}
+
+export function useUnblock() {
+  const s = useSocial();
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: (userId: string) => need(s).unblockUser(userId), onSuccess: () => qc.invalidateQueries({ queryKey: [s?.userId ?? ''] }) });
 }

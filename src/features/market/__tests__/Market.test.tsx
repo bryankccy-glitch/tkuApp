@@ -45,8 +45,9 @@ describe('Market pages', () => {
   });
 
   it('requires agreeing to the trading tips, then publishes and opens the post', async () => {
-    localStorage.removeItem('tku.market.rulesAccepted');
-    const { repo, social } = repoWithSocial();
+    const social = new FakeSocial();
+    social.rulesAccepted = false;
+    const { repo } = repoWithSocial(social);
     const user = userEvent.setup();
     renderApp(routes, '/market', repo);
     await user.click((await screen.findAllByRole('button', { name: '發文' }))[0]!);
@@ -101,8 +102,9 @@ describe('Market pages', () => {
     const dialog = await screen.findByRole('dialog', { name: '檢舉貼文' });
     await user.click(within(dialog).getByLabelText('疑似詐騙'));
     await user.click(within(dialog).getByRole('button', { name: '送出檢舉' }));
-    expect(await screen.findByText('已收到檢舉，謝謝你')).toBeInTheDocument();
-    expect(social.reports).toEqual([{ postId: 'p1', reason: 'scam', note: '' }]);
+    expect(await screen.findByText(/已收到檢舉/)).toBeInTheDocument();
+    expect(social.reports[0]).toMatchObject({ postId: 'p1', type: 'post' });
+    expect(social.reports[0]).toMatchObject({ reason: 'scam' });
   });
 
   it('owner can mark a post reserved and closed; closed posts stop taking comments', async () => {
@@ -118,5 +120,35 @@ describe('Market pages', () => {
     expect(await screen.findByText('這篇貼文已完成，不再開放留言。')).toBeInTheDocument();
     expect(screen.queryByLabelText('留言內容')).toBeNull();
     expect(screen.queryByRole('button', { name: '檢舉這篇貼文' })).toBeNull();
+  });
+
+  it('blocks an author and leaves the post', async () => {
+    const social = new FakeSocial();
+    social.posts.push(post({}));
+    const { repo } = repoWithSocial(social);
+    const user = userEvent.setup();
+    renderApp(routes, '/market/p1', repo);
+    await screen.findByRole('heading', { name: '微積分課本' });
+    await user.click(screen.getByRole('button', { name: '封鎖' }));
+    const dialog = await screen.findByRole('dialog', { name: /封鎖 學長/ });
+    await user.click(within(dialog).getByRole('button', { name: '封鎖' }));
+    expect(await screen.findByRole('heading', { name: '二手市集' })).toBeInTheDocument();
+    expect(social.blocked).toEqual([{ userId: 'other', displayName: 'other' }]);
+  });
+
+  it('asks for the rules before the first comment', async () => {
+    const social = new FakeSocial();
+    social.rulesAccepted = false;
+    social.posts.push(post({}));
+    const { repo } = repoWithSocial(social);
+    const user = userEvent.setup();
+    renderApp(routes, '/market/p1', repo);
+    await screen.findByRole('heading', { name: '微積分課本' });
+    await user.type(screen.getByLabelText('留言內容'), '請問還在嗎');
+    await user.click(screen.getByRole('button', { name: '送出留言' }));
+    const dialog = await screen.findByRole('dialog', { name: '使用市集前請先同意規範' });
+    expect(social.comments).toHaveLength(0);
+    await user.click(within(dialog).getByRole('button', { name: '同意並繼續' }));
+    expect(social.rulesAccepted).toBe(true);
   });
 });

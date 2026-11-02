@@ -1,3 +1,4 @@
+import { removePushSubscription } from '@/services/pushSubscription';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
@@ -79,6 +80,8 @@ export function AuthProvider({ children, localRepository = localRepo }: { childr
       repo: session ? new SupabaseRepository(client, session.user.id) : null,
       continueAsGuest,
       signOut: async () => {
+        // Reminders must stop for this device while the session can still remove the subscription.
+        await removePushSubscription().catch(() => undefined);
         await client.auth.signOut();
       },
     };

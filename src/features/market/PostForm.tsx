@@ -1,20 +1,31 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { ImagePlus, ShieldCheck, X } from 'lucide-react';
-import { useSocial } from '@/lib/social/hooks';
+import { useRulesAccepted, useSocial } from '@/lib/social/hooks';
 import { downscaleToJpeg } from '@/lib/images';
 import { Sheet } from '@/components/ui/Sheet';
 import { Button } from '@/components/ui/Button';
 import { Segmented } from '@/components/ui/misc';
 import {
-  MARKET_CATEGORIES, MARKET_CONDITIONS, type MarketCategory, type MarketCondition, type MarketKind, type MarketPost, type MarketPostInput,
+  MARKET_CATEGORIES, MARKET_CONDITIONS, MARKET_RULES_VERSION, type MarketCategory, type MarketCondition, type MarketKind, type MarketPost, type MarketPostInput,
 } from '@/lib/social/types';
 import { t } from '@/i18n/t';
 
-const RULES_KEY = 'tku.market.rulesAccepted';
 const MAX_PHOTOS = 4;
 
-function rulesAccepted() {
-  try { return localStorage.getItem(RULES_KEY) === '1'; } catch { return false; }
+export function RulesList() {
+  return (
+    <>
+      <ul className="list-disc space-y-0.5 pl-5 text-label text-muted">
+        <li>{t('market.rules.noMoney')}</li>
+        <li>{t('market.rules.meetSafely')}</li>
+        <li>{t('market.rules.noPiracy')}</li>
+        <li>{t('market.rules.noProhibited')}</li>
+        <li>{t('market.rules.privacy')}</li>
+      </ul>
+      <Link to="/terms" className="mt-1.5 inline-block text-label font-semibold text-link hover:underline">{t('safety.rulesTerms')}</Link>
+    </>
+  );
 }
 
 /** Create / edit a 二手市集 post. Price is a reference only — the app never handles money. */
@@ -28,11 +39,16 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
   const [price, setPrice] = useState('');
   const [courseCode, setCourseCode] = useState('');
   const [condition, setCondition] = useState<MarketCondition | ''>('');
-  const [agree, setAgree] = useState(rulesAccepted);
+  const accepted = useRulesAccepted();
+  const [agree, setAgree] = useState(false);
+  const canAdd = agree || accepted.data === true;
   const [error, setError] = useState<string | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const social = useSocial();
+  // Files uploaded in this form and not yet saved, and saved files the user removed.
+  const fresh = useRef<string[]>([]);
+  const removed = useRef<string[]>([]);
 
   const addPhotos = async (files: FileList | null) => {
     if (!files?.length || !social) return;
@@ -43,6 +59,7 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
       const picked = [...files].filter((f) => f.type.startsWith('image/')).slice(0, room);
       const urls: string[] = [];
       for (const f of picked) urls.push(await social.uploadMarketPhoto(await downscaleToJpeg(f)));
+      fresh.current.push(...urls);
       setPhotos((p) => [...p, ...urls].slice(0, MAX_PHOTOS));
     } catch {
       setError(t('market.form.photoFailed'));
@@ -61,6 +78,8 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
     setCourseCode(initial?.courseCode ?? '');
     setCondition(initial?.condition ?? '');
     setPhotos(initial?.photos ?? []);
+    fresh.current = [];
+    removed.current = [];
     setError(null);
   }, [open, initial]);
 
@@ -76,24 +95,43 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
       if (!Number.isInteger(n) || n < 0 || n > 100000) return setError(t('market.form.priceInvalid'));
       p = n;
     }
-    if (!agree) return setError(t('market.form.mustAgree'));
-    try { localStorage.setItem(RULES_KEY, '1'); } catch { /* ignore */ }
+    if (!canAdd) return setError(t('market.form.mustAgree'));
+    if (accepted.data !== true) await social?.acceptRules(MARKET_RULES_VERSION).catch(() => undefined);
     await onSubmit({
       kind, category, title: tt, description: description.trim(), price: p,
       courseCode: courseCode.trim() || null, condition: kind === 'sell' && condition ? condition : null,
       photos,
     });
+    fresh.current = [];
+    const gone = removed.current;
+    removed.current = [];
+    if (gone.length) void social?.removeMarketPhotos(gone).catch(() => undefined);
+  };
+
+  const removePhoto = (url: string) => {
+    setPhotos((p) => p.filter((x) => x !== url));
+    if (fresh.current.includes(url)) {
+      fresh.current = fresh.current.filter((x) => x !== url);
+      void social?.removeMarketPhotos([url]).catch(() => undefined);
+    } else removed.current.push(url);
+  };
+
+  const cancel = () => {
+    if (fresh.current.length) void social?.removeMarketPhotos(fresh.current).catch(() => undefined);
+    fresh.current = [];
+    removed.current = [];
+    onClose();
   };
 
   return (
     <Sheet
       open={open}
-      onClose={onClose}
+      onClose={cancel}
       title={initial ? t('market.form.editTitle') : t('market.form.newTitle')}
       size="lg"
       footer={
         <>
-          <Button variant="secondary" className="flex-1" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button variant="secondary" className="flex-1" onClick={cancel}>{t('common.cancel')}</Button>
           <Button type="submit" form="market-form" className="flex-1" loading={saving} disabled={uploading}>{initial ? t('common.save') : t('market.form.publish')}</Button>
         </>
       }
@@ -150,7 +188,7 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
             {photos.map((url) => (
               <div key={url} className="relative aspect-square overflow-hidden rounded-sm border border-line bg-sunken">
                 <img src={url} alt="" className="h-full w-full object-cover" />
-                <button type="button" onClick={() => setPhotos((p) => p.filter((x) => x !== url))} aria-label={t('market.form.photoRemove')}
+                <button type="button" onClick={() => removePhoto(url)} aria-label={t('market.form.photoRemove')}
                   className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white"><X className="h-3.5 w-3.5" /></button>
               </div>
             ))}
@@ -158,7 +196,7 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
               <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-sm border border-dashed border-line text-label text-muted hover:bg-sunken">
                 <ImagePlus className="h-5 w-5" aria-hidden />
                 {uploading ? t('market.form.photoUploading') : t('market.form.photoAdd')}
-                <input type="file" accept="image/*" multiple className="sr-only" disabled={uploading} onChange={(e) => { void addPhotos(e.target.files); e.target.value = ''; }} />
+                <input type="file" accept="image/*" multiple className="sr-only" disabled={uploading || !canAdd} onChange={(e) => { void addPhotos(e.target.files); e.target.value = ''; }} />
               </label>
             )}
           </div>
@@ -166,19 +204,14 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
 
         <div className="rounded-sm border border-line bg-sunken p-3">
           <p className="flex items-center gap-1.5 text-caption font-semibold text-ink"><ShieldCheck className="h-4 w-4 text-primary" />{t('market.rules.title')}</p>
-          <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-label text-muted">
-            <li>{t('market.rules.noMoney')}</li>
-            <li>{t('market.rules.meetSafely')}</li>
-            <li>{t('market.rules.noPiracy')}</li>
-            <li>{t('market.rules.noProhibited')}</li>
-            <li>{t('market.rules.privacy')}</li>
-          </ul>
+          <div className="mt-1.5"><RulesList /></div>
           <label className="mt-2.5 flex items-center gap-2 text-caption font-semibold text-ink">
-            <input type="checkbox" className="h-4 w-4 accent-[rgb(var(--c-primary))]" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+            <input type="checkbox" className="h-4 w-4 accent-[rgb(var(--c-primary))]" checked={canAdd} disabled={accepted.data === true} onChange={(e) => setAgree(e.target.checked)} />
             {t('market.rules.agree')}
           </label>
         </div>
 
+        {!canAdd && <p className="text-label text-muted">{t('safety.rulesPhoto')}</p>}
         {error && <p role="alert" className="text-caption text-danger">{error}</p>}
       </form>
     </Sheet>

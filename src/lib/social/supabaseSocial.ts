@@ -2,12 +2,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Course, CourseColor, Weekday } from '../types';
 import type {
   FriendDirection, FriendEntry, FriendRequestResult, MarketCategory, MarketComment, MarketCondition, MarketKind,
-  MarketPost, MarketPostInput, MarketStatus, ReportReason, SocialApi,
+  BlockedUser, MarketPost, MarketPostInput, MarketStatus, ReportReason, ReportTarget, SocialApi,
 } from './types';
 
 /** Error with a stable `code` the UI can translate (see `socialErrorKey`). */
 export class SocialError extends Error {
-  constructor(public code: 'rate_limit' | 'closed' | 'duplicate' | 'not_found' | 'unknown', message: string) {
+  constructor(public code: 'rate_limit' | 'closed' | 'duplicate' | 'not_found' | 'rules_required' | 'blocked_term' | 'suspended' | 'blocked' | 'unknown', message: string) {
     super(message);
   }
 }
@@ -17,6 +17,10 @@ function fail(err: { message: string; code?: string } | null): void {
   const m = err.message;
   if (/rate limit|too many pending/i.test(m)) throw new SocialError('rate_limit', m);
   if (/post is closed/i.test(m)) throw new SocialError('closed', m);
+  if (/rules required/i.test(m)) throw new SocialError('rules_required', m);
+  if (/blocked term/i.test(m)) throw new SocialError('blocked_term', m);
+  if (/account suspended/i.test(m)) throw new SocialError('suspended', m);
+  if (/^blocked$/i.test(m)) throw new SocialError('blocked', m);
   if (err.code === '23505') throw new SocialError('duplicate', m);
   if (/not found/i.test(m)) throw new SocialError('not_found', m);
   throw new SocialError('unknown', m);
@@ -148,8 +152,28 @@ export class SupabaseSocial implements SocialApi {
     return this.db.storage.from('market-photos').getPublicUrl(path).data.publicUrl;
   }
 
+  /** Removes photos from this user's own folder; URLs of other users are ignored. */
+  async removeMarketPhotos(urls: string[]) {
+    const marker = `/market-photos/${this.userId}/`;
+    const paths = urls.filter((u) => u.includes(marker)).map((u) => `${this.userId}/${u.split(marker)[1]!.split('?')[0]}`);
+    if (paths.length) fail((await this.db.storage.from('market-photos').remove(paths)).error);
+  }
+
+  /** Removes every photo this user uploaded, including ones no post refers to any more. */
+  async removeAllMyPhotos() {
+    const bucket = this.db.storage.from('market-photos');
+    for (;;) {
+      const { data, error } = await bucket.list(this.userId, { limit: 100 });
+      fail(error);
+      if (!data?.length) return;
+      fail((await bucket.remove(data.map((f) => `${this.userId}/${f.name}`))).error);
+    }
+  }
+
   async deleteMarketPost(id: string) {
+    const post = await this.getMarketPost(id);
     fail((await this.db.from('market_posts').delete().eq('id', id)).error);
+    if (post?.photos.length) await this.removeMarketPhotos(post.photos);
   }
 
   async listComments(postId: string) {
@@ -168,7 +192,35 @@ export class SupabaseSocial implements SocialApi {
     fail((await this.db.from('market_comments').delete().eq('id', id)).error);
   }
 
-  async reportPost(postId: string, reason: ReportReason, note?: string) {
-    fail((await this.db.from('market_reports').insert({ post_id: postId, reason, note: note?.trim() || null })).error);
+  async report(target: ReportTarget, reason: ReportReason, note?: string) {
+    const clean = note?.trim() || null;
+    const { error } = target.type === 'post'
+      ? await this.db.from('market_reports').insert({ post_id: target.id, reason, note: clean })
+      : await this.db.from('content_reports').insert({ target_type: target.type, target_id: target.id, reason, note: clean });
+    fail(error);
+  }
+
+  async hasAcceptedRules(version: number) {
+    const { data, error } = await this.db.from('market_rule_acceptances').select('version').eq('user_id', this.userId).maybeSingle();
+    fail(error);
+    return Boolean(data && (data as { version: number }).version >= version);
+  }
+
+  async acceptRules(version: number) {
+    fail((await this.db.rpc('accept_market_rules', { rules_version: version })).error);
+  }
+
+  async blockUser(userId: string) {
+    fail((await this.db.rpc('block_user', { target: userId })).error);
+  }
+
+  async unblockUser(userId: string) {
+    fail((await this.db.from('user_blocks').delete().eq('blocker', this.userId).eq('blocked', userId)).error);
+  }
+
+  async listBlocked(): Promise<BlockedUser[]> {
+    const { data, error } = await this.db.from('user_blocks').select('blocked, blocked_name').eq('blocker', this.userId).order('created_at');
+    fail(error);
+    return ((data ?? []) as { blocked: string; blocked_name: string }[]).map((r) => ({ userId: r.blocked, displayName: r.blocked_name }));
   }
 }

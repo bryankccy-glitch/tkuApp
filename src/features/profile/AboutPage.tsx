@@ -1,4 +1,5 @@
 import { ExternalLink } from 'lucide-react';
+import { LegalLinks } from '@/features/legal/LegalLinks';
 import { Page } from '@/components/layout/AppShell';
 import { PageHeader } from '@/components/ui/misc';
 import { Wordmark } from '@/components/brand/Logo';
@@ -50,7 +51,8 @@ export default function AboutPage() {
           ))}
         </ul>
       </section>
-      <p className="mt-8 pb-2 text-center text-[11px] text-muted">TKU Campus OS · {__BUILD__}</p>
+      <LegalLinks className="mt-8" />
+      <p className="mt-3 pb-2 text-center text-[11px] text-muted">TKU Campus OS · {__BUILD__}</p>
     </Page>
   );
 }

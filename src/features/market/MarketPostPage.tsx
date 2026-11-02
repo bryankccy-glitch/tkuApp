@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Flag, Pencil, Send, ShieldCheck, Trash2 } from 'lucide-react';
+import { ArrowLeft, Ban, Flag, Pencil, Send, ShieldCheck, Trash2 } from 'lucide-react';
 import { Page } from '@/components/layout/AppShell';
 import { EmptyState, ErrorNotice, Segmented } from '@/components/ui/misc';
 import { Button } from '@/components/ui/Button';
@@ -8,10 +8,11 @@ import { ConfirmSheet, Sheet } from '@/components/ui/Sheet';
 import { SignInRequired } from '@/components/ui/SignInRequired';
 import { useToast } from '@/components/ui/Toast';
 import { LoadingMark } from '@/components/brand/Logo';
-import { socialErrorMessage, useComments, useMarketMutations, useMarketPost, useSocial } from '@/lib/social/hooks';
-import { REPORT_REASONS, type MarketPost, type MarketStatus, type ReportReason } from '@/lib/social/types';
+import { socialErrorMessage, useComments, useMarketMutations, useMarketPost, useRulesAccepted, useSocial } from '@/lib/social/hooks';
+import type { MarketStatus, ReportTarget } from '@/lib/social/types';
 import { KindBadge, StatusBadge, priceText, timeAgo } from './marketUi';
-import { PostForm } from './PostForm';
+import { PostForm, RulesList } from './PostForm';
+import { ReportSheet } from './ReportSheet';
 import { t } from '@/i18n/t';
 
 export default function MarketPostPage() {
@@ -36,7 +37,10 @@ function PostDetail({ userId }: { userId: string }) {
   const [body, setBody] = useState('');
   const [editOpen, setEditOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [reportOpen, setReportOpen] = useState(false);
+  const [reporting, setReporting] = useState<{ target: ReportTarget; subject: string } | null>(null);
+  const [blocking, setBlocking] = useState<{ userId: string; name: string } | null>(null);
+  const [rulesOpen, setRulesOpen] = useState(false);
+  const rules = useRulesAccepted();
 
   if (post.isLoading) return <LoadingMark />;
   if (post.error) return <ErrorNotice error={post.error} onRetry={() => post.refetch()} />;
@@ -52,6 +56,7 @@ function PostDetail({ userId }: { userId: string }) {
     e.preventDefault();
     const text = body.trim();
     if (!text) return;
+    if (rules.data === false) return setRulesOpen(true);
     if (await run(() => m.comment.mutateAsync({ postId: p.id, body: text }))) setBody('');
   };
 
@@ -123,6 +128,12 @@ function PostDetail({ userId }: { userId: string }) {
                       {t('market.deleteComment')}
                     </button>
                   )}
+                  {c.userId !== userId && (
+                    <div className="mt-1 flex gap-3 text-label font-semibold text-muted">
+                      <button type="button" className="hover:text-danger" onClick={() => setReporting({ target: { type: 'comment', id: c.id }, subject: c.body.slice(0, 60) })}>{t('safety.reportComment')}</button>
+                      <button type="button" className="hover:text-danger" onClick={() => setBlocking({ userId: c.userId, name: c.authorName })}>{t('safety.block')}</button>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
@@ -141,9 +152,17 @@ function PostDetail({ userId }: { userId: string }) {
       </section>
 
       {!mine && (
-        <button type="button" onClick={() => setReportOpen(true)} className="mx-auto mt-8 flex items-center gap-1.5 text-label font-semibold text-muted hover:text-danger">
-          <Flag className="h-3.5 w-3.5" />{t('market.report')}
-        </button>
+        <div className="mt-8 flex justify-center gap-5 text-label font-semibold text-muted">
+          <button type="button" onClick={() => setReporting({ target: { type: 'post', id: p.id }, subject: p.title })} className="flex items-center gap-1.5 hover:text-danger">
+            <Flag className="h-3.5 w-3.5" />{t('market.report')}
+          </button>
+          <button type="button" onClick={() => setReporting({ target: { type: 'user', id: p.userId }, subject: p.authorName })} className="flex items-center gap-1.5 hover:text-danger">
+            <Flag className="h-3.5 w-3.5" />{t('safety.reportUser')}
+          </button>
+          <button type="button" onClick={() => setBlocking({ userId: p.userId, name: p.authorName })} className="flex items-center gap-1.5 hover:text-danger">
+            <Ban className="h-3.5 w-3.5" />{t('safety.block')}
+          </button>
+        </div>
       )}
 
       <PostForm
@@ -162,8 +181,25 @@ function PostDetail({ userId }: { userId: string }) {
         loading={m.remove.isPending}
         onConfirm={async () => { if (await run(() => m.remove.mutateAsync(p.id), t('market.deleted'))) navigate('/market', { replace: true }); }}
       />
-      <ReportSheet open={reportOpen} onClose={() => setReportOpen(false)} post={p}
-        onSubmit={async (reason, note) => { if (await run(() => m.report.mutateAsync({ postId: p.id, reason, note }), t('market.reported'))) setReportOpen(false); }} />
+      <ReportSheet open={reporting !== null} onClose={() => setReporting(null)} subject={reporting?.subject ?? ''}
+        onSubmit={async (reason, note) => { if (reporting && await run(() => m.report.mutateAsync({ target: reporting.target, reason, note }), t('safety.reported'))) setReporting(null); }} />
+      <ConfirmSheet
+        open={blocking !== null}
+        onClose={() => setBlocking(null)}
+        title={t('safety.blockTitle', { name: blocking?.name ?? '' })}
+        message={t('safety.blockBody')}
+        confirmLabel={t('safety.block')}
+        loading={m.block.isPending}
+        onConfirm={async () => {
+          if (!blocking) return;
+          const leaving = blocking.userId === p.userId;
+          if (await run(() => m.block.mutateAsync(blocking.userId), t('safety.blocked'))) { setBlocking(null); if (leaving) navigate('/market', { replace: true }); }
+        }}
+      />
+      <Sheet open={rulesOpen} onClose={() => setRulesOpen(false)} title={t('safety.rulesTitle')} size="sm"
+        footer={<Button className="flex-1" loading={m.acceptRules.isPending} onClick={async () => { if (await run(() => m.acceptRules.mutateAsync())) setRulesOpen(false); }}>{t('safety.rulesAccept')}</Button>}>
+        <RulesList />
+      </Sheet>
     </article>
   );
 }
@@ -174,39 +210,5 @@ function Info({ label, value }: { label: string; value: string }) {
       <dt className="text-label text-muted">{label}</dt>
       <dd className="truncate font-semibold text-ink">{value}</dd>
     </div>
-  );
-}
-
-function ReportSheet({ open, onClose, post, onSubmit }: { open: boolean; onClose: () => void; post: MarketPost; onSubmit: (r: ReportReason, note?: string) => void }) {
-  const [reason, setReason] = useState<ReportReason>('prohibited');
-  const [note, setNote] = useState('');
-  return (
-    <Sheet
-      open={open}
-      onClose={onClose}
-      title={t('market.reportTitle')}
-      description={post.title}
-      size="sm"
-      footer={
-        <>
-          <Button variant="secondary" className="flex-1" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button variant="danger" className="flex-1" onClick={() => onSubmit(reason, note)}>{t('market.reportSend')}</Button>
-        </>
-      }
-    >
-      <fieldset>
-        <legend className="label">{t('market.reportReason')}</legend>
-        <div className="grid gap-1.5">
-          {REPORT_REASONS.map((r) => (
-            <label key={r} className="flex items-center gap-2.5 rounded-sm border border-line px-3 py-2.5 text-body text-ink has-[:checked]:border-primary">
-              <input type="radio" name="report-reason" value={r} checked={reason === r} onChange={() => setReason(r)} className="h-4 w-4" />
-              {t(`market.reason.${r}`)}
-            </label>
-          ))}
-        </div>
-      </fieldset>
-      <label htmlFor="report-note" className="label mt-3">{t('market.reportNote')}</label>
-      <textarea id="report-note" rows={2} maxLength={500} className="field" value={note} onChange={(e) => setNote(e.target.value)} />
-    </Sheet>
   );
 }

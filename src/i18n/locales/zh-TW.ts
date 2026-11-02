@@ -876,6 +876,33 @@ const zh = {
       "rateLimit": "操作太頻繁了，請稍後再試"
     }
   },
+  "safety": {
+    "home": "回首頁",
+    "updated": "最後更新：{{date}}",
+    "contactEmail": "聯絡信箱：",
+    "legalNav": "法律與支援",
+    "report": "檢舉",
+    "reportUser": "檢舉使用者",
+    "reportComment": "檢舉留言",
+    "block": "封鎖",
+    "blockTitle": "封鎖 {{name}}？",
+    "blockBody": "你們將看不到彼此的貼文與留言，也無法再加好友；好友關係和課表分享會立即結束。之後可以在好友頁解除。",
+    "blocked": "已封鎖",
+    "unblock": "解除封鎖",
+    "unblocked": "已解除封鎖",
+    "blockedList": "已封鎖的使用者",
+    "reported": "已收到檢舉，我們會在 3 個工作天內審查",
+    "rulesTitle": "使用市集前請先同意規範",
+    "rulesAccept": "同意並繼續",
+    "rulesTerms": "完整內容見服務條款",
+    "rulesPhoto": "請先勾選同意規範，才能上傳照片",
+    "err": {
+      "rules": "請先同意市集規範",
+      "term": "內容包含不允許的字詞，請修改後再送出",
+      "suspended": "這個帳號已被停權，如有疑問請聯絡我們",
+      "blocked": "你們之間有封鎖，無法進行這個操作"
+    }
+  },
   "friends": {
     "incomingBadge": "{{count}} 個好友邀請",
     "tabsLabel": "課表類型",
@@ -945,7 +972,7 @@ const zh = {
     "title": "二手市集",
     "subtitle": "二手書、文具、生活用品。在留言區自己約，平台不經手金錢。",
     "needAccountTitle": "登入後就能逛二手市集",
-    "needAccountBody": "為了保護交易雙方，只有登入的同學能發文、留言與瀏覽。",
+    "needAccountBody": "為了保護交易雙方，只有登入的同學能發文、留言與瀏覽貼文。",
     "search": "搜尋市集",
     "searchPh": "書名、物品或課號",
     "newPost": "發文",

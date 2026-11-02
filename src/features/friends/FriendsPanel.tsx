@@ -6,7 +6,8 @@ import { EmptyState, ErrorNotice, SectionTitle } from '@/components/ui/misc';
 import { SignInRequired } from '@/components/ui/SignInRequired';
 import { useToast } from '@/components/ui/Toast';
 import { LoadingMark } from '@/components/brand/Logo';
-import { socialErrorMessage, useFriendCode, useFriendMutations, useFriends, useSocial } from '@/lib/social/hooks';
+import { socialErrorMessage, useBlockedUsers, useFriendCode, useFriendMutations, useFriends, useMarketMutations, useSocial, useUnblock } from '@/lib/social/hooks';
+import { ReportSheet } from '@/features/market/ReportSheet';
 import type { FriendEntry, FriendRequestResult } from '@/lib/social/types';
 import type { Course } from '@/lib/types';
 import { FriendSchedule } from './FriendSchedule';
@@ -37,6 +38,11 @@ function FriendsInner({ myCourses, semesterCode, initialCode }: { myCourses: Cou
   const [input, setInput] = useState(initialCode ?? '');
   const [viewing, setViewing] = useState<FriendEntry | null>(null);
   const [confirmRegen, setConfirmRegen] = useState(false);
+  const [blocking, setBlocking] = useState<FriendEntry | null>(null);
+  const [reporting, setReporting] = useState<FriendEntry | null>(null);
+  const market = useMarketMutations();
+  const blockedUsers = useBlockedUsers();
+  const unblock = useUnblock();
 
   useEffect(() => { if (initialCode) setInput(initialCode); }, [initialCode]);
 
@@ -121,6 +127,7 @@ function FriendsInner({ myCourses, semesterCode, initialCode }: { myCourses: Cou
                   <li key={f.friendshipId} className="flex items-center gap-3 px-4 py-3">
                     <Avatar name={f.displayName} />
                     <PersonText f={f} sub={t('friends.wantsToShare')} />
+                    <button type="button" onClick={() => setBlocking(f)} className="text-label font-semibold text-muted hover:text-danger">{t('safety.block')}</button>
                     <Button size="sm" onClick={() => act(() => m.respond.mutateAsync({ id: f.friendshipId, accept: true }), t('friends.accepted', { name: f.displayName }))} aria-label={t('friends.acceptName', { name: f.displayName })}>
                       <Check className="h-4 w-4" />{t('friends.accept')}
                     </Button>
@@ -140,12 +147,14 @@ function FriendsInner({ myCourses, semesterCode, initialCode }: { myCourses: Cou
             ) : (
               <ul className="divide-y divide-line rounded-lg border border-line bg-surface">
                 {accepted.map((f) => (
-                  <li key={f.friendshipId}>
-                    <button type="button" onClick={() => setViewing(f)} className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-sunken">
+                  <li key={f.friendshipId} className="flex items-center">
+                    <button type="button" onClick={() => setViewing(f)} className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left hover:bg-sunken">
                       <Avatar name={f.displayName} />
                       <PersonText f={f} sub={t('friends.viewSchedule')} />
                       <ChevronRight className="h-5 w-5 text-muted" />
                     </button>
+                    <button type="button" onClick={() => setReporting(f)} className="shrink-0 py-3 pl-1 pr-2 text-label font-semibold text-muted hover:text-danger">{t('safety.report')}</button>
+                    <button type="button" onClick={() => setBlocking(f)} className="shrink-0 py-3 pl-1 pr-3 text-label font-semibold text-muted hover:text-danger">{t('safety.block')}</button>
                   </li>
                 ))}
               </ul>
@@ -169,7 +178,32 @@ function FriendsInner({ myCourses, semesterCode, initialCode }: { myCourses: Cou
         </>
       )}
 
+      {(blockedUsers.data?.length ?? 0) > 0 && (
+        <section aria-labelledby="f-blocked">
+          <SectionTitle id="f-blocked">{t('safety.blockedList')}</SectionTitle>
+          <ul className="divide-y divide-line rounded-lg border border-line bg-surface">
+            {blockedUsers.data!.map((b) => (
+              <li key={b.userId} className="flex items-center justify-between gap-3 px-4 py-3">
+                <span className="truncate text-body text-ink">{b.displayName}</span>
+                <Button size="sm" variant="secondary" onClick={() => act(() => unblock.mutateAsync(b.userId), t('safety.unblocked'))}>{t('safety.unblock')}</Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <p className="text-[11px] leading-relaxed text-muted">{t('friends.privacy')}</p>
+
+      <ReportSheet open={reporting !== null} onClose={() => setReporting(null)} subject={reporting?.displayName ?? ''}
+        onSubmit={async (reason, note) => { if (reporting) { await act(() => market.report.mutateAsync({ target: { type: 'user', id: reporting.friendId }, reason, note }), t('safety.reported')); setReporting(null); } }} />
+      <ConfirmSheet
+        open={blocking !== null}
+        onClose={() => setBlocking(null)}
+        title={t('safety.blockTitle', { name: blocking?.displayName ?? '' })}
+        message={t('safety.blockBody')}
+        confirmLabel={t('safety.block')}
+        onConfirm={async () => { if (blocking) { await act(() => market.block.mutateAsync(blocking.friendId), t('safety.blocked')); setBlocking(null); } }}
+      />
 
       <ConfirmSheet
         open={confirmRegen}

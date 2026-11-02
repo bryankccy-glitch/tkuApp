@@ -876,6 +876,33 @@ const zhCN = {
       "rateLimit": "操作太频繁了，请稍后再试"
     }
   },
+  "safety": {
+    "home": "回首页",
+    "updated": "最后更新：{{date}}",
+    "contactEmail": "联络信箱：",
+    "legalNav": "法律与支援",
+    "report": "检举",
+    "reportUser": "检举使用者",
+    "reportComment": "检举留言",
+    "block": "封锁",
+    "blockTitle": "封锁 {{name}}？",
+    "blockBody": "你们将看不到彼此的贴文与留言，也无法再加好友；好友关系和课表分享会立即结束。之后可以在好友页解除。",
+    "blocked": "已封锁",
+    "unblock": "解除封锁",
+    "unblocked": "已解除封锁",
+    "blockedList": "已封锁的使用者",
+    "reported": "已收到检举，我们会在 3 个工作天内审查",
+    "rulesTitle": "使用市集前请先同意规范",
+    "rulesAccept": "同意并继续",
+    "rulesTerms": "完整内容见服务条款",
+    "rulesPhoto": "请先勾选同意规范，才能上传照片",
+    "err": {
+      "rules": "请先同意市集规范",
+      "term": "内容包含不允许的字词，请修改后再送出",
+      "suspended": "这个帐号已被停权，如有疑问请联络我们",
+      "blocked": "你们之间有封锁，无法进行这个操作"
+    }
+  },
   "friends": {
     "incomingBadge": "{{count}} 个好友邀请",
     "tabsLabel": "课表类型",

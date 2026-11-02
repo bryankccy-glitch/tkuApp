@@ -876,6 +876,33 @@ const en = {
       "rateLimit": "Too many actions — try again in a while"
     }
   },
+  "safety": {
+    "home": "Home",
+    "updated": "Last updated: {{date}}",
+    "contactEmail": "Email: ",
+    "legalNav": "Legal and support",
+    "report": "Report",
+    "reportUser": "Report user",
+    "reportComment": "Report comment",
+    "block": "Block",
+    "blockTitle": "Block {{name}}?",
+    "blockBody": "You will no longer see each other’s posts or comments, or be able to add each other. Any friendship and schedule sharing ends now. You can undo this on the Friends page.",
+    "blocked": "Blocked",
+    "unblock": "Unblock",
+    "unblocked": "Unblocked",
+    "blockedList": "Blocked users",
+    "reported": "Report received. We review reports within 3 business days",
+    "rulesTitle": "Please agree to the market rules first",
+    "rulesAccept": "Agree and continue",
+    "rulesTerms": "See the Terms of Service for the full rules",
+    "rulesPhoto": "Tick the box to agree before uploading photos",
+    "err": {
+      "rules": "Please agree to the market rules first",
+      "term": "This text has a word we don’t allow. Please edit it and try again",
+      "suspended": "This account is suspended. Contact us if you have questions",
+      "blocked": "You can’t do this because one of you has blocked the other"
+    }
+  },
   "friends": {
     "incomingBadge": "{{count}} friend requests",
     "tabsLabel": "Timetable",

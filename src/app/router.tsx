@@ -21,6 +21,7 @@ const MarketPage = lazy(() => import('@/features/market/MarketPage'));
 const MarketPostPage = lazy(() => import('@/features/market/MarketPostPage'));
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
 const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'));
+const LegalPage = lazy(() => import('@/features/legal/LegalPage'));
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { loading, repo } = useAuth();
@@ -43,6 +44,10 @@ const createRouter = import.meta.env.VITE_HASH_ROUTER === '1' ? createHashRouter
 export const router = createRouter([
   { path: '/login', element: <LoginPage />, errorElement: <RouteError /> },
   { path: '/reset-password', element: <ResetPasswordPage />, errorElement: <RouteError /> },
+  { path: '/privacy', element: <LegalPage doc="privacy" />, errorElement: <RouteError /> },
+  { path: '/terms', element: <LegalPage doc="terms" />, errorElement: <RouteError /> },
+  { path: '/support', element: <LegalPage doc="support" />, errorElement: <RouteError /> },
+  { path: '/delete-account', element: <LegalPage doc="delete" />, errorElement: <RouteError /> },
   {
     errorElement: <RouteError />,
     element: (

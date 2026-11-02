@@ -62,7 +62,7 @@ export default function ProfilePage() {
     setDeleting(true);
     try {
       await repo.deleteAllData();
-      try { ['tku.chat.v1', 'tku.bookmarks', 'tku.semester', 'tku.reminders.v1', 'tku.reminders.fired.v1', 'tku.weather.v1'].forEach((k) => localStorage.removeItem(k)); } catch { /* ignore */ }
+      try { Object.keys(localStorage).filter((k) => k.startsWith('tku.chat.')).forEach((k) => localStorage.removeItem(k)); ['tku.bookmarks', 'tku.semester', 'tku.reminders.v1', 'tku.reminders.fired.v1', 'tku.weather.v1'].forEach((k) => localStorage.removeItem(k)); } catch { /* ignore */ }
       qc.clear();
       toast({ tone: 'success', message: mode === 'cloud' ? t('me.deletedCloud') : t('me.deletedLocal') });
       setConfirmDelete(false);

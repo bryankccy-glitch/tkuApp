@@ -1,5 +1,5 @@
 import type { Course } from '@/lib/types';
-import type { FriendEntry, FriendRequestResult, MarketComment, MarketPost, MarketPostInput, MarketStatus, ReportReason, SocialApi } from '@/lib/social/types';
+import type { BlockedUser, ReportTarget, FriendEntry, FriendRequestResult, MarketComment, MarketPost, MarketPostInput, MarketStatus, ReportReason, SocialApi } from '@/lib/social/types';
 import { LocalRepository } from '@/lib/data/local';
 import { memoryStorage } from './memoryStorage';
 
@@ -11,7 +11,10 @@ export class FakeSocial implements SocialApi {
   schedules = new Map<string, Course[]>();
   posts: MarketPost[] = [];
   comments: MarketComment[] = [];
-  reports: { postId: string; reason: ReportReason; note?: string }[] = [];
+  reports: { postId: string; type: string; reason: ReportReason; note?: string }[] = [];
+  blocked: BlockedUser[] = [];
+  rulesAccepted = true;
+  removedPhotos: string[] = [];
   codes = new Map<string, { id: string; name: string }>();
   private n = 0;
   private id(p: string) { this.n += 1; return `${p}${this.n}`; }
@@ -66,7 +69,14 @@ export class FakeSocial implements SocialApi {
     return c;
   }
   async deleteComment(id: string) { this.comments = this.comments.filter((c) => c.id !== id); }
-  async reportPost(postId: string, reason: ReportReason, note?: string) { this.reports.push({ postId, reason, note }); }
+  async report(target: ReportTarget, reason: ReportReason, note?: string) { this.reports.push({ postId: target.id, type: target.type, reason, note }); }
+  async removeMarketPhotos(urls: string[]) { this.removedPhotos.push(...urls); }
+  async removeAllMyPhotos() { /* nothing stored */ }
+  async hasAcceptedRules() { return this.rulesAccepted; }
+  async acceptRules() { this.rulesAccepted = true; }
+  async blockUser(userId: string) { this.blocked.push({ userId, displayName: userId }); this.posts = this.posts.filter((p) => p.userId !== userId); this.comments = this.comments.filter((c) => c.userId !== userId); }
+  async unblockUser(userId: string) { this.blocked = this.blocked.filter((b) => b.userId !== userId); }
+  async listBlocked() { return this.blocked; }
 }
 
 /** A local repository that also exposes a fake social API, as if signed in. */

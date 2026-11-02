@@ -24,6 +24,10 @@ export type MarketStatus = (typeof MARKET_STATUSES)[number];
 export const REPORT_REASONS = ['prohibited', 'scam', 'spam', 'harassment', 'other'] as const;
 export type ReportReason = (typeof REPORT_REASONS)[number];
 
+export const MARKET_RULES_VERSION = 1;
+export interface ReportTarget { type: 'post' | 'comment' | 'user'; id: string }
+export interface BlockedUser { userId: string; displayName: string }
+
 export interface MarketPost {
   id: string;
   userId: string;
@@ -81,5 +85,12 @@ export interface SocialApi {
   listComments(postId: string): Promise<MarketComment[]>;
   addComment(postId: string, body: string): Promise<MarketComment>;
   deleteComment(id: string): Promise<void>;
-  reportPost(postId: string, reason: ReportReason, note?: string): Promise<void>;
+  report(target: ReportTarget, reason: ReportReason, note?: string): Promise<void>;
+  removeMarketPhotos(urls: string[]): Promise<void>;
+  removeAllMyPhotos(): Promise<void>;
+  hasAcceptedRules(version: number): Promise<boolean>;
+  acceptRules(version: number): Promise<void>;
+  blockUser(userId: string): Promise<void>;
+  unblockUser(userId: string): Promise<void>;
+  listBlocked(): Promise<BlockedUser[]>;
 }

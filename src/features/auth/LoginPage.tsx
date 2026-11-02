@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { z } from '@/lib/zod';
+import { LegalLinks } from '@/features/legal/LegalLinks';
 import { Eye, EyeOff } from 'lucide-react';
 import { LogoMark } from '@/components/brand/Logo';
 import { PixelCampusScene } from '@/components/campus-scene/PixelCampusScene';
@@ -171,6 +172,7 @@ export default function LoginPage() {
         )}
 
         <p className="mt-6 text-[11px] leading-relaxed text-muted">{t('auth.notice')}</p>
+        <LegalLinks className="mt-3" />
       </main>
     </div>
   );

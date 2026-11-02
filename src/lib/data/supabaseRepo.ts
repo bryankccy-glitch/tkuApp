@@ -190,6 +190,8 @@ export class SupabaseRepository implements DataRepository {
 
   /** Deletes the auth account; FK cascades remove every personal row. */
   async deleteAllData() {
+    // Storage files are not covered by the database cascade.
+    await this.social.removeAllMyPhotos();
     ok(await this.db.rpc('delete_my_account'));
     await this.db.auth.signOut();
   }
