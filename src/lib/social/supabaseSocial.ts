@@ -166,7 +166,9 @@ export class SupabaseSocial implements SocialApi {
       const { data, error } = await bucket.list(this.userId, { limit: 100 });
       fail(error);
       if (!data?.length) return;
-      fail((await bucket.remove(data.map((f) => `${this.userId}/${f.name}`))).error);
+      const removed = await bucket.remove(data.map((f) => `${this.userId}/${f.name}`));
+      fail(removed.error);
+      if (!removed.data?.length) throw new SocialError('unknown', 'photos could not be removed');
     }
   }
 
