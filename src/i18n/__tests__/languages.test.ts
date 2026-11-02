@@ -54,6 +54,19 @@ describe('languages', () => {
     }
   });
 
+  it('loads English before a pack, so missing strings still fall back to it', async () => {
+    await setLanguage('ja');
+    expect(i18n.hasResourceBundle('en', 'translation')).toBe(true);
+    expect(i18n.getFixedT('ja')('nav.home')).toBe('ホーム');
+  });
+
+  it('switches to the on-demand built-in languages', async () => {
+    await setLanguage('en');
+    expect(i18n.t('nav.home')).toBe((en as unknown as { nav: { home: string } }).nav.home);
+    await setLanguage('zh-CN');
+    expect(i18n.t('nav.home')).toBe((zhCN as unknown as { nav: { home: string } }).nav.home);
+  });
+
   it('rejects languages that are not offered', async () => {
     await expect(setLanguage('xx')).rejects.toThrow();
     expect(i18n.language).toBe('zh-TW');

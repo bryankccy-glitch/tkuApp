@@ -49,6 +49,18 @@ export default defineConfig({
     }),
   ],
   resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
+  build: {
+    rollupOptions: {
+      output: {
+        // Libraries change rarely: keep them apart so a deploy only re-downloads the app's own code.
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          supabase: ['@supabase/supabase-js'],
+          vendor: ['@tanstack/react-query', 'i18next', 'react-i18next', 'tailwind-merge'],
+        },
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

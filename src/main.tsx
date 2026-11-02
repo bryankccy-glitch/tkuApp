@@ -9,7 +9,7 @@ import { BootScreen } from './components/brand/Logo';
 import { router } from './app/router';
 import { LanguageRoot } from './app/LanguageRoot';
 import './styles/index.css';
-import './i18n';
+import { i18nReady } from './i18n';
 import { seedPreviewDemo } from './lib/data/previewDemo';
 import { disablePageZoom } from './lib/noZoom';
 import { holdSplash } from './lib/splash';
@@ -45,7 +45,7 @@ function SplashRelease() {
   return null;
 }
 
-createRoot(document.getElementById('root')!).render(
+void i18nReady.then(() => createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
@@ -62,4 +62,4 @@ createRoot(document.getElementById('root')!).render(
       </QueryClientProvider>
     </ThemeProvider>
   </StrictMode>,
-);
+));

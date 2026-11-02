@@ -62,6 +62,7 @@ test('greeting and weather switch to English', async ({ page }) => {
   await page.route('https://api.open-meteo.com/**', (r) => r.fulfill({ json: SAMPLE }));
   await page.goto('/me');
   await page.getByRole('radio', { name: 'English' }).click();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en'); // the language loads on demand
   await page.goto('/');
   const hero = page.locator('section[aria-labelledby="hero-greeting"]');
   await expect(hero.getByText('Tamsui', { exact: true })).toBeVisible();

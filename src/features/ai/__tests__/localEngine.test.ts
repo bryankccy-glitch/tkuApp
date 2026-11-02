@@ -114,8 +114,8 @@ describe('local campus assistant — more questions', () => {
   });
 
   it('answers in English', async () => {
-    const { default: i18n } = await import('@/i18n');
-    await i18n.changeLanguage('en');
+    const { default: i18n, setLanguage } = await import('@/i18n');
+    await setLanguage('en');
     try {
       expect(q('where is my next class?', new Date(2026, 9, 14, 13, 30)).content).toMatch(/next class is \*\*作業系統\*\*.*15:10.*B110/s);
       expect(q('when do I finish today?').content).toContain('ending at **17:00**');
