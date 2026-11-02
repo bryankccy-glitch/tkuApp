@@ -61,12 +61,77 @@ export async function testPushSubscription(userId: string, prefs: ReminderPrefs)
   if (!response.ok) throw new Error('push test failed');
 }
 
-/** Removes this device's subscription (server row first, then the browser subscription). */
+const PENDING_REMOVAL = 'tku.push.pendingRemoval';
+
+function pendingRemoval(): string | null {
+  try { return localStorage.getItem(PENDING_REMOVAL); } catch { return null; }
+}
+
+function rememberRemoval(endpoint: string) {
+  try { localStorage.setItem(PENDING_REMOVAL, endpoint); } catch { /* storage unavailable */ }
+}
+
+async function boundedCleanup(work: () => Promise<void>): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      work(),
+      new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error('push cleanup timed out')), 5000); }),
+    ]);
+  } finally { clearTimeout(timer); }
+}
+
+async function deleteEndpoint(endpoint: string): Promise<void> {
+  if (!supabase) throw new Error('push storage unavailable');
+  const { error } = await supabase.from('push_subscriptions').delete().eq('endpoint', endpoint);
+  if (error) throw new Error(error.message);
+}
+
+function clearPending(endpoint: string) {
+  try { if (pendingRemoval() === endpoint) localStorage.removeItem(PENDING_REMOVAL); } catch { /* storage unavailable */ }
+}
+
+/** Retry server cleanup even on browsers without PushManager support. */
+export async function retryPendingPushRemoval(): Promise<void> {
+  const endpoint = pendingRemoval();
+  if (!endpoint) return;
+  await boundedCleanup(async () => {
+    // The browser subscription may still exist when unsubscribe previously failed.
+    const sub = pushAvailable()
+      ? await (await navigator.serviceWorker.ready).pushManager.getSubscription()
+      : null;
+    const results = await Promise.allSettled([
+      deleteEndpoint(endpoint),
+      sub?.endpoint === endpoint ? sub.unsubscribe().then((ok) => {
+        if (!ok) throw new Error('push unsubscribe failed');
+      }) : Promise.resolve(),
+    ]);
+    for (const result of results) if (result.status === 'rejected') throw result.reason;
+    clearPending(endpoint);
+  });
+}
+
+/** Persist the endpoint before cleanup so timeouts and sign-out cannot lose it. */
 export async function removePushSubscription(): Promise<void> {
-  if (!pushAvailable() || !supabase) return;
-  const reg = await registration();
-  const sub = await reg.pushManager.getSubscription();
-  if (!sub) return;
-  await supabase.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
-  await sub.unsubscribe().catch(() => false);
+  await boundedCleanup(async () => {
+    if (!pushAvailable()) {
+      await retryPendingPushRemoval();
+      return;
+    }
+    const sub = await (await navigator.serviceWorker.ready).pushManager.getSubscription();
+    if (!sub) {
+      await retryPendingPushRemoval();
+      return;
+    }
+    const endpoint = sub.endpoint;
+    rememberRemoval(endpoint);
+    const results = await Promise.allSettled([
+      deleteEndpoint(endpoint),
+      sub.unsubscribe().then((ok) => {
+        if (!ok) throw new Error('push unsubscribe failed');
+      }),
+    ]);
+    for (const result of results) if (result.status === 'rejected') throw result.reason;
+    clearPending(endpoint);
+  });
 }

@@ -139,8 +139,10 @@ function MarketFeed({ userId }: { userId: string }) {
             setFormOpen(false);
             toast({ tone: 'success', message: t('market.posted') });
             navigate(`/market/${post.id}`);
+            return true;
           } catch (e) {
             toast({ tone: 'error', message: socialErrorMessage(e) });
+            return false;
           }
         }}
       />

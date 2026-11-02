@@ -170,7 +170,11 @@ function PostDetail({ userId }: { userId: string }) {
         initial={p}
         onClose={() => setEditOpen(false)}
         saving={m.update.isPending}
-        onSubmit={async (v) => { if (await run(() => m.update.mutateAsync({ id: p.id, patch: v }), t('market.saved'))) setEditOpen(false); }}
+        onSubmit={async (v) => {
+          const saved = await run(() => m.update.mutateAsync({ id: p.id, patch: v }), t('market.saved'));
+          if (saved) setEditOpen(false);
+          return saved;
+        }}
       />
       <ConfirmSheet
         open={confirmDelete}

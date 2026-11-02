@@ -1,4 +1,4 @@
-import { removePushSubscription } from '@/services/pushSubscription';
+import { removePushSubscription, retryPendingPushRemoval } from '@/services/pushSubscription';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
@@ -58,6 +58,10 @@ export function AuthProvider({ children, localRepository = localRepo }: { childr
     return () => { clearTimeout(timer); data.subscription.unsubscribe(); };
   }, []);
 
+  useEffect(() => {
+    if (session) void retryPendingPushRemoval().catch(() => undefined);
+  }, [session]);
+
   const continueAsGuest = useCallback(() => { writeGuest(true); setGuest(true); }, []);
 
   const value = useMemo<AuthState>(() => {
@@ -81,7 +85,10 @@ export function AuthProvider({ children, localRepository = localRepo }: { childr
       continueAsGuest,
       signOut: async () => {
         // Reminders must stop for this device while the session can still remove the subscription.
-        await removePushSubscription().catch(() => undefined);
+        await removePushSubscription().catch(() => {
+          // removePushSubscription persists tku.push.pendingRemoval before attempting cleanup.
+          // Leave it for the next authenticated session, even when push is unavailable.
+        });
         await client.auth.signOut();
       },
     };

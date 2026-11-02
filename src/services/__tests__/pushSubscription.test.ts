@@ -1,20 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-const mocks = vi.hoisted(() => ({ upsert: vi.fn(), getSubscription: vi.fn(), subscribe: vi.fn(), getSession: vi.fn() }));
-vi.mock('@/lib/supabase', () => ({ supabase: { from: () => ({ upsert: mocks.upsert }), auth: { getSession: mocks.getSession } } }));
-import { pushAvailable, savePushSubscription, testPushSubscription } from '../pushSubscription';
+const mocks = vi.hoisted(() => ({ upsert: vi.fn(), getSubscription: vi.fn(), subscribe: vi.fn(), getSession: vi.fn(), deleteEndpoint: vi.fn(), unsubscribe: vi.fn() }));
+vi.mock('@/lib/supabase', () => ({ supabase: { from: () => ({ upsert: mocks.upsert, delete: () => ({ eq: mocks.deleteEndpoint }) }), auth: { getSession: mocks.getSession } } }));
+import { pushAvailable, savePushSubscription, testPushSubscription, removePushSubscription, retryPendingPushRemoval } from '../pushSubscription';
 
 describe('push subscription upgrade', () => {
   const key = btoa(String.fromCharCode(4, ...Array<number>(64).fill(1))).replace(/=/g, '');
   beforeEach(() => {
     vi.stubGlobal('PushManager', class {});
     Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { ready: Promise.resolve({ pushManager: mocks }) } });
+    localStorage.clear();
+    mocks.deleteEndpoint.mockResolvedValue({ error: null });
+    mocks.unsubscribe.mockResolvedValue(true);
     mocks.getSubscription.mockResolvedValue(null);
     mocks.subscribe.mockResolvedValue({ toJSON: () => ({ endpoint: 'https://push.example/owned', keys: { p256dh: 'public', auth: 'subscription-secret' } }) });
     mocks.upsert.mockResolvedValue({ error: null });
     mocks.getSession.mockResolvedValue({ data: { session: { access_token: 'user-jwt' } } });
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ configured: true, publicKey: key }))));
   });
-  afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
+  afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.clearAllMocks(); });
   it('works without a build-time VAPID key and persists the device and preferences', async () => {
     expect(pushAvailable()).toBe(true);
     await savePushSubscription('u1', { enabled: true, classMinutes: 10, tasks: true });
@@ -35,4 +38,48 @@ describe('push subscription upgrade', () => {
     mocks.upsert.mockResolvedValue({ error: { message: 'denied' } });
     await expect(savePushSubscription('u1', { enabled: true, classMinutes: 10, tasks: true })).rejects.toThrow('denied');
   });
+  it('still unsubscribes and retains the endpoint when deleting the row fails', async () => {
+    mocks.getSubscription.mockResolvedValue({ endpoint: 'device', unsubscribe: mocks.unsubscribe });
+    mocks.deleteEndpoint.mockResolvedValue({ error: { message: 'denied' } });
+    await expect(removePushSubscription()).rejects.toThrow('denied');
+    expect(mocks.unsubscribe).toHaveBeenCalledOnce();
+    expect(localStorage.getItem('tku.push.pendingRemoval')).toBe('device');
+    mocks.deleteEndpoint.mockResolvedValue({ error: null });
+    vi.stubGlobal('PushManager', undefined);
+    // Remove capability entirely, rather than only changing its value.
+    Reflect.deleteProperty(window, 'PushManager');
+    await retryPendingPushRemoval();
+    expect(mocks.deleteEndpoint).toHaveBeenLastCalledWith('endpoint', 'device');
+    expect(localStorage.getItem('tku.push.pendingRemoval')).toBeNull();
+  });
+
+  it('rejects a false unsubscribe result and retries the browser subscription', async () => {
+    mocks.getSubscription.mockResolvedValue({ endpoint: 'device', unsubscribe: mocks.unsubscribe });
+    mocks.unsubscribe.mockResolvedValueOnce(false);
+    await expect(removePushSubscription()).rejects.toThrow('unsubscribe');
+    expect(localStorage.getItem('tku.push.pendingRemoval')).toBe('device');
+    await retryPendingPushRemoval();
+    expect(mocks.unsubscribe).toHaveBeenCalledTimes(2);
+    expect(localStorage.getItem('tku.push.pendingRemoval')).toBeNull();
+  });
+
+  it('bounds cleanup to five seconds and retains a known endpoint', async () => {
+    vi.useFakeTimers();
+    mocks.getSubscription.mockResolvedValue({ endpoint: 'device', unsubscribe: mocks.unsubscribe });
+    mocks.deleteEndpoint.mockImplementationOnce(() => new Promise(() => {}));
+    const result = expect(removePushSubscription()).rejects.toThrow('timed out');
+    await vi.advanceTimersByTimeAsync(5000);
+    await result;
+    expect(mocks.unsubscribe).toHaveBeenCalledOnce();
+    expect(localStorage.getItem('tku.push.pendingRemoval')).toBe('device');
+  });
+
+  it('bounds waiting for the service worker as part of the whole cleanup', async () => {
+    vi.useFakeTimers();
+    Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { ready: new Promise(() => {}) } });
+    const result = expect(removePushSubscription()).rejects.toThrow('timed out');
+    await vi.advanceTimersByTimeAsync(5000);
+    await result;
+  });
+
 });

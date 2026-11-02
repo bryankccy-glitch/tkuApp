@@ -30,7 +30,7 @@ export function RulesList() {
 
 /** Create / edit a 二手市集 post. Price is a reference only — the app never handles money. */
 export function PostForm({ open, onClose, onSubmit, saving, initial }: {
-  open: boolean; onClose: () => void; onSubmit: (v: MarketPostInput) => Promise<void> | void; saving?: boolean; initial?: MarketPost | null;
+  open: boolean; onClose: () => void; onSubmit: (v: MarketPostInput) => Promise<boolean>; saving?: boolean; initial?: MarketPost | null;
 }) {
   const [kind, setKind] = useState<MarketKind>('sell');
   const [category, setCategory] = useState<MarketCategory>('book');
@@ -49,26 +49,48 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
   // Files uploaded in this form and not yet saved, and saved files the user removed.
   const fresh = useRef<string[]>([]);
   const removed = useRef<string[]>([]);
+  const session = useRef(0);
+  const socialRef = useRef(social);
+  socialRef.current = social;
+  useEffect(() => () => {
+    session.current += 1;
+    const urls = fresh.current;
+    fresh.current = [];
+    if (urls.length) void socialRef.current?.removeMarketPhotos(urls).catch(() => undefined);
+  }, []);
 
   const addPhotos = async (files: FileList | null) => {
     if (!files?.length || !social) return;
+    const currentSession = session.current;
     setError(null);
     setUploading(true);
     try {
       const room = MAX_PHOTOS - photos.length;
       const picked = [...files].filter((f) => f.type.startsWith('image/')).slice(0, room);
-      const urls: string[] = [];
-      for (const f of picked) urls.push(await social.uploadMarketPhoto(await downscaleToJpeg(f)));
-      fresh.current.push(...urls);
-      setPhotos((p) => [...p, ...urls].slice(0, MAX_PHOTOS));
+      for (const f of picked) {
+        const blob = await downscaleToJpeg(f);
+        if (session.current !== currentSession) return;
+        const url = await social.uploadMarketPhoto(blob);
+        if (session.current !== currentSession) {
+          void social.removeMarketPhotos([url]).catch(() => undefined);
+          return;
+        }
+        fresh.current.push(url);
+        setPhotos((p) => [...p, url]);
+      }
     } catch {
-      setError(t('market.form.photoFailed'));
+      if (session.current === currentSession) setError(t('market.form.photoFailed'));
     } finally {
-      setUploading(false);
+      if (session.current === currentSession) setUploading(false);
     }
   };
 
   useEffect(() => {
+    session.current += 1;
+    const urls = fresh.current;
+    fresh.current = [];
+    if (urls.length) void socialRef.current?.removeMarketPhotos(urls).catch(() => undefined);
+    setUploading(false);
     if (!open) return;
     setKind(initial?.kind ?? 'sell');
     setCategory(initial?.category ?? 'book');
@@ -96,13 +118,27 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
       p = n;
     }
     if (!canAdd) return setError(t('market.form.mustAgree'));
-    if (accepted.data !== true) await social?.acceptRules(MARKET_RULES_VERSION).catch(() => undefined);
-    await onSubmit({
+    if (accepted.data !== true) {
+      try {
+        if (!social) throw new Error('social unavailable');
+        await social.acceptRules(MARKET_RULES_VERSION);
+      } catch {
+        return setError(t('widget.failed'));
+      }
+    }
+    // A successful save closes the form before it resolves, and closing removes unsaved uploads.
+    // These are about to be saved, so take them out of that list while the save runs.
+    const saving = fresh.current;
+    fresh.current = [];
+    const saved = await onSubmit({
       kind, category, title: tt, description: description.trim(), price: p,
       courseCode: courseCode.trim() || null, condition: kind === 'sell' && condition ? condition : null,
       photos,
     });
-    fresh.current = [];
+    if (!saved) {
+      fresh.current = [...saving, ...fresh.current];
+      return;
+    }
     const gone = removed.current;
     removed.current = [];
     if (gone.length) void social?.removeMarketPhotos(gone).catch(() => undefined);
@@ -117,6 +153,7 @@ export function PostForm({ open, onClose, onSubmit, saving, initial }: {
   };
 
   const cancel = () => {
+    session.current += 1;
     if (fresh.current.length) void social?.removeMarketPhotos(fresh.current).catch(() => undefined);
     fresh.current = [];
     removed.current = [];
