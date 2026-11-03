@@ -296,7 +296,8 @@ const pack = {
   "reminder": {
     "classTitle": "Kelas dalam {{minutes}} menit: {{course}}",
     "taskTitle": "{{kind}} segera jatuh tempo: {{title}}",
-    "taskBody": "Tenggat {{time}}"
+    "taskBody": "Tenggat {{time}}",
+    "classRoomTitle": "Kelas di {{room}} dalam {{minutes}} menit: {{course}}"
   },
   "nav": {
     "home": "Beranda",
@@ -1102,6 +1103,33 @@ const pack = {
     },
     "room": "Ruang",
     "roomFor": "Ruang untuk {{slot}}"
+  },
+  "safety": {
+    "home": "Beranda",
+    "updated": "Terakhir diperbarui: {{date}}",
+    "contactEmail": "Email: ",
+    "legalNav": "Hukum dan dukungan",
+    "report": "Laporkan",
+    "reportUser": "Laporkan pengguna",
+    "reportComment": "Laporkan komentar",
+    "block": "Blokir",
+    "blockTitle": "Blokir {{name}}?",
+    "blockBody": "Kalian tidak akan lagi melihat postingan atau komentar satu sama lain, dan tidak bisa saling menambahkan sebagai teman. Pertemanan dan berbagi jadwal berakhir sekarang. Kalian dapat membatalkannya di halaman Teman.",
+    "blocked": "Diblokir",
+    "unblock": "Buka blokir",
+    "unblocked": "Blokir dibuka",
+    "blockedList": "Pengguna yang diblokir",
+    "reported": "Laporan diterima. Kami meninjau laporan dalam 3 hari kerja",
+    "rulesTitle": "Harap setujui aturan pasar terlebih dahulu",
+    "rulesAccept": "Setuju dan lanjutkan",
+    "rulesTerms": "Lihat Ketentuan Layanan untuk aturan lengkap",
+    "rulesPhoto": "Centang kotak untuk menyetujui sebelum mengunggah foto",
+    "err": {
+      "rules": "Harap setujui aturan pasar terlebih dahulu",
+      "term": "Teks ini memuat kata yang tidak kami izinkan. Harap ubah lalu coba lagi",
+      "suspended": "Akun ini telah ditangguhkan. Hubungi kami jika ada pertanyaan",
+      "blocked": "Anda tidak bisa melakukan ini karena salah satu pihak memblokir pihak lainnya"
+    }
   }
 };
 export default pack;

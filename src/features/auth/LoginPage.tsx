@@ -5,7 +5,7 @@ import { z } from '@/lib/zod';
 import { LegalLinks } from '@/features/legal/LegalLinks';
 import { Eye, EyeOff } from 'lucide-react';
 import { LogoMark } from '@/components/brand/Logo';
-import { PixelCampusScene } from '@/components/campus-scene/PixelCampusScene';
+import { LazyPixelCampusScene } from '@/components/campus-scene/LazyPixelCampusScene';
 import { buildScene } from '@/components/campus-scene/SceneController';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/app/AuthProvider';
@@ -22,7 +22,7 @@ function LoginScene() {
   const { weather } = useCampusWeather();
   const tod = useTimeOfDay(weather);
   const scene = useMemo(() => buildScene(tod.now, tod.sunrise, tod.sunset, weather), [tod, weather]);
-  return <PixelCampusScene scene={scene} label={t('hero.sceneLabel', { scene: t(`weather.scene.${scene.kind}`) })} />;
+  return <LazyPixelCampusScene scene={scene} label={t('hero.sceneLabel', { scene: t(`weather.scene.${scene.kind}`) })} />;
 }
 
 export default function LoginPage() {

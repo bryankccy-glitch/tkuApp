@@ -15,6 +15,8 @@ const flat = (o: Tree, p = '', out: Record<string, string> = {}) => {
 };
 const placeholders = (s: string) => (s.match(/\{\{\s*[\w.]+\s*\}\}/g) ?? []).map((x) => x.replace(/\s/g, '')).sort().join('|');
 const packs = import.meta.glob<{ default: Tree }>('../packs/*.ts', { eager: true });
+// Language names stay in their own script; the English period suffix is intentionally empty.
+const INTENTIONALLY_UNTRANSLATED = ['settings.zh', 'settings.en', 'course.periodSuffix'];
 
 describe('languages', () => {
   afterEach(async () => { await i18n.changeLanguage('zh-TW'); });
@@ -28,15 +30,17 @@ describe('languages', () => {
     expect(Object.keys(packs).length).toBe(LANGUAGES.filter((x) => !isBuiltIn(x.code)).length);
   });
 
-  it.each(Object.entries(packs))('%s: only known keys, same placeholders, nearly complete', (_file, mod) => {
+  it.each(Object.entries(packs))('%s: only known keys, same placeholders, complete', (file, mod) => {
     const source = flat(en as unknown as Tree);
     const pack = flat(mod.default);
+    const missingKeys = Object.keys(source).filter((key) =>
+      !INTENTIONALLY_UNTRANSLATED.includes(key) && !pack[key]?.trim());
+    expect(missingKeys, `${file}: missing or empty keys: ${missingKeys.join(', ')}`).toEqual([]);
     for (const [k, v] of Object.entries(pack)) {
       expect(source[k], `unknown key ${k}`).toBeDefined();
       expect(placeholders(v), k).toBe(placeholders(source[k]!));
       expect(v.trim(), k).not.toBe('');
     }
-    expect(Object.keys(pack).length / Object.keys(source).length).toBeGreaterThan(0.97);
   });
 
   it('switches to a shipped language without any network request', async () => {

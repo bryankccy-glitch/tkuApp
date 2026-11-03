@@ -296,7 +296,8 @@ const pack = {
   "reminder": {
     "classTitle": "Còn {{minutes}} phút nữa vào học: {{course}}",
     "taskTitle": "{{kind}} sắp đến hạn: {{title}}",
-    "taskBody": "Hạn {{time}}"
+    "taskBody": "Hạn {{time}}",
+    "classRoomTitle": "Lớp học tại {{room}} sau {{minutes}} phút: {{course}}"
   },
   "nav": {
     "home": "Trang chủ",
@@ -1102,6 +1103,33 @@ const pack = {
     },
     "room": "Phòng",
     "roomFor": "Phòng cho {{slot}}"
+  },
+  "safety": {
+    "home": "Trang chủ",
+    "updated": "Cập nhật lần cuối: {{date}}",
+    "contactEmail": "Email: ",
+    "legalNav": "Pháp lý và hỗ trợ",
+    "report": "Báo cáo",
+    "reportUser": "Báo cáo người dùng",
+    "reportComment": "Báo cáo bình luận",
+    "block": "Chặn",
+    "blockTitle": "Chặn {{name}}?",
+    "blockBody": "Hai bạn sẽ không còn nhìn thấy bài đăng hay bình luận của nhau và không thể kết bạn với nhau. Tình bạn và chia sẻ lịch học sẽ kết thúc ngay bây giờ. Bạn có thể hoàn tác trong trang Bạn bè.",
+    "blocked": "Đã chặn",
+    "unblock": "Bỏ chặn",
+    "unblocked": "Đã bỏ chặn",
+    "blockedList": "Người dùng đã chặn",
+    "reported": "Đã nhận báo cáo. Chúng tôi xem xét trong vòng 3 ngày làm việc",
+    "rulesTitle": "Vui lòng đồng ý với quy định của chợ đồ cũ trước",
+    "rulesAccept": "Đồng ý và tiếp tục",
+    "rulesTerms": "Xem Điều khoản dịch vụ để biết đầy đủ quy định",
+    "rulesPhoto": "Hãy tích vào ô để đồng ý trước khi tải ảnh lên",
+    "err": {
+      "rules": "Vui lòng đồng ý với quy định của chợ đồ cũ trước",
+      "term": "Nội dung này có từ mà chúng tôi không cho phép. Vui lòng chỉnh sửa rồi thử lại",
+      "suspended": "Tài khoản này đã bị đình chỉ. Hãy liên hệ với chúng tôi nếu bạn có thắc mắc",
+      "blocked": "Bạn không thể làm điều này vì một trong hai người đã chặn người kia"
+    }
   }
 };
 export default pack;

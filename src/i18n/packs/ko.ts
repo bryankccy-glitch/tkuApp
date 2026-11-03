@@ -296,7 +296,8 @@ const pack = {
   "reminder": {
     "classTitle": "{{minutes}}분 후 수업: {{course}}",
     "taskTitle": "{{kind}} 마감 임박: {{title}}",
-    "taskBody": "마감 {{time}}"
+    "taskBody": "마감 {{time}}",
+    "classRoomTitle": "{{minutes}}분 후 {{room}}에서 수업: {{course}}"
   },
   "nav": {
     "home": "홈",
@@ -1102,6 +1103,33 @@ const pack = {
     },
     "room": "강의실",
     "roomFor": "{{slot}} 강의실"
+  },
+  "safety": {
+    "home": "홈",
+    "updated": "마지막 업데이트: {{date}}",
+    "contactEmail": "이메일: ",
+    "legalNav": "법적 안내 및 지원",
+    "report": "신고",
+    "reportUser": "사용자 신고",
+    "reportComment": "댓글 신고",
+    "block": "차단",
+    "blockTitle": "{{name}}님을 차단할까요?",
+    "blockBody": "서로의 게시물과 댓글이 보이지 않게 되고, 서로를 친구로 추가할 수도 없게 됩니다. 친구 관계와 시간표 공유는 즉시 끝납니다. 이 작업은 친구 페이지에서 취소할 수 있습니다.",
+    "blocked": "차단됨",
+    "unblock": "차단 해제",
+    "unblocked": "차단 해제됨",
+    "blockedList": "차단한 사용자",
+    "reported": "신고가 접수되었습니다. 영업일 기준 3일 이내에 검토합니다",
+    "rulesTitle": "먼저 중고 장터 규칙에 동의해 주세요",
+    "rulesAccept": "동의하고 계속하기",
+    "rulesTerms": "전체 규칙은 서비스 이용약관을 참고하세요",
+    "rulesPhoto": "사진을 업로드하기 전에 체크박스에 동의 표시를 해 주세요",
+    "err": {
+      "rules": "먼저 중고 장터 규칙에 동의해 주세요",
+      "term": "내용에 허용되지 않는 단어가 포함되어 있습니다. 수정 후 다시 시도해 주세요",
+      "suspended": "이 계정은 정지되었습니다. 궁금한 점이 있으면 문의해 주세요",
+      "blocked": "한쪽이 상대를 차단해서 이 작업을 할 수 없습니다"
+    }
   }
 };
 export default pack;

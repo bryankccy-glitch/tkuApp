@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { intlLocale } from '@/i18n';
 import { CalendarClock, CalendarDays, ListChecks, MapPinned, Megaphone, WifiOff } from 'lucide-react';
 import { LogoMark } from '@/components/brand/Logo';
-import { PixelCampusScene } from '@/components/campus-scene/PixelCampusScene';
+import { LazyPixelCampusScene } from '@/components/campus-scene/LazyPixelCampusScene';
 import { buildScene, greetingKey } from '@/components/campus-scene/SceneController';
 import type { DayPhase, SceneState, SceneWeather } from '@/components/campus-scene/sceneTypes';
 import { useCampusWeather } from '@/hooks/useCampusWeather';
@@ -61,7 +61,7 @@ export function Hero({ name, summary, cheer }: { name?: string; summary?: HeroSu
 
   return (
     <section aria-labelledby="hero-greeting" className="relative h-[400px] overflow-hidden rounded-b-[28px] bg-[#171717] text-white">
-      <PixelCampusScene scene={scene} label={t('hero.sceneLabel', { scene: t(`weather.scene.${scene.kind}`) })} />
+      <LazyPixelCampusScene scene={scene} label={t('hero.sceneLabel', { scene: t(`weather.scene.${scene.kind}`) })} />
       {/* Local translucent mask behind the text so moving clouds never reduce contrast. */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[62%] bg-[linear-gradient(180deg,rgb(10_10_14/0.55)_0%,rgb(10_10_14/0.32)_55%,rgb(10_10_14/0)_100%)]" />
       <div aria-hidden className="pointer-events-none absolute left-0 top-0 h-[62%] w-[70%] bg-[radial-gradient(ellipse_at_0%_35%,rgb(10_10_14/0.28),rgb(10_10_14/0)_70%)]" />

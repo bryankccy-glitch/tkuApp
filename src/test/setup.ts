@@ -9,6 +9,8 @@ afterEach(() => {
 });
 
 // jsdom gaps
+window.scrollTo = function () {};
+HTMLCanvasElement.prototype.getContext = function () { return null; };
 if (!Element.prototype.scrollIntoView) Element.prototype.scrollIntoView = function () {};
 if (!window.matchMedia) {
   window.matchMedia = (query: string) =>

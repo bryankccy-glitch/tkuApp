@@ -296,7 +296,8 @@ const pack = {
   "reminder": {
     "classTitle": "Clase en {{minutes}} min: {{course}}",
     "taskTitle": "{{kind}} vence pronto: {{title}}",
-    "taskBody": "Vence {{time}}"
+    "taskBody": "Vence {{time}}",
+    "classRoomTitle": "Clase en {{room}} en {{minutes}} min: {{course}}"
   },
   "nav": {
     "home": "Inicio",
@@ -1102,6 +1103,33 @@ const pack = {
     },
     "room": "Aula",
     "roomFor": "Aula de {{slot}}"
+  },
+  "safety": {
+    "home": "Inicio",
+    "updated": "Última actualización: {{date}}",
+    "contactEmail": "Correo: ",
+    "legalNav": "Legal y soporte",
+    "report": "Reportar",
+    "reportUser": "Reportar usuario",
+    "reportComment": "Reportar comentario",
+    "block": "Bloquear",
+    "blockTitle": "¿Bloquear a {{name}}?",
+    "blockBody": "Dejarán de verse las publicaciones y los comentarios, y no podrán añadirse mutuamente. La amistad y el uso compartido de horarios terminan ahora. Puedes deshacerlo en la página de Amigos.",
+    "blocked": "Bloqueado",
+    "unblock": "Desbloquear",
+    "unblocked": "Desbloqueado",
+    "blockedList": "Usuarios bloqueados",
+    "reported": "Denuncia recibida. Revisamos las denuncias en un plazo de 3 días laborables",
+    "rulesTitle": "Acepta primero las reglas del mercadillo",
+    "rulesAccept": "Aceptar y continuar",
+    "rulesTerms": "Consulta las Condiciones del servicio para ver las reglas completas",
+    "rulesPhoto": "Marca la casilla para aceptar antes de subir fotos",
+    "err": {
+      "rules": "Acepta primero las reglas del mercadillo",
+      "term": "Este texto contiene una palabra que no permitimos. Edítalo e inténtalo de nuevo",
+      "suspended": "Esta cuenta está suspendida. Contáctanos si tienes dudas",
+      "blocked": "No puedes hacer esto porque uno de los dos ha bloqueado al otro"
+    }
   }
 };
 export default pack;

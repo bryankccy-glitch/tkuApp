@@ -296,7 +296,8 @@ const pack = {
   "reminder": {
     "classTitle": "{{minutes}}分後に授業：{{course}}",
     "taskTitle": "{{kind}}の締め切り間近：{{title}}",
-    "taskBody": "締め切り {{time}}"
+    "taskBody": "締め切り {{time}}",
+    "classRoomTitle": "{{minutes}}分後に{{room}}で授業：{{course}}"
   },
   "nav": {
     "home": "ホーム",
@@ -1102,6 +1103,33 @@ const pack = {
     },
     "room": "教室",
     "roomFor": "{{slot}}の教室"
+  },
+  "safety": {
+    "home": "ホーム",
+    "updated": "最終更新：{{date}}",
+    "contactEmail": "メール：",
+    "legalNav": "法律とサポート",
+    "report": "報告",
+    "reportUser": "ユーザーを報告",
+    "reportComment": "コメントを報告",
+    "block": "ブロック",
+    "blockTitle": "{{name}}さんをブロックしますか？",
+    "blockBody": "お互いの投稿やコメントが表示されなくなり、友達に追加することもできなくなります。友達関係と時間割の共有はすぐに終了します。この操作は友達ページから取り消せます。",
+    "blocked": "ブロック済み",
+    "unblock": "ブロック解除",
+    "unblocked": "ブロック解除済み",
+    "blockedList": "ブロックしたユーザー",
+    "reported": "報告を受け付けました。3営業日以内に確認します",
+    "rulesTitle": "先にマーケットのルールに同意してください",
+    "rulesAccept": "同意して続行",
+    "rulesTerms": "詳細なルールは利用規約をご覧ください",
+    "rulesPhoto": "写真をアップロードする前にチェックボックスにチェックを入れてください",
+    "err": {
+      "rules": "先にマーケットのルールに同意してください",
+      "term": "入力内容に許可されていない語が含まれています。修正してもう一度お試しください",
+      "suspended": "このアカウントは停止されています。ご不明な点はお問い合わせください",
+      "blocked": "一方が相手をブロックしているため、この操作はできません"
+    }
   }
 };
 export default pack;
