@@ -1,12 +1,14 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-10-28（Asia/Taipei, UTC+8）
+2026-11-12（Asia/Taipei, UTC+8）
 
 ## Updated By
-Claude Code（2026-10-28 首頁個人化鼓勵語）；先前 Claude Code（2026-10-26 上線版：完全不需 API 金鑰）；先前：Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
+Claude Code（2026-11-12 活動主辦解析修正上線、原生分支跟上 main）；先前 Claude Code（2026-10-28 首頁個人化鼓勵語）；先前 Claude Code（2026-10-26 上線版：完全不需 API 金鑰）；先前：Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
 
 ## Current Status
+2026-11-12：正式站為 main `d81631f`（11/3 上架安全版＋11/12 活動主辦修正），Vercel 自動部署。App 不使用任何 AI／翻譯 API；伺服器只剩推播、活動同步（每日 04:00 台北，已確認每天有新增）、小工具。原生 App（Capacitor）在 `feat/native`（worktree `../tkuApp-native`），已合併最新 main、補齊 `remind.noteNative` 六語翻譯，252 tests／lint／typecheck／build 通過；尚未送審（需 Apple Developer 帳號，使用者決定）。
+
 2026-10-26 上線版：App 不再使用任何 AI／翻譯 API。助理（本機規則引擎）、課表截圖辨識（Tesseract.js）、介面翻譯（預先翻好的語言檔）都在手機上執行；伺服器只剩推播、活動同步、小工具。Vercel 的 `GEMINI_API_KEY`（與誤建的 `AGEMINI_API_KEY`）可以刪除。lint、typecheck、171 單元、132 E2E 通過。
 
 2026-10-22 Codex：推播訂閱補建／重連與伺服器推播測試修正（程式提交 `76b6f07`）已依使用者最新「部署」指示 fast-forward 合併 main 並發布至正式站。正式 GET `/api/push` 回 200、configured=true、含公開 key；未帶 token 的 POST 回 401「請先登入」。瀏覽器經 PWA 重新載入後確認最新版設定頁與資源版本；此瀏覽器的提醒開關原為關閉，沒有替使用者開啟權限或新增訂閱。先前線上 0 訂閱與手動排程 401 unauthorized 的問題仍待設定／真機驗證；部署成功不能視為上課通知已恢復。未更換線上密鑰、未修改使用者課表。
@@ -26,6 +28,8 @@ Claude Code（2026-10-28 首頁個人化鼓勵語）；先前 Claude Code（2026
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **活動主辦解析修正＋原生分支同步 — Claude Code（2026-11-12）**：正式站「校園活動」主辦前出現 `align='left'>`（`api/sync-events.ts` 以 `<td[\s>]` 切欄，屬性殘留）。改以 `<td\b[^>]*>` 切欄；每日同步更新既有活動時改為一併更新 title／category／summary／organizer（原只更新時間地點），舊錯誤資料於下次同步自動更正。新增 2 測試，239 tests 通過；使用者同意部署，push `d81631f`，Vercel success。同日 `feat/native` 合併 main（無衝突），補 es/id/ja/ko/th/vi 的 `remind.noteNative`。
+  - **Next Step**：明早確認活動頁無 `align=` 殘留；原生 App 送審前在 Xcode 執行 `npx cap sync ios` 並實機測試；推播仍待 cron_secret／CRON_SECRET 同步後真機驗證；Supabase 外洩密碼保護待使用者開啟。
 - **上線 — Claude Code（2026-11-03 19:10）**：使用者下令上線。push `d7f544b..4224f79`（含 11/2 上架安全修正 3 個 commit 與 11/3 優化），Vercel 自動部署 `tku-3zeb8u82x` Ready；接著用 Supabase MCP 套用 `store_safety`（與檔案逐字相同）。驗證：5 張新表 RLS 開啟、7 個函式、10 個禁用詞、`hidden_at` 欄位都在；正式站載入新 bundle（含獨立的 `PixelCampusScene` chunk），`/api/push` 200；`release-check --migrations-applied` 通過。Security advisor 的新項目都是刻意設計（`blocked_terms`、`suspended_users` 只給 service role；RPC 皆檢查 `auth.uid()`）。
   - **Next Step**：`VITE_SUPPORT_EMAIL` 仍未設定（法律頁的聯絡信箱目前隱藏），使用者決定信箱後設定並重新部署；Supabase Auth 的外洩密碼保護（HaveIBeenPwned）建議開啟；真人登入後實測市集同意規範、檢舉、封鎖。
 - **補齊 6 語言安全字串、翻譯測試改為必須完整、首頁動畫延後載入 — Claude Code＋Codex＋OpenCode（2026-11-03）**：(1) 11/2 新增的檢舉／封鎖／市集規範／停權等 23 個 `safety.*` 字串與 `reminder.classRoomTitle`，原本在 ja、ko、vi、th、id、es 都沒翻譯（顯示英文）。OpenCode 翻譯，Claude 審查並統一用詞（日文「友達」、各語言沿用既有的「二手市集」名稱），寫入 `src/i18n/packs/*.ts`，只有新增。(2) Codex：`languages.test.ts` 由「超過 97% 即可」改為每個英文字串都必須翻譯，例外只有 `settings.zh`、`settings.en`、`course.periodSuffix`，失敗時一次列出所有缺少的 key（已用刪掉一個字串反向驗證會失敗）；`src/test/setup.ts` 補 `window.scrollTo` 與 canvas `getContext` 替身，單元測試的 jsdom「Not implemented」雜訊歸零。(3) Claude：新增 `LazyPixelCampusScene`，首頁與登入頁的像素動畫改為獨立 chunk（19 KB），首次載入的 index 由 172.9 KB 降到 154.1 KB；載入前顯示同名的無障礙佔位（不帶 `data-scene`，E2E 會等真正的場景）。驗證：lint、typecheck、Vitest 237、build、Playwright 134 全過。
