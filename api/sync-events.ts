@@ -54,7 +54,7 @@ export function parseList(html: string): ListItem[] {
     if (!link) continue;
     const cid = decodeEntities(link[1]!);
     const title = clean(link[2]!);
-    const cells = row.split(/<td[\s>]/i).slice(1).map((c) => clean(c.replace(/<\/td>[\s\S]*$/i, '')));
+    const cells = row.split(/<td\b[^>]*>/i).slice(1).map((c) => clean(c.replace(/<\/td>[\s\S]*$/i, '')));
     // Columns: 序號 | 活動起迄日 | 活動名稱 | 對象 | 報名起迄日 | 承辦單位 | 我要報名
     const titleIdx = cells.findIndex((c) => c.includes(title.slice(0, 8)));
     const audience = titleIdx >= 0 ? cells[titleIdx + 1] ?? '' : '';
@@ -183,7 +183,14 @@ export async function syncEvents(db: SupabaseClient, now = new Date(), get: (url
   for (const { it, d } of eligible) {
     const src = url(it.cid);
     keep.add(src);
-    const fields = { starts_at: d.start, ends_at: d.end, location: d.location, status: 'published' };
+    // 標題、摘要、主辦也一起更新：來源網站改字或解析修正後，既有活動才會跟著變正確
+    const fields = {
+      starts_at: d.start, ends_at: d.end, location: d.location, status: 'published',
+      title: it.title.slice(0, 120),
+      category: categorize(it.title, it.organizer),
+      summary: buildSummary(it, d),
+      organizer: (it.organizer || '淡江大學').slice(0, 80),
+    };
     const row = existing.get(src);
     if (row) {
       const { error } = await db.from('campus_events').update(fields).eq('id', row.id);
@@ -192,10 +199,6 @@ export async function syncEvents(db: SupabaseClient, now = new Date(), get: (url
     } else {
       const { error } = await db.from('campus_events').insert({
         ...fields,
-        title: it.title.slice(0, 120),
-        category: categorize(it.title, it.organizer),
-        summary: buildSummary(it, d),
-        organizer: (it.organizer || '淡江大學').slice(0, 80),
         source_name: SOURCE_NAME,
         source_url: src,
         registration_url: src,

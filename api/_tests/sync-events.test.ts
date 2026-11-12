@@ -28,6 +28,13 @@ describe('sync-events parsing', () => {
     expect(parsePageCount(LIST)).toBe(2);
   });
 
+  it('drops <td> attributes such as align= from cell text', () => {
+    const html = `<table><tr class="row"><td align='center'>1</td><td align='left'>2026-11-16</td>
+      <td align='left'><a href="course.aspx?cid=ATTR1">英文系講座</a></td><td align='left'>學生</td>
+      <td align='left'>2026-11-01~2026-11-15</td><td align='left'>英文學系</td><td>報名</td></tr></table>`;
+    expect(parseList(html)[0]).toMatchObject({ cid: 'ATTR1', title: '英文系講座', audience: '學生', organizer: '英文學系' });
+  });
+
   it('reads exact time, registration end and place from an activity page', () => {
     expect(parseDetail(detailHtml('2026/10/24 13:00', '2026/10/24 17:00'))).toEqual({
       start: '2026-10-24T13:00:00+08:00', end: '2026-10-24T17:00:00+08:00', regEnd: '2026-10-23T12:00:00+08:00',
@@ -81,6 +88,15 @@ describe('syncEvents', () => {
     const ins = calls.find((c) => c.op === 'insert')!.payload as Record<string, string>;
     expect(ins).toMatchObject({ source_name: SOURCE_NAME, status: 'published', location: '商管大樓B712教室', starts_at: '2026-10-24T13:00:00+08:00', category: 'programming' });
     expect(calls.find((c) => c.op === 'archive')!.ids).toEqual(['e1']);
+  });
+
+  it('rewrites organizer and summary of an existing activity', async () => {
+    const { db, calls } = fakeDb([{ id: 'e2', source_url: `${ORIGIN}/course.aspx?cid=ASBX1024AI`, status: 'published' }]);
+    const r = await syncEvents(db, new Date('2026-10-19T00:00:00+08:00'), get);
+    expect(r).toMatchObject({ inserted: 0, updated: 1 });
+    const upd = calls.find((c) => c.op === 'update')!.payload as Record<string, string>;
+    expect(upd).toMatchObject({ organizer: '課外活動輔導組', title: '社團AI與資訊推廣活動-遊戲開發者座談會' });
+    expect(upd.summary).toMatch(/^主辦：課外活動輔導組｜/);
   });
 
   it('refuses to touch the table when the list page looks broken', async () => {
