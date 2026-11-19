@@ -28,6 +28,7 @@ Claude Code（2026-11-12 活動主辦解析修正上線、原生分支跟上 mai
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **課表全部刪除＋截圖匯入同課一老師、連堂合併 — Claude Code＋Codex（2026-11-19，未部署）**：(1) Claude：課表頁新增「全部刪除」（確認視窗寫明學期、門數、無法復原；作業考試保留但解除課程連結），Repository 新增 `deleteCoursesInSemester`（local 與 Supabase，Supabase 靠 RLS 只刪本人），9 語言字串（zh-CN 手動補，本機無 opencc）。(2) Codex：新增 `src/lib/ocr/normalizeCells.ts`，同課只留出現最多的老師讀法（助教仍獨立）；同日同課相連節次合併、教室取多數讀法（修正高爾夫連堂被拆）；小字行放大後再 OCR；課名差一字統一。Claude 審查後補「只差序號（一／二、上／下、A／B）不合併」保護。驗證：Vitest 43 檔 251 項、typecheck、lint、build、新增 E2E「全部刪除」桌面＋手機通過。尚未用真實截圖量測老師名字辨識率（需使用者提供 2–5 張截圖做固定考題）。
 - **活動主辦解析修正＋原生分支同步 — Claude Code（2026-11-12）**：正式站「校園活動」主辦前出現 `align='left'>`（`api/sync-events.ts` 以 `<td[\s>]` 切欄，屬性殘留）。改以 `<td\b[^>]*>` 切欄；每日同步更新既有活動時改為一併更新 title／category／summary／organizer（原只更新時間地點），舊錯誤資料於下次同步自動更正。新增 2 測試，239 tests 通過；使用者同意部署，push `d81631f`，Vercel success。同日 `feat/native` 合併 main（無衝突），補 es/id/ja/ko/th/vi 的 `remind.noteNative`。
   - **Next Step**：明早確認活動頁無 `align=` 殘留；原生 App 送審前在 Xcode 執行 `npx cap sync ios` 並實機測試；推播仍待 cron_secret／CRON_SECRET 同步後真機驗證；Supabase 外洩密碼保護待使用者開啟。
 - **上線 — Claude Code（2026-11-03 19:10）**：使用者下令上線。push `d7f544b..4224f79`（含 11/2 上架安全修正 3 個 commit 與 11/3 優化），Vercel 自動部署 `tku-3zeb8u82x` Ready；接著用 Supabase MCP 套用 `store_safety`（與檔案逐字相同）。驗證：5 張新表 RLS 開啟、7 個函式、10 個禁用詞、`hidden_at` 欄位都在；正式站載入新 bundle（含獨立的 `PixelCampusScene` chunk），`/api/push` 200；`release-check --migrations-applied` 通過。Security advisor 的新項目都是刻意設計（`blocked_terms`、`suspended_users` 只給 service role；RPC 皆檢查 `auth.uid()`）。
