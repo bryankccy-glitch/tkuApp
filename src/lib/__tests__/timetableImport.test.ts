@@ -85,10 +85,70 @@ describe('cellsToCourses (淡江 timetable screenshot)', () => {
     expect(cellsToCourses([c(1, 1, '', '實習', '助　教', 'B 1')]).courses[0]).toMatchObject({ name: '實習（助教）', instructor: '助教' });
   });
 
-  it('does not merge different named teachers or unknown teachers into one lecturer', () => {
-    const result = cellsToCourses([c(1, 1, '', '專題', '老師甲', 'B1'), c(1, 2, '', '專題', '老師乙', 'B1'), c(1, 3, '', '專題', '', 'B1')]);
-    expect(result.courses).toHaveLength(3);
-    expect(result.courses.map((course) => course.instructor)).toEqual(['老師甲', '老師乙', '']);
+  it('uses the most frequent lecturer even when OCR differs by multiple characters, keeping TA separate', () => {
+    const result = cellsToCourses([
+      c(1, 1, '', '投資學', '錯誤名', 'B1'),
+      c(1, 2, '', '投資學', '薛勝斌', 'B1'),
+      c(1, 3, '', '投資學', '薛勝斌', 'B1'),
+      c(1, 4, '', '投資學', '助　教', 'B1'),
+      c(1, 5, '', '投資學', 'TA', 'B1'),
+      c(1, 6, '', '投資學', 'ta', 'B1'),
+    ]);
+    expect(result.courses).toHaveLength(2);
+    expect(result.courses.map(({ name, instructor }) => ({ name, instructor }))).toEqual([
+      { name: '投資學', instructor: '薛勝斌' }, { name: '投資學（助教）', instructor: '助教' },
+    ]);
+  });
+
+  it('breaks lecturer ties by longest reading then first input occurrence, ignoring empty readings', () => {
+    const result = cellsToCourses([
+      c(5, 1, '', '專題', '甲乙丙', ''), c(2, 1, '', '專題', '丁戊己', ''),
+      c(1, 1, '', '專題', '甲乙', ''), c(1, 2, '', '專題', '', ''), c(1, 3, '', '專題', '', ''),
+    ]);
+    expect(result.courses).toHaveLength(1);
+    expect(result.courses[0]!.instructor).toBe('甲乙丙');
+    expect(cellsToCourses([c(1, 1, '', '專題', '', '')]).courses[0]!.instructor).toBe('');
+  });
+
+  it('merges consecutive golf periods despite room differences and keeps gaps and days separate', () => {
+    const result = cellsToCourses([
+      c(2, 7, '', '體育－高爾夫', '甲乙丙', 'SG 314'), c(2, 8, '', '體育－高爾夫', '甲乙丙', 'SG 3I4'),
+      c(2, 10, '', '體育－高爾夫', '甲乙丙', 'B1'), c(3, 1, '', '體育－高爾夫', '甲乙丙', 'B2'),
+    ]);
+    expect(result.courses).toHaveLength(1);
+    expect(result.courses[0]!.slots).toMatchObject([
+      { weekday: 2, fromPeriod: 7, toPeriod: 8, room: 'SG314', startTime: '14:10', endTime: '16:00' },
+      { weekday: 2, fromPeriod: 10, toPeriod: 10, room: 'B1' },
+      { weekday: 3, fromPeriod: 1, toPeriod: 1, room: 'B2' },
+    ]);
+  });
+
+  it('votes on rooms within each segment, preferring the first nonempty reading on ties', () => {
+    const result = cellsToCourses([
+      c(1, 1, '', '專題', '甲', ''), c(1, 2, '', '專題', '甲', 'B1'),
+      c(1, 3, '', '專題', '甲', 'B2'), c(1, 4, '', '專題', '甲', 'B2'),
+      c(1, 6, '', '專題', '甲', ''), c(1, 7, '', '專題', '甲', 'B3'), c(1, 8, '', '專題', '甲', 'B4'),
+    ]);
+    expect(result.courses[0]!.slots.map((slot) => slot.room)).toEqual(['B2', 'B3']);
+  });
+
+  it('unifies a one-character course typo by frequency before lecturer voting and slot merging', () => {
+    const result = cellsToCourses([
+      c(1, 1, '', '投貢學', '錯誤名', 'B1'), c(1, 2, '', '投資學', '薛勝斌', 'B1'),
+      c(1, 3, '', '投資學', '薛勝斌', 'B1'), c(2, 1, '', '投資學', 'TA', 'B1'),
+      c(3, 1, '', '作業系統', '另一位', 'B2'),
+    ]);
+    expect(result.courses.map((course) => course.name)).toEqual(['投資學', '投資學（助教）', '作業系統']);
+    expect(result.courses[0]).toMatchObject({ instructor: '薛勝斌', slots: [{ fromPeriod: 1, toPeriod: 3 }] });
+  });
+
+  it('uses the more common course spelling, including insertion and longer-name edits', () => {
+    const result = cellsToCourses([
+      c(1, 1, '', '程式設計資料結構', '甲', ''), c(1, 2, '', '程式設計與資料結構', '甲', ''),
+      c(1, 3, '', '程式設計與資料結構', '甲', ''), c(2, 1, '', '程式設計與資枓結構', '甲', ''),
+    ]);
+    expect(result.courses).toHaveLength(1);
+    expect(result.courses[0]!.name).toBe('程式設計與資料結構');
   });
 });
 

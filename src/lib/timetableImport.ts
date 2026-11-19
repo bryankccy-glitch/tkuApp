@@ -1,3 +1,4 @@
+import { courseKey, isTa, mostFrequent, normalizeImportCells } from './ocr/normalizeCells';
 import { TKU_PERIODS } from './periods';
 import { COURSE_COLORS, type CourseColor, type Weekday } from './types';
 
@@ -37,16 +38,9 @@ export interface ImportResult {
   skipped: ImportCell[];
 }
 
-const isTa = (teacher: string) => /^助\s*教$/.test(teacher.replace(/[\s\u3000]/g, ' ').trim()) || /^TA$/i.test(teacher.trim());
-
 /** "B 217" / "ｂ２１７" → "B217"; keeps building letters + number, uppercase. */
 export function normalizeRoom(room: string): string {
   return room.normalize('NFKC').replace(/\s+/g, '').toUpperCase().slice(0, 20);
-}
-
-/** Matching key for the same course across cells (width / spacing / bracket variants). */
-function courseKey(name: string) {
-  return name.normalize('NFKC').replace(/[\s\u3000]/g, '').toLowerCase();
 }
 
 /** Collapse whitespace (incl. full-width spaces) but keep the original characters for display. */
@@ -54,7 +48,7 @@ function cleanText(s: string, max: number) {
   return s.replace(/[\s\u3000]+/g, ' ').trim().slice(0, max);
 }
 
-/** Merge only cells with the same course and teacher; TA sessions stay separate. */
+/** Merge OCR variants of the same course; TA sessions stay separate. */
 export function cellsToCourses(cells: ImportCell[]): ImportResult {
   const skipped: ImportCell[] = [];
   const valid: (ImportCell & { roomN: string })[] = [];
@@ -64,33 +58,41 @@ export function cellsToCourses(cells: ImportCell[]): ImportResult {
     const period = TKU_PERIODS.find((p) => p.no === c.period);
     if (!name || !Number.isInteger(c.weekday) || c.weekday < 1 || c.weekday > 7) continue;
     if (!period) { skipped.push(c); continue; }
-    const dup = `${c.weekday}-${c.period}-${courseKey(name)}`;
+    const dup = `${c.weekday}-${c.period}-${courseKey(name)}-${isTa(c.teacher)}`;
     if (seen.has(dup)) continue; // the model sometimes repeats a cell
     seen.add(dup);
     valid.push({ ...c, course: name, group: cleanText(c.group, 40), teacher: cleanText(c.teacher, 60), roomN: normalizeRoom(c.room) });
   }
 
   const byCourse = new Map<string, typeof valid>();
-  for (const c of valid) {
+  for (const c of normalizeImportCells(valid)) {
     const teacher = isTa(c.teacher) ? '助教' : c.teacher;
-    const k = `${courseKey(c.course)}::${teacher || '__unknown_teacher__'}`;
-    byCourse.set(k, [...(byCourse.get(k) ?? []), c]);
+    const k = `${courseKey(c.course)}::${isTa(teacher) ? 'ta' : 'lecture'}`;
+    byCourse.set(k, [...(byCourse.get(k) ?? []), { ...c, roomN: normalizeRoom(c.room) }]);
   }
 
   const courses: DraftCourse[] = [];
   for (const [key, list] of byCourse) {
+    const originalOrder = new Map(list.map((c, i) => [c, i]));
     list.sort((a, b) => a.weekday - b.weekday || a.period - b.period);
-    const slots: DraftSlot[] = [];
+    const segments: (typeof list)[] = [];
     for (const c of list) {
-      const last = slots[slots.length - 1];
-      const p = TKU_PERIODS.find((x) => x.no === c.period)!;
-      if (last && last.weekday === c.weekday && last.toPeriod === c.period - 1 && last.room === c.roomN) {
-        last.toPeriod = c.period;
-        last.endTime = p.end;
-      } else {
-        slots.push({ weekday: c.weekday as Weekday, fromPeriod: c.period, toPeriod: c.period, startTime: p.start, endTime: p.end, room: c.roomN });
-      }
+      const segment = segments[segments.length - 1];
+      const last = segment?.[segment.length - 1];
+      if (last && last.weekday === c.weekday && last.period === c.period) continue;
+      if (last && last.weekday === c.weekday && last.period === c.period - 1) segment!.push(c);
+      else segments.push([c]);
     }
+    const slots: DraftSlot[] = segments.map((segment) => {
+      const first = segment[0]!, last = segment[segment.length - 1]!;
+      const roomReadings = [...segment].sort((a, b) => originalOrder.get(a)! - originalOrder.get(b)!);
+      return {
+        weekday: first.weekday as Weekday, fromPeriod: first.period, toPeriod: last.period,
+        startTime: TKU_PERIODS.find((p) => p.no === first.period)!.start,
+        endTime: TKU_PERIODS.find((p) => p.no === last.period)!.end,
+        room: mostFrequent(roomReadings.map((c) => c.roomN)),
+      };
+    });
     const ta = isTa(list[0]!.teacher);
     const instructor = ta ? '助教' : list[0]!.teacher;
     const group = list.find((c) => c.group)?.group ?? '';

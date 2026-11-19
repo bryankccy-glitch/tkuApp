@@ -1,3 +1,5 @@
+import { normalizeImportCells } from './normalizeCells';
+export { unifyTeachers } from './normalizeCells';
 import type { ImportCell } from '@/lib/timetableImport';
 import { cellLineImages, detectGrid, parseCellLines, type Grid, type LineImage, type Pixels } from './timetableGrid';
 
@@ -27,14 +29,26 @@ async function toPixels(file: Blob): Promise<Pixels> {
   return { width: w, height: h, data: img.data };
 }
 
-function lineCanvas(l: LineImage, pad = 16): HTMLCanvasElement {
+/** Enlarge small glyphs once per memoized line; retain antialiasing for thin strokes. */
+export function lineCanvas(l: LineImage, pad = 16): HTMLCanvasElement {
+  const source = document.createElement('canvas');
+  source.width = l.width;
+  source.height = l.height;
+  source.getContext('2d')!.putImageData(new ImageData(l.data, l.width, l.height), 0, 0);
+  // cellLineImages adds three source pixels of padding, then scales the image.
+  const sourceGlyphHeight = Math.max(1, l.bottom - l.top + 1);
+  const glyphHeight = sourceGlyphHeight * l.height / (sourceGlyphHeight + 6);
+  const scale = glyphHeight < 32 ? Math.min(4, 40 / glyphHeight) : 1;
+  const width = Math.round(l.width * scale), height = Math.round(l.height * scale);
   const c = document.createElement('canvas');
-  c.width = l.width + pad * 2;
-  c.height = l.height + pad * 2;
+  c.width = width + pad * 2;
+  c.height = height + pad * 2;
   const ctx = c.getContext('2d')!;
   ctx.fillStyle = '#fff';
   ctx.fillRect(0, 0, c.width, c.height);
-  ctx.putImageData(new ImageData(l.data, l.width, l.height), pad, pad);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(source, pad, pad, width, height);
   return c;
 }
 
@@ -115,34 +129,10 @@ export async function readTimetableImage(file: Blob, onProgress?: (p: ReadProgre
       if (!parsed || period > 14) continue;
       cells.push({ weekday: job.weekday, period, group: parsed.group.replace(/\s/g, ''), course: tidyCourse(parsed.course), teacher: parsed.teacher, room: parsed.room });
     }
-    return unifyTeachers(cells);
+    return normalizeImportCells(cells);
   } finally {
     await worker.terminate();
   }
-}
-
-const oneCharApart = (a: string, b: string) =>
-  a.length === b.length && a.length >= 2 && [...a].filter((c, i) => c !== b[i]).length === 1;
-
-/**
- * The same instructor of the same course can be read with one character different in another
- * cell (e.g. 鄭元成 / 笨元成), which would split one course in two. Use the more frequent reading.
- */
-export function unifyTeachers(cells: ImportCell[]): ImportCell[] {
-  const byCourse = new Map<string, Map<string, number>>();
-  for (const c of cells) {
-    const m = byCourse.get(c.course) ?? new Map<string, number>();
-    m.set(c.teacher, (m.get(c.teacher) ?? 0) + 1);
-    byCourse.set(c.course, m);
-  }
-  return cells.map((c) => {
-    const counts = byCourse.get(c.course)!;
-    let best = c.teacher;
-    for (const [name, n] of counts) {
-      if (name !== c.teacher && oneCharApart(name, c.teacher) && n > (counts.get(best) ?? 0)) best = name;
-    }
-    return best === c.teacher ? c : { ...c, teacher: best };
-  });
 }
 
 function hash(data: Uint8ClampedArray): number {
