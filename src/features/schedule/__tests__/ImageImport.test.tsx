@@ -71,6 +71,27 @@ describe('ImageImport', () => {
     expect(list[1]).toMatchObject({ instructor: '鄭培宇', slots: [{ weekday: 3, startTime: '10:10', endTime: '12:00', room: 'B218' }] });
   });
 
+  it('reviews one lecturer per corrected course and merged golf slots, with TA separate', async () => {
+    const user = userEvent.setup();
+    const { onImport } = setup(async () => [
+      cell(1, 1, '投貢學', '錯誤名', 'B606'), cell(1, 2, '投資學', '薛勝斌', 'B606'),
+      cell(1, 3, '投資學', '薛勝斌', 'B606'), cell(1, 4, '投資學', 'TA', 'B606'),
+      cell(2, 7, '體育－高爾夫', '甲乙丙', 'SG314'), cell(2, 8, '體育－高爾夫', '甲乙丙', 'SG3I4'),
+    ]);
+    await pick(user);
+    expect(await screen.findByText('讀到 3 個課程項目（正課與助教課分開）')).toBeInTheDocument();
+    expect(screen.getAllByDisplayValue('薛勝斌')).toHaveLength(1);
+    expect(screen.queryByDisplayValue('錯誤名')).not.toBeInTheDocument();
+    expect(screen.getByDisplayValue('投資學（助教）')).toBeInTheDocument();
+    expect(screen.getByText(/14:10–16:00/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '加入 3 個課程項目' }));
+    expect(onImport).toHaveBeenCalledWith(expect.arrayContaining([
+      expect.objectContaining({ name: '投資學', instructor: '薛勝斌' }),
+      expect.objectContaining({ name: '投資學（助教）', instructor: '助教' }),
+      expect.objectContaining({ name: '體育－高爾夫', slots: [{ weekday: 2, startTime: '14:10', endTime: '16:00', room: 'SG314' }] }),
+    ]));
+  });
+
   it('explains when the on-device reader cannot load and offers CSV instead', async () => {
     const user = userEvent.setup();
     setup(async () => { throw new TimetableImportError('engine'); });
