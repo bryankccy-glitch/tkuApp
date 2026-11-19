@@ -44,3 +44,27 @@ describe('course names that differ only by an ordinal stay separate', () => {
     expect(out.map((c) => c.course)).toEqual(['微積分（一）', '微積分（一）', '微積分（二）', '投資學', '投資學', '投資學']);
   });
 });
+
+describe('voteReadings (several renderings of one OCR line)', () => {
+  it('ignores spacing differences and keeps the majority reading', async () => {
+    const { voteReadings } = await import('../readTimetable');
+    expect(voteReadings(['李 文 基 T 701', '李 文 基 T701', '李文基 T 701'])).toBe('李文基T701');
+  });
+  it('votes per character when no whole reading has a majority', async () => {
+    const { voteReadings } = await import('../readTimetable');
+    // 實測：薛勝斌 was read as 薛勝廬／薛膀這／薛勝斌／廳勝站／薛勝斌
+    expect(voteReadings(['薛勝廬B606', '薛膀這B606', '薛勝斌B606', '廳勝站B606', '薛勝斌B606'])).toBe('薛勝斌B606');
+  });
+  it('breaks a split vote with characters this page spells confidently elsewhere', async () => {
+    const { voteReadings } = await import('../readTimetable');
+    const readings = ['鄭塔宇B217', '鄭培宇B217', '鄭培宇B217', '鄭卉宇B217', '鄭塔宇B217'];
+    expect(voteReadings(readings)).toBe('鄭塔宇B217');
+    expect(voteReadings(readings, new Map([['培', 3]]))).toBe('鄭培宇B217');
+    expect(voteReadings(['經當學', '經注學', '經注學', '經濟學'], new Map([['濟', 2]]))).toBe('經濟學');
+  });
+  it('never produces a character that no rendering read', async () => {
+    const { voteReadings } = await import('../readTimetable');
+    const out = voteReadings(['蔡淑芬', '松淑芬', '理淑芬', '薦淑芬', '正淑芬'], new Map([['蕭', 9]]));
+    expect(['蔡', '松', '理', '薦', '正']).toContain([...out][0]);
+  });
+});

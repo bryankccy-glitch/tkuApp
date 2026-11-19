@@ -76,11 +76,11 @@ export async function readTimetableImage(file: Blob, onProgress?: (p: ReadProgre
   if (!grid) throw new NotATimetableError();
 
   // Collect the non-empty cells first, so progress has a known total.
-  const jobs: { weekday: number; period: number; lines: LineImage[] }[] = [];
+  const jobs: { weekday: number; period: number; lines: LineImage[]; box: [number, number, number, number] }[] = [];
   for (let d = 1; d <= 7; d += 1) {
     for (let r = 1; r < grid.ys.length; r += 1) {
       const lines = cellLineImages(pixels, grid.xs[d]!, grid.ys[r - 1]!, grid.xs[d + 1]!, grid.ys[r]!);
-      if (lines.length) jobs.push({ weekday: d, period: r, lines });
+      if (lines.length) jobs.push({ weekday: d, period: r, lines, box: [grid.xs[d]!, grid.ys[r - 1]!, grid.xs[d + 1]!, grid.ys[r]!] });
     }
   }
   if (!jobs.length) return [];
@@ -110,20 +110,41 @@ export async function readTimetableImage(file: Blob, onProgress?: (p: ReadProgre
     const first = 1 + (offsets.find((o, i) => offsets.indexOf(o) !== i) ?? (offsets.length === 1 ? offsets[0]! : 0));
     onProgress?.({ done: ++done, total });
     // Identical cells (a course over several periods) are rendered identically: read each once.
-    const memo = new Map<string, string>();
-    const cells: ImportCell[] = [];
+    // Pass 1: read every distinct line under several renderings.
+    const readingsByKey = new Map<string, string[]>();
+    const cellKeys: { job: (typeof jobs)[number]; keys: { key: string; link: boolean }[] }[] = [];
     for (const job of jobs) {
-      const texts: { text: string; link: boolean }[] = [];
-      for (const l of job.lines) {
+      let variants: LineImage[][] | null = null;
+      const keys: { key: string; link: boolean }[] = [];
+      for (const [i, l] of job.lines.entries()) {
         const key = `${l.width}x${l.height}:${hash(l.data)}`;
-        let text = memo.get(key);
-        if (text === undefined) {
-          text = (await worker.recognize(lineCanvas(l))).data.text.trim();
-          memo.set(key, text);
+        keys.push({ key, link: l.link });
+        if (!readingsByKey.has(key)) {
+          const readings = [(await worker.recognize(lineCanvas(l))).data.text.trim()];
+          variants ??= VOTE_VARIANTS.map(([scale, contrast]) => cellLineImages(pixels, ...job.box, scale, 0, contrast));
+          for (const v of variants) {
+            const alt = v.length === job.lines.length ? v[i] : undefined;
+            if (alt) readings.push((await worker.recognize(lineCanvas(alt))).data.text.trim());
+          }
+          readingsByKey.set(key, readings);
         }
-        texts.push({ text, link: l.link });
         onProgress?.({ done: ++done, total });
       }
+      cellKeys.push({ job, keys });
+    }
+    // Pass 2: vote. Ties are broken by how often each character is read anywhere in this screenshot,
+    // so a name read clearly in one cell (鄭培宇) settles a split reading of it in another.
+    const prior = new Map<string, number>();
+    for (const readings of readingsByKey.values()) {
+      const clean = readings.map((r) => r.replace(/\s+/g, '')).filter(Boolean);
+      const agreed = clean.find((r) => clean.filter((x) => x === r).length * 2 > clean.length);
+      // Only lines the renderings agree on count as evidence of how this page spells things.
+      if (agreed) for (const ch of agreed) prior.set(ch, (prior.get(ch) ?? 0) + 1);
+    }
+    const voted = new Map([...readingsByKey].map(([key, readings]) => [key, voteReadings(readings, prior)]));
+    const cells: ImportCell[] = [];
+    for (const { job, keys } of cellKeys) {
+      const texts = keys.map(({ key, link }) => ({ text: voted.get(key)!, link }));
       const parsed = parseCellLines(texts);
       const period = job.period + first - 1;
       if (!parsed || period > 14) continue;
@@ -133,6 +154,39 @@ export async function readTimetableImage(file: Blob, onProgress?: (p: ReadProgre
   } finally {
     await worker.terminate();
   }
+}
+
+/** Alternative renderings (upscale factor, contrast) used only for voting; the default render is 3×, 1.0. */
+const VOTE_VARIANTS: [number, number][] = [[2, 1], [3, 1.6], [4, 1], [2, 2]];
+
+/**
+ * Majority vote over several OCR readings of the same line. A reading shared by most renderings
+ * wins; otherwise readings of the most common length are voted per character. Never invents
+ * characters that no rendering produced.
+ */
+export function voteReadings(readings: string[], prior?: ReadonlyMap<string, number>): string {
+  // Renderings disagree on spaces (「B607」/「B 607」) far more than on characters: vote without them.
+  const list = readings.map((r) => r.replace(/\s+/g, '')).filter(Boolean);
+  if (!list.length) return readings[0] ?? '';
+  const counts = new Map<string, number>();
+  for (const r of list) counts.set(r, (counts.get(r) ?? 0) + 1);
+  const [top, n] = [...counts].sort((a, b) => b[1] - a[1])[0]!;
+  if (n > list.length / 2) return top;
+  const lengths = new Map<number, number>();
+  for (const r of list) lengths.set([...r].length, (lengths.get([...r].length) ?? 0) + 1);
+  const len = [...lengths].sort((a, b) => b[1] - a[1] || (a[0] === [...list[0]!].length ? -1 : 1))[0]![0];
+  const same = list.filter((r) => [...r].length === len).map((r) => [...r]);
+  if (same.length < 2) return list[0]!;
+  return Array.from({ length: len }, (_, i) => {
+    const c = new Map<string, number>();
+    for (const r of same) c.set(r[i]!, (c.get(r[i]!) ?? 0) + 1);
+    const best = Math.max(...c.values());
+    const order = same.map((r) => r[i]!).filter((ch, k, all) => all.indexOf(ch) === k);
+    if (best * 2 > same.length) return order.find((ch) => c.get(ch) === best)!;
+    // No majority for this character: prefer the candidate this page spells confidently elsewhere,
+    // then the more frequent one, then the default rendering's. Only characters actually read qualify.
+    return order.sort((a, b) => ((prior?.get(b) ?? 0) > 0 ? 1 : 0) - ((prior?.get(a) ?? 0) > 0 ? 1 : 0) || c.get(b)! - c.get(a)!)[0]!;
+  }).join('');
 }
 
 function hash(data: Uint8ClampedArray): number {
