@@ -567,6 +567,8 @@ const pack = {
     "saveShort": "저장"
   },
   "ai": {
+    "unknown": "이 질문에 답할 신뢰할 수 있는 정보가 없습니다.",
+    "atTime": "{{date}} {{time}} 기준:",
     "src": {
       "schedule": "내 시간표",
       "tasks": "내 할 일과 시험",
@@ -596,6 +598,8 @@ const pack = {
       "count": "{{date}} 수업 {{count}}개:"
     },
     "exams": {
+      "allCount": "예정된 시험이 {{count}}개 있습니다:",
+      "noneUpcoming": "등록된 시험이 없습니다.",
       "none": "앞으로 {{days}}일 동안 할 일에 시험이 없습니다. 빠진 시험이 있으면 과제와 시험에서 쪽지 시험, 중간고사, 기말고사로 추가하세요.",
       "count": "앞으로 {{days}}일 동안 시험 {{count}}개:",
       "noneFor": "앞으로 {{days}}일 동안 “{{name}}”의 시험이 등록되어 있지 않습니다."
@@ -678,6 +682,7 @@ const pack = {
       "answer": "{{date}}: 마지막 수업은 {{name}}{{where}}, **{{end}}**에 끝납니다."
     },
     "free": {
+      "between": "{{day}}, {{from}} 종료부터 {{to}} 시작까지: {{start}}–{{end}}. 이 구간에 예정된 수업은 아래에 표시됩니다.",
       "noClass": "{{date}}: 수업이 없어 하루 종일 비어 있습니다.",
       "none": "{{date}}: 수업 사이에 40분 이상 빈 시간이 없습니다.",
       "count": "{{date}}: 공강 {{count}}개",

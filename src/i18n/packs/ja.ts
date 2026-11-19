@@ -567,6 +567,8 @@ const pack = {
     "saveShort": "保存"
   },
   "ai": {
+    "unknown": "この質問に答えるための信頼できる情報がありません。",
+    "atTime": "{{date}} {{time}} 時点：",
     "src": {
       "schedule": "あなたの時間割",
       "tasks": "あなたのやることと試験",
@@ -596,6 +598,8 @@ const pack = {
       "count": "{{date}}の授業は{{count}}コマ："
     },
     "exams": {
+      "allCount": "今後の試験は{{count}}件です：",
+      "noneUpcoming": "試験は登録されていません。",
       "none": "今後{{days}}日間、やることに試験はありません。登録していない試験があれば「課題と試験」で小テスト・中間試験・期末試験として追加してください。",
       "count": "今後{{days}}日間に試験が{{count}}件あります：",
       "noneFor": "今後{{days}}日間、「{{name}}」の試験は登録されていません。"
@@ -678,6 +682,7 @@ const pack = {
       "answer": "{{date}}の最後の授業は{{name}}{{where}}、**{{end}}** に終わります。"
     },
     "free": {
+      "between": "{{day}}、{{from}}の終了から{{to}}の開始まで：{{start}}–{{end}}。この間に予定されている授業は下に表示されます。",
       "noClass": "{{date}}は授業がなく、一日中空いています。",
       "none": "{{date}}は授業の間に40分以上の空きはありません。",
       "count": "{{date}}の空きコマは{{count}}つ",

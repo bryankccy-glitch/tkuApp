@@ -567,6 +567,8 @@ const pack = {
     "saveShort": "Lưu"
   },
   "ai": {
+    "unknown": "Hiện tôi không có thông tin đáng tin cậy để trả lời câu hỏi này.",
+    "atTime": "Tại thời điểm {{date}} {{time}}:",
     "src": {
       "schedule": "Thời khóa biểu của bạn",
       "tasks": "Việc cần làm và kỳ thi của bạn",
@@ -596,6 +598,8 @@ const pack = {
       "count": "{{date}} có {{count}} tiết học:"
     },
     "exams": {
+      "allCount": "Bạn có {{count}} kỳ thi sắp tới:",
+      "noneUpcoming": "Chưa có kỳ thi nào được ghi lại.",
       "none": "Trong {{days}} ngày tới, danh sách việc cần làm không có kỳ thi nào. Nếu thiếu, hãy thêm trong Bài tập & kỳ thi với loại kiểm tra nhanh, giữa kỳ hoặc cuối kỳ.",
       "count": "{{count}} kỳ thi trong {{days}} ngày tới:",
       "noneFor": "Không có kỳ thi nào của “{{name}}” trong {{days}} ngày tới."
@@ -678,6 +682,7 @@ const pack = {
       "answer": "{{date}}: tiết cuối là {{name}}{{where}}, kết thúc lúc **{{end}}**."
     },
     "free": {
+      "between": "{{day}}, từ khi {{from}} kết thúc đến khi {{to}} bắt đầu: {{start}}–{{end}}. Các buổi học trong khoảng này được liệt kê bên dưới.",
       "noClass": "{{date}}: không có tiết — cả ngày rảnh.",
       "none": "{{date}}: không có khoảng trống từ 40 phút trở lên giữa các tiết.",
       "count": "{{date}}: {{count}} khoảng trống",

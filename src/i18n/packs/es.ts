@@ -567,6 +567,8 @@ const pack = {
     "saveShort": "Guardar"
   },
   "ai": {
+    "unknown": "No tengo información fiable para responder a esta pregunta.",
+    "atTime": "A fecha de {{date}} {{time}}:",
     "src": {
       "schedule": "Tu horario",
       "tasks": "Tus pendientes y exámenes",
@@ -596,6 +598,8 @@ const pack = {
       "count": "{{count}} clases {{date}}:"
     },
     "exams": {
+      "allCount": "Tienes {{count}} exámenes próximos:",
+      "noneUpcoming": "No hay exámenes registrados.",
       "none": "No hay exámenes en tus pendientes para los próximos {{days}} días. Si falta alguno, añádelo en Tareas y exámenes como prueba corta, parcial o final.",
       "count": "{{count}} exámenes en los próximos {{days}} días:",
       "noneFor": "No hay exámenes registrados de «{{name}}» en los próximos {{days}} días."
@@ -678,6 +682,7 @@ const pack = {
       "answer": "{{date}}: tu última clase es {{name}}{{where}}, termina a las **{{end}}**."
     },
     "free": {
+      "between": "{{day}}, desde el final de {{from}} hasta el inicio de {{to}}: {{start}}–{{end}}. Las clases programadas en este intervalo se muestran abajo.",
       "noClass": "{{date}}: sin clases, tienes el día libre.",
       "none": "{{date}}: no hay huecos de 40 minutos o más entre clases.",
       "count": "{{date}}: {{count}} hueco(s) libre(s)",

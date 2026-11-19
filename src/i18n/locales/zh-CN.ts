@@ -569,6 +569,8 @@ const zhCN = {
     "saveShort": "收藏"
   },
   "ai": {
+    "unknown": "这个问题我目前没有可靠的资料可以回答。",
+    "atTime": "以 {{date}} {{time}} 为准：",
     "src": {
       "schedule": "你的课表",
       "tasks": "你的待办与考试",
@@ -598,6 +600,8 @@ const zhCN = {
       "count": "{{date}}共有 {{count}} 堂课："
     },
     "exams": {
+      "allCount": "接下来有 {{count}} 个考试：",
+      "noneUpcoming": "没有登记考试。",
       "none": "接下来 {{days}} 天内，你的待办里没有考试。如果有考试还没登记，可以到「作业与考试」新增，类型选小考、期中考或期末考。",
       "count": "接下来 {{days}} 天内有 {{count}} 场考试：",
       "noneFor": "接下来 {{days}} 天内，「{{name}}」没有登记考试。"
@@ -680,6 +684,7 @@ const zhCN = {
       "answer": "{{date}}最后一堂是 {{name}}{{where}}，**{{end}}** 下课。"
     },
     "free": {
+      "between": "{{day}} {{from}} 下课到 {{to}} 上课：{{start}}–{{end}}。此区间内已排课的时段会列在下方。",
       "noClass": "{{date}}没有排课，整天都有空。",
       "none": "{{date}}的课之间没有超过 40 分钟的空堂。",
       "count": "{{date}}有 {{count}} 段空堂：",

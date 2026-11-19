@@ -569,6 +569,8 @@ const en = {
     "saveShort": "Save"
   },
   "ai": {
+    "unknown": "I do not have reliable information to answer this question.",
+    "atTime": "As of {{date}} {{time}}:",
     "src": {
       "schedule": "Your schedule",
       "tasks": "Your to-dos and exams",
@@ -598,6 +600,8 @@ const en = {
       "count": "{{count}} classes {{date}}:"
     },
     "exams": {
+      "allCount": "You have {{count}} upcoming exams:",
+      "noneUpcoming": "No exams are recorded.",
       "none": "No exams in your to-dos for the next {{days}} days. If one is missing, add it in Homework & exams as a quiz, midterm or final.",
       "count": "{{count}} exams in the next {{days}} days:",
       "noneFor": "No exams are logged for “{{name}}” in the next {{days}} days."
@@ -680,6 +684,7 @@ const en = {
       "answer": "{{date}}: your last class is {{name}}{{where}}, ending at **{{end}}**."
     },
     "free": {
+      "between": "{{day}}, from the end of {{from}} to the start of {{to}}: {{start}}–{{end}}. Any lessons scheduled within this interval are listed below.",
       "noClass": "{{date}}: no classes — the whole day is free.",
       "none": "{{date}}: no gaps of 40 minutes or more between classes.",
       "count": "{{date}}: {{count}} free gap(s)",

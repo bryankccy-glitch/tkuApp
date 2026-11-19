@@ -569,6 +569,8 @@ const zh = {
     "saveShort": "收藏"
   },
   "ai": {
+    "unknown": "這個問題我目前沒有可靠的資料可以回答。",
+    "atTime": "以 {{date}} {{time}} 為準：",
     "src": {
       "schedule": "你的課表",
       "tasks": "你的待辦與考試",
@@ -598,6 +600,8 @@ const zh = {
       "count": "{{date}}共有 {{count}} 堂課："
     },
     "exams": {
+      "allCount": "接下來有 {{count}} 個考試：",
+      "noneUpcoming": "沒有登記考試。",
       "none": "接下來 {{days}} 天內，你的待辦裡沒有考試。如果有考試還沒登記，可以到「作業與考試」新增，類型選小考、期中考或期末考。",
       "count": "接下來 {{days}} 天內有 {{count}} 場考試：",
       "noneFor": "接下來 {{days}} 天內，「{{name}}」沒有登記考試。"
@@ -680,6 +684,7 @@ const zh = {
       "answer": "{{date}}最後一堂是 {{name}}{{where}}，**{{end}}** 下課。"
     },
     "free": {
+      "between": "{{day}} {{from}} 下課到 {{to}} 上課：{{start}}–{{end}}。此區間內已排課的時段會列在下方。",
       "noClass": "{{date}}沒有排課，整天都有空。",
       "none": "{{date}}的課之間沒有超過 40 分鐘的空堂。",
       "count": "{{date}}有 {{count}} 段空堂：",

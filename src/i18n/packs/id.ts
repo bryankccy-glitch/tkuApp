@@ -567,6 +567,8 @@ const pack = {
     "saveShort": "Simpan"
   },
   "ai": {
+    "unknown": "Saya belum memiliki informasi tepercaya untuk menjawab pertanyaan ini.",
+    "atTime": "Pada {{date}} {{time}}:",
     "src": {
       "schedule": "Jadwalmu",
       "tasks": "Tugas dan ujianmu",
@@ -596,6 +598,8 @@ const pack = {
       "count": "{{count}} kelas {{date}}:"
     },
     "exams": {
+      "allCount": "Ada {{count}} ujian mendatang:",
+      "noneUpcoming": "Belum ada ujian yang tercatat.",
       "none": "Tidak ada ujian di daftar tugasmu untuk {{days}} hari ke depan. Jika ada yang terlewat, tambahkan di Tugas & ujian sebagai kuis, UTS, atau UAS.",
       "count": "{{count}} ujian dalam {{days}} hari ke depan:",
       "noneFor": "Tidak ada ujian “{{name}}” yang tercatat dalam {{days}} hari ke depan."
@@ -678,6 +682,7 @@ const pack = {
       "answer": "{{date}}: kelas terakhirmu {{name}}{{where}}, selesai pukul **{{end}}**."
     },
     "free": {
+      "between": "{{day}}, dari akhir {{from}} hingga awal {{to}}: {{start}}–{{end}}. Kelas yang dijadwalkan dalam rentang ini tercantum di bawah.",
       "noClass": "{{date}}: tidak ada kelas — seharian kosong.",
       "none": "{{date}}: tidak ada jeda 40 menit atau lebih di antara kelas.",
       "count": "{{date}}: {{count}} jam kosong",
