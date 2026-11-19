@@ -91,3 +91,15 @@ test('campus assistant answers in the language of the question', async ({ page }
   await expect(page.getByText(/キャンパスアシスタントです/)).toBeVisible({ timeout: 8000 });
   await expect(page.locator('html')).toHaveAttribute('lang', 'zh-Hant-TW');
 });
+
+test('全部刪除 removes every course of the semester after confirming', async ({ page }) => {
+  await addCourseToday(page, '投資學', 'B217');
+  await addCourseToday(page, '體育－高爾夫', 'GOLF');
+  await page.goto('/schedule');
+  await page.getByRole('button', { name: '全部刪除' }).click();
+  const sheet = page.getByRole('dialog', { name: '刪除這學期的所有課程？' });
+  await expect(sheet).toContainText('2 門課');
+  await sheet.getByRole('button', { name: '全部刪除' }).click();
+  await expect(page.getByText('已刪除 2 門課')).toBeVisible();
+  await expect(page.getByRole('button', { name: '全部刪除' })).toBeDisabled();
+});
