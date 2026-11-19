@@ -34,6 +34,8 @@ export interface DataRepository {
   listCourses(semesterId: string): Promise<Course[]>;
   upsertCourse(c: CourseInput): Promise<Course>;
   deleteCourse(id: string): Promise<void>;
+  /** Deletes every course (and its time slots) of one semester; returns how many were removed. */
+  deleteCoursesInSemester(semesterId: string): Promise<number>;
 
   listTasks(): Promise<Task[]>;
   upsertTask(t: TaskInput): Promise<Task>;

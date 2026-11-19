@@ -418,6 +418,10 @@ const pack = {
     "dayCount": "{{day}}, {{count}} kelas",
     "noClassesOn": "Tidak ada kelas pada {{day}}",
     "imported": "{{count}} entri mata kuliah diimpor",
+    "deleteAll": "Hapus semua",
+    "deleteAllTitle": "Hapus semua mata kuliah semester ini?",
+    "deleteAllBody": "Ini akan menghapus {{count}} mata kuliah dan semua jadwal kuliah di {{semester}}, dan tidak bisa dibatalkan. Tugas dan ujian tetap disimpan tetapi tidak lagi terhubung ke mata kuliah.",
+    "deletedAll": "{{count}} mata kuliah dihapus",
     "importFailed": "Impor gagal"
   },
   "course": {

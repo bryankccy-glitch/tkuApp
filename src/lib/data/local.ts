@@ -102,6 +102,17 @@ export class LocalRepository implements DataRepository {
     return course;
   }
 
+  async deleteCoursesInSemester(semesterId: string) {
+    const s = this.read();
+    const gone = new Set(s.courses.filter((c) => c.semesterId === semesterId).map((c) => c.id));
+    this.write({
+      ...s,
+      courses: s.courses.filter((c) => !gone.has(c.id)),
+      tasks: s.tasks.map((t) => (t.courseId && gone.has(t.courseId) ? { ...t, courseId: null } : t)),
+    });
+    return gone.size;
+  }
+
   async deleteCourse(id: string) {
     const s = this.read();
     this.write({

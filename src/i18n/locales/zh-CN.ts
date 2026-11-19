@@ -419,6 +419,10 @@ const zhCN = {
     "dayCount": "{{day}}，{{count}} 堂课",
     "noClassesOn": "{{day}}没有课",
     "imported": "已汇入 {{count}} 个课程项目",
+    "deleteAll": "全部删除",
+    "deleteAllTitle": "删除这学期的所有课程？",
+    "deleteAllBody": "会删除 {{semester}} 的 {{count}} 门课和所有上课时段，无法复原。作业与考试会保留，但不再连到课程。",
+    "deletedAll": "已删除 {{count}} 门课",
     "importFailed": "汇入失败"
   },
   "course": {

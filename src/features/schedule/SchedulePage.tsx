@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { AlertTriangle, Download, ImagePlus, Plus } from 'lucide-react';
+import { AlertTriangle, Download, ImagePlus, Plus, Trash2 } from 'lucide-react';
+import { ConfirmSheet } from '@/components/ui/Sheet';
 import { Page } from '@/components/layout/AppShell';
 import { PageHeader, Segmented, EmptyState, ErrorNotice } from '@/components/ui/misc';
 import { Button } from '@/components/ui/Button';
@@ -36,7 +37,8 @@ export default function SchedulePage() {
   const [params, setParams] = useSearchParams();
   const { semester } = useSemester();
   const { data: courses = [], isLoading, error, refetch } = useCourses(semester?.id);
-  const { save, importMany } = useCourseMutations(semester?.id);
+  const { save, importMany, removeAll } = useCourseMutations(semester?.id);
+  const [confirmClear, setConfirmClear] = useState(false);
   const today = weekdayOf(now);
   const [view, setView] = useState<View>('day');
   const [day, setDay] = useState<Weekday>(today);
@@ -70,6 +72,16 @@ export default function SchedulePage() {
     toast({ tone: 'success', message: t('schedule.exported', { count: courses.length }) });
   };
 
+  const clearAll = async () => {
+    try {
+      const count = await removeAll.mutateAsync();
+      toast({ tone: 'success', message: t('schedule.deletedAll', { count }) });
+      setConfirmClear(false);
+    } catch (e) {
+      toast({ tone: 'error', message: e instanceof Error ? e.message : t('common.saveFailed') });
+    }
+  };
+
   const days: Weekday[] = [1, 2, 3, 4, 5, 6, 7];
 
   return (
@@ -81,6 +93,7 @@ export default function SchedulePage() {
           <>
             <Button variant="secondary" size="sm" onClick={() => setImageOpen(true)}><ImagePlus className="h-4 w-4" />{t('imageImport.button')}</Button>
             <Button variant="secondary" size="sm" onClick={exportCsv} disabled={!courses.length}><Download className="h-4 w-4" />{t('common.exportCsv')}</Button>
+            <Button variant="secondary" size="sm" onClick={() => setConfirmClear(true)} disabled={!courses.length}><Trash2 className="h-4 w-4" />{t('schedule.deleteAll')}</Button>
             <Button size="sm" onClick={() => setParams({ add: '1' })}><Plus className="h-4 w-4" />{t('schedule.addCourse')}</Button>
           </>
         }
@@ -168,6 +181,15 @@ export default function SchedulePage() {
       </>
       )}
 
+      <ConfirmSheet
+        open={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        title={t('schedule.deleteAllTitle')}
+        message={t('schedule.deleteAllBody', { semester: semester?.code ?? '', count: courses.length })}
+        confirmLabel={t('schedule.deleteAll')}
+        loading={removeAll.isPending}
+        onConfirm={clearAll}
+      />
       <CourseForm open={formOpen} onClose={closeForm} courses={courses} onSubmit={onCreate} saving={save.isPending} />
       <ImageImport
         open={imageOpen}

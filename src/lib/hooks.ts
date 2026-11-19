@@ -70,6 +70,13 @@ export function useCourseMutations(semesterId: string | undefined) {
   return {
     save: useMutation({ mutationFn: (c: CourseInput) => repo.upsertCourse(c), onSuccess: invalidate }),
     remove: useMutation({ mutationFn: (id: string) => repo.deleteCourse(id), onSuccess: invalidate }),
+    removeAll: useMutation({
+      mutationFn: () => {
+        if (!semesterId) throw new Error(i18n.t('errors.noSemester'));
+        return repo.deleteCoursesInSemester(semesterId);
+      },
+      onSuccess: invalidate,
+    }),
     importMany: useMutation({
       mutationFn: async (list: Omit<CourseInput, 'semesterId'>[]) => {
         if (!semesterId) throw new Error(i18n.t('errors.noSemester'));

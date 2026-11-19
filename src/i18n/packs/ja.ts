@@ -418,6 +418,10 @@ const pack = {
     "dayCount": "{{day}}、授業{{count}}コマ",
     "noClassesOn": "{{day}}は授業がありません",
     "imported": "{{count}}件の科目をインポートしました",
+    "deleteAll": "すべて削除",
+    "deleteAllTitle": "今学期の科目をすべて削除しますか？",
+    "deleteAllBody": "{{semester}} の {{count}} 件の科目と授業時間をすべて削除します。元に戻せません。課題と試験は残りますが、科目との関連は外れます。",
+    "deletedAll": "{{count}} 件の科目を削除しました",
     "importFailed": "インポートに失敗しました"
   },
   "course": {

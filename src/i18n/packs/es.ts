@@ -418,6 +418,10 @@ const pack = {
     "dayCount": "{{day}}, {{count}} clases",
     "noClassesOn": "No hay clases el {{day}}",
     "imported": "Se importaron {{count}} asignaturas",
+    "deleteAll": "Eliminar todo",
+    "deleteAllTitle": "¿Eliminar todas las asignaturas de este semestre?",
+    "deleteAllBody": "Se eliminarán {{count}} asignaturas y todos sus horarios de {{semester}}. No se puede deshacer. Las tareas y exámenes se conservan, pero ya no estarán vinculados a una asignatura.",
+    "deletedAll": "Se eliminaron {{count}} asignaturas",
     "importFailed": "Error al importar"
   },
   "course": {

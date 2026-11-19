@@ -418,6 +418,10 @@ const pack = {
     "dayCount": "{{day}} มี {{count}} คาบ",
     "noClassesOn": "{{day}} ไม่มีคาบเรียน",
     "imported": "นำเข้า {{count}} รายการวิชาแล้ว",
+    "deleteAll": "ลบทั้งหมด",
+    "deleteAllTitle": "ลบวิชาทั้งหมดของภาคเรียนนี้หรือไม่?",
+    "deleteAllBody": "จะลบ {{count}} วิชาและเวลาเรียนทั้งหมดใน {{semester}} และย้อนกลับไม่ได้ งานและการสอบจะยังอยู่แต่จะไม่ผูกกับวิชาอีก",
+    "deletedAll": "ลบ {{count}} วิชาแล้ว",
     "importFailed": "นำเข้าไม่สำเร็จ"
   },
   "course": {

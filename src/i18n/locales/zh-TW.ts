@@ -419,6 +419,10 @@ const zh = {
     "dayCount": "{{day}}，{{count}} 堂課",
     "noClassesOn": "{{day}}沒有課",
     "imported": "已匯入 {{count}} 個課程項目",
+    "deleteAll": "全部刪除",
+    "deleteAllTitle": "刪除這學期的所有課程？",
+    "deleteAllBody": "會刪除 {{semester}} 的 {{count}} 門課和所有上課時段，無法復原。作業與考試會保留，但不再連到課程。",
+    "deletedAll": "已刪除 {{count}} 門課",
     "importFailed": "匯入失敗"
   },
   "course": {

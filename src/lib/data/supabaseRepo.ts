@@ -138,6 +138,11 @@ export class SupabaseRepository implements DataRepository {
     return mapCourse(full);
   }
 
+  async deleteCoursesInSemester(semesterId: string) {
+    const rows = check(await this.db.from('user_courses').delete().eq('semester_id', semesterId).select('id')) as { id: string }[];
+    return rows.length;
+  }
+
   async deleteCourse(id: string) {
     ok(await this.db.from('user_courses').delete().eq('id', id));
   }

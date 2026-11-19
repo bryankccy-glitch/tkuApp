@@ -418,6 +418,10 @@ const pack = {
     "dayCount": "{{day}}, {{count}} tiết học",
     "noClassesOn": "{{day}} không có tiết học",
     "imported": "Đã nhập {{count}} mục môn học",
+    "deleteAll": "Xóa tất cả",
+    "deleteAllTitle": "Xóa tất cả môn học của học kỳ này?",
+    "deleteAllBody": "Thao tác này xóa {{count}} môn học và mọi giờ học trong {{semester}}, không thể hoàn tác. Bài tập và bài thi vẫn được giữ nhưng không còn liên kết với môn học.",
+    "deletedAll": "Đã xóa {{count}} môn học",
     "importFailed": "Nhập thất bại"
   },
   "course": {

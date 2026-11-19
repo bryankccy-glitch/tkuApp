@@ -418,6 +418,10 @@ const pack = {
     "dayCount": "{{day}}, 수업 {{count}}개",
     "noClassesOn": "{{day}}에는 수업이 없습니다",
     "imported": "과목 항목 {{count}}개를 가져왔습니다",
+    "deleteAll": "모두 삭제",
+    "deleteAllTitle": "이번 학기 과목을 모두 삭제할까요?",
+    "deleteAllBody": "{{semester}}의 과목 {{count}}개와 모든 수업 시간을 삭제합니다. 되돌릴 수 없습니다. 과제와 시험은 남지만 과목과의 연결은 해제됩니다.",
+    "deletedAll": "과목 {{count}}개를 삭제했습니다",
     "importFailed": "가져오기 실패"
   },
   "course": {

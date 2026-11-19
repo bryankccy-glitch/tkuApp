@@ -419,6 +419,10 @@ const en = {
     "dayCount": "{{day}}, {{count}} classes",
     "noClassesOn": "No classes on {{day}}",
     "imported": "Imported {{count}} course entries",
+    "deleteAll": "Delete all",
+    "deleteAllTitle": "Delete all courses this semester?",
+    "deleteAllBody": "This removes {{count}} courses and every class time in {{semester}}. It cannot be undone. Assignments and exams are kept but no longer linked to a course.",
+    "deletedAll": "Deleted {{count}} courses",
     "importFailed": "Import failed"
   },
   "course": {

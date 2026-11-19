@@ -23,6 +23,22 @@ describe('LocalRepository CRUD', () => {
     expect((await repo.listTasks()).find((t) => t.id === task.id)!.courseId).toBeNull();
   });
 
+  it('deletes every course of one semester only, keeping tasks but unlinking them', async () => {
+    const repo = new LocalRepository(memStorage());
+    const [sem] = await repo.listSemesters();
+    const other = await repo.upsertSemester({ code: '114-2', name: '114 學年度第 2 學期', startDate: '2026-02-16', endDate: '2026-06-20' });
+    const slot = { weekday: 2 as const, startTime: '08:10', endTime: '10:00', room: 'B217' };
+    const a = await repo.upsertCourse({ semesterId: sem!.id, name: '投資學', color: 'navy', slots: [slot] });
+    await repo.upsertCourse({ semesterId: sem!.id, name: '體育－高爾夫', color: 'navy', slots: [slot] });
+    await repo.upsertCourse({ semesterId: other.id, name: '會計學', color: 'navy', slots: [slot] });
+    const task = await repo.upsertTask({ title: '報告', kind: 'homework', courseId: a.id, dueAt: new Date().toISOString(), priority: 'low', completed: false, remindMinutesBefore: null });
+    expect(await repo.deleteCoursesInSemester(sem!.id)).toBe(2);
+    expect(await repo.listCourses(sem!.id)).toHaveLength(0);
+    expect((await repo.listCourses(other.id)).map((c) => c.name)).toEqual(['會計學']);
+    expect((await repo.listTasks()).find((t) => t.id === task.id)!.courseId).toBeNull();
+    expect(await repo.deleteCoursesInSemester(sem!.id)).toBe(0);
+  });
+
   it('persists across instances and wipes on deleteAllData', async () => {
     const storage = memStorage();
     const r1 = new LocalRepository(storage);
