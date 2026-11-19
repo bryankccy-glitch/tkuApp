@@ -28,6 +28,8 @@ Claude Code（2026-11-12 活動主辦解析修正上線、原生分支跟上 mai
 - 測試：Vitest 單元＋元件測試 39 項；Playwright E2E 36 項（桌面＋手機）
 
 ## Latest Changes
+- **截圖辨識投票＋校園助理訓練 — Claude Code＋Codex（2026-11-19，未部署）**：(1) OCR：每行用 5 種渲染（放大／對比）各讀一次、去空白後逐字多數決；無過半時參考整張圖「多數渲染一致」的行用字。實測使用者真實 115-1 截圖（28 格、答案經使用者確認，截圖與答案只在本機、不進 repo）：老師 20→24/28、課名 25→28/28、教室 28/28；仍錯：「炤」「蕭」（字庫極限）。辨識時間約 ×4（桌機 1→4 秒）。(2) 助理：Codex 以 208 題訓練（27%→100%）；獨立 Codex 出 60 題盲測（未看程式）：29→49/60。剩餘 11 題中 6 題為日期格式（答案內容正確，評分要求 YYYY-MM-DD）、2 題題目問題、3 題真錯（兩課之間空檔 2、開學日 1）。Claude 審查：課程暱稱由寫死對照改為比對使用者自己的課名（避免只適用這位學生），完整課名優先、平手不猜；修「今天」被當成午夜。評測工具 `src/features/ai/__tests__/assistant.eval.test.ts`（預設略過，需外部題庫與課表檔）。驗證：Vitest 298、typecheck、lint、build、Playwright 136 全過。
+  - **Next Step**：部署後實機量手機上的截圖辨識時間；可再補「兩課之間空檔」與「開學日」。
 - **課表全部刪除＋截圖匯入同課一老師、連堂合併 — Claude Code＋Codex（2026-11-19，未部署）**：(1) Claude：課表頁新增「全部刪除」（確認視窗寫明學期、門數、無法復原；作業考試保留但解除課程連結），Repository 新增 `deleteCoursesInSemester`（local 與 Supabase，Supabase 靠 RLS 只刪本人），9 語言字串（zh-CN 手動補，本機無 opencc）。(2) Codex：新增 `src/lib/ocr/normalizeCells.ts`，同課只留出現最多的老師讀法（助教仍獨立）；同日同課相連節次合併、教室取多數讀法（修正高爾夫連堂被拆）；小字行放大後再 OCR；課名差一字統一。Claude 審查後補「只差序號（一／二、上／下、A／B）不合併」保護。驗證：Vitest 43 檔 251 項、typecheck、lint、build、新增 E2E「全部刪除」桌面＋手機通過。尚未用真實截圖量測老師名字辨識率（需使用者提供 2–5 張截圖做固定考題）。
 - **活動主辦解析修正＋原生分支同步 — Claude Code（2026-11-12）**：正式站「校園活動」主辦前出現 `align='left'>`（`api/sync-events.ts` 以 `<td[\s>]` 切欄，屬性殘留）。改以 `<td\b[^>]*>` 切欄；每日同步更新既有活動時改為一併更新 title／category／summary／organizer（原只更新時間地點），舊錯誤資料於下次同步自動更正。新增 2 測試，239 tests 通過；使用者同意部署，push `d81631f`，Vercel success。同日 `feat/native` 合併 main（無衝突），補 es/id/ja/ko/th/vi 的 `remind.noteNative`。
   - **Next Step**：明早確認活動頁無 `align=` 殘留；原生 App 送審前在 Xcode 執行 `npx cap sync ios` 並實機測試；推播仍待 cron_secret／CRON_SECRET 同步後真機驗證；Supabase 外洩密碼保護待使用者開啟。
