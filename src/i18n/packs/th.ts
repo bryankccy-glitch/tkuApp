@@ -1,6 +1,13 @@
 // th: pre-translated interface strings (from en.ts). Missing keys fall back to English.
 // When English strings change, add/update the same keys here (checked by src/i18n/__tests__/languages.test.ts).
 const pack = {
+  "map3d": {
+    "mode": "โหมดแผนที่",
+    "scene": "สัญลักษณ์ตำแหน่งอาคาร 3 มิติ วิทยาเขตตั้นเจียง",
+    "rotate": "หมุน",
+    "tilt": "เอียง",
+    "notice": "ความสูงจำลอง: ทุกอาคาร 3 ชั้น × 3 ม. กล่องเป็นสัญลักษณ์ตำแหน่ง ไม่ใช่ขอบเขตจริง ตำแหน่ง: OSM (ODbL) ค้นหาอาคารได้จากรายการด้านล่าง"
+},
   "calendar": {
     "title": "ปฏิทินนักศึกษา",
     "month": "เดือน",

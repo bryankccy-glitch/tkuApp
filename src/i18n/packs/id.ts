@@ -1,6 +1,13 @@
 // id: pre-translated interface strings (from en.ts). Missing keys fall back to English.
 // When English strings change, add/update the same keys here (checked by src/i18n/__tests__/languages.test.ts).
 const pack = {
+  "map3d": {
+    "mode": "Mode peta",
+    "scene": "Simbol lokasi gedung 3D kampus Tamkang",
+    "rotate": "Putar",
+    "tilt": "Kemiringan",
+    "notice": "Tinggi ilustrasi: seragam 3 lantai × 3 m; balok adalah simbol lokasi, bukan bentuk tapak sebenarnya. Lokasi: OSM (ODbL). Cari gedung dalam daftar di bawah."
+},
   "calendar": {
     "title": "Kalender mahasiswa",
     "month": "Bulan",

@@ -1,6 +1,13 @@
 // vi: pre-translated interface strings (from en.ts). Missing keys fall back to English.
 // When English strings change, add/update the same keys here (checked by src/i18n/__tests__/languages.test.ts).
 const pack = {
+  "map3d": {
+    "mode": "Chế độ bản đồ",
+    "scene": "Ký hiệu vị trí tòa nhà 3D tại cơ sở Đạm Giang",
+    "rotate": "Xoay",
+    "tilt": "Nghiêng",
+    "notice": "Chiều cao minh họa: đồng nhất 3 tầng × 3 m; khối chỉ là ký hiệu vị trí, không phải đường bao thực tế. Vị trí: OSM (ODbL). Tìm tòa nhà trong danh sách bên dưới."
+},
   "calendar": {
     "title": "Lịch sinh viên",
     "month": "Tháng",

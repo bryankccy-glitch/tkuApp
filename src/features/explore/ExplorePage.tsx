@@ -105,7 +105,7 @@ export default function ExplorePage() {
               onClick={locate}
               aria-label={t('explore.locateMe')}
               aria-busy={geo.locating}
-              className={cn('absolute bottom-3 right-3 z-[1000] flex h-11 items-center gap-1.5 rounded-full bg-surface px-3.5 text-caption font-semibold shadow-lift', geo.location ? 'text-[#2F6FED]' : 'text-ink')}
+              className={cn('absolute top-1 right-2 z-[1000] flex h-11 items-center gap-1.5 rounded-full bg-surface px-3.5 text-caption font-semibold shadow-lift', geo.location ? 'text-[#2F6FED]' : 'text-ink')}
             >
               <LocateFixed className={cn('h-5 w-5', geo.locating && 'animate-pulse')} aria-hidden />
               {geo.locating ? t('explore.locating') : t('explore.myLocation')}

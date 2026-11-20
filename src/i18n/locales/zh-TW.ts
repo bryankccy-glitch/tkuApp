@@ -1,5 +1,12 @@
 // Generated from the translation store; edit keys here directly is fine.
 const zh = {
+  "map3d": {
+    "mode": "地圖模式",
+    "scene": "淡江校園 3D 建築點位示意",
+    "rotate": "旋轉",
+    "tilt": "傾斜",
+    "notice": "示意高度：統一 3 層 × 3 公尺；方塊為點位符號，非實際輪廓。位置：OSM（ODbL）；可用下方列表查找。"
+},
   "calendar": {
     "title": "學生行事曆",
     "month": "月",

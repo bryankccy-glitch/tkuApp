@@ -1,6 +1,13 @@
 // es: pre-translated interface strings (from en.ts). Missing keys fall back to English.
 // When English strings change, add/update the same keys here (checked by src/i18n/__tests__/languages.test.ts).
 const pack = {
+  "map3d": {
+    "mode": "Modo de mapa",
+    "scene": "Símbolos de edificios 3D del campus de Tamkang",
+    "rotate": "Girar",
+    "tilt": "Inclinación",
+    "notice": "Altura ilustrativa: 3 plantas × 3 m uniformes; los bloques son símbolos de ubicación, no contornos reales. Posiciones: OSM (ODbL). Busca edificios en la lista inferior."
+},
   "calendar": {
     "title": "Calendario estudiantil",
     "month": "Mes",

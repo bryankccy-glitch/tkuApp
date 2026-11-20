@@ -1,5 +1,12 @@
 // Generated from the translation store; edit keys here directly is fine.
 const en = {
+  "map3d": {
+    "mode": "Map mode",
+    "scene": "Tamkang campus 3D building point symbols",
+    "rotate": "Rotate",
+    "tilt": "Tilt",
+    "notice": "Illustrative height: uniform 3 floors × 3 m; blocks are point symbols, not actual footprints. Positions: OSM (ODbL). Find buildings in the list below."
+},
   "calendar": {
     "title": "Student calendar",
     "month": "Month",

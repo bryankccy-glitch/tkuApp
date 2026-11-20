@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
+import CampusMap3D from './CampusMap3D';
 import 'leaflet/dist/leaflet.css';
 import { CAMPUS_CENTER, type CampusPlace } from '@/data/places';
 import type { MyLocation } from '@/hooks/useMyLocation';
@@ -17,6 +18,15 @@ export default function CampusMap({ places, selected, me, recenter = 0 }: {
   /** Increment to fly to `me` again (e.g. the 定位 button was pressed). */
   recenter?: number;
 }) {
+  const [mode, setMode] = useState<'2d' | '3d'>(() => {
+    try { return localStorage.getItem('tku.explore.mapMode') === '3d' ? '3d' : '2d'; }
+    catch { return '2d'; }
+  });
+  const changeMode = (next: '2d' | '3d') => {
+    setMode(next);
+    try { localStorage.setItem('tku.explore.mapMode', next); } catch { /* Storage can be disabled. */ }
+  };
+  useEffect(() => { if (mode === '2d') map.current?.invalidateSize(); }, [mode]);
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const layer = useRef<L.LayerGroup | null>(null);
@@ -77,5 +87,17 @@ export default function CampusMap({ places, selected, me, recenter = 0 }: {
     }
   }, [me, recenter]);
 
-  return <div ref={el} className="h-full w-full" role="region" aria-label={t('map.label')} />;
+  return <div className="flex h-full min-w-0 flex-col">
+    <div className="flex shrink-0 items-center gap-1 bg-surface px-2" role="group" aria-label={t('map3d.mode')}>
+      {(['2d', '3d'] as const).map((value) => <button key={value} type="button" className="h-11 rounded-sm px-3 text-caption font-semibold text-primary" aria-label={t('map3d.mode') + ' ' + value.toUpperCase()} aria-pressed={mode === value} onClick={() => changeMode(value)}>{value.toUpperCase()}</button>)}
+    </div>
+    <div className="relative min-h-0 flex-1">
+      {/* Leaflet adds its own classes to the map element: toggle a wrapper so React never overwrites them. */}
+      <div className={mode === '2d' ? 'h-full w-full' : 'hidden'}>
+        <div className="h-full w-full" ref={el} role="region" aria-label={t('map.label')} />
+      </div>
+      {mode === '3d' && <CampusMap3D places={places} selected={selected} />}
+    </div>
+    {mode === '3d' && <p className="shrink-0 bg-surface px-2 py-1 text-[10px] text-muted">{t('map3d.notice')}</p>}
+  </div>;
 }

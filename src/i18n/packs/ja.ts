@@ -1,6 +1,13 @@
 // ja: pre-translated interface strings (from en.ts). Missing keys fall back to English.
 // When English strings change, add/update the same keys here (checked by src/i18n/__tests__/languages.test.ts).
 const pack = {
+  "map3d": {
+    "mode": "地図モード",
+    "scene": "淡江キャンパスの3D建物位置図",
+    "rotate": "回転",
+    "tilt": "傾き",
+    "notice": "高さは模式表示：一律3階 × 3m。立方体は位置記号で実際の輪郭ではありません。位置：OSM（ODbL）。下の一覧でも検索できます。"
+},
   "calendar": {
     "title": "学生カレンダー",
     "month": "月",

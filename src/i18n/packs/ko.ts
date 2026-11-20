@@ -1,6 +1,13 @@
 // ko: pre-translated interface strings (from en.ts). Missing keys fall back to English.
 // When English strings change, add/update the same keys here (checked by src/i18n/__tests__/languages.test.ts).
 const pack = {
+  "map3d": {
+    "mode": "지도 모드",
+    "scene": "담강 캠퍼스 3D 건물 위치 기호",
+    "rotate": "회전",
+    "tilt": "기울기",
+    "notice": "예시 높이: 모두 3층 × 3m. 블록은 위치 기호이며 실제 윤곽이 아닙니다. 위치: OSM(ODbL). 아래 목록에서 건물을 찾을 수 있습니다."
+},
   "calendar": {
     "title": "학생 캘린더",
     "month": "월",
