@@ -3,10 +3,9 @@
 const pack = {
   "map3d": {
     "mode": "Chế độ bản đồ",
-    "scene": "Ký hiệu vị trí tòa nhà 3D tại cơ sở Đạm Giang",
-    "rotate": "Xoay",
-    "tilt": "Nghiêng",
-    "notice": "Chiều cao minh họa: đồng nhất 3 tầng × 3 m; khối chỉ là ký hiệu vị trí, không phải đường bao thực tế. Vị trí: OSM (ODbL). Tìm tòa nhà trong danh sách bên dưới."
+    "scene": "Bản đồ 3D khuôn viên Đạm Giang",
+    "notice": "Một số chiều cao tòa nhà chỉ để minh họa (9 m khi thiếu dữ liệu). Dữ liệu: OpenStreetMap / OpenMapTiles / OpenFreeMap. Kéo để xoay hoặc nghiêng; chụm hai ngón để thu phóng. Có thể dùng danh sách bên dưới.",
+    "unavailable": "Không tải được bản đồ 3D, đã chuyển về 2D. Hãy kiểm tra kết nối và hỗ trợ WebGL."
 },
   "calendar": {
     "title": "Lịch sinh viên",

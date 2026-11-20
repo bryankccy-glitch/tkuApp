@@ -3,10 +3,9 @@
 const pack = {
   "map3d": {
     "mode": "Mode peta",
-    "scene": "Simbol lokasi gedung 3D kampus Tamkang",
-    "rotate": "Putar",
-    "tilt": "Kemiringan",
-    "notice": "Tinggi ilustrasi: seragam 3 lantai × 3 m; balok adalah simbol lokasi, bukan bentuk tapak sebenarnya. Lokasi: OSM (ODbL). Cari gedung dalam daftar di bawah."
+    "scene": "Peta 3D kampus Tamkang",
+    "notice": "Sebagian tinggi bangunan hanya ilustrasi (9 m jika tidak tersedia). Data: OpenStreetMap / OpenMapTiles / OpenFreeMap. Seret untuk memutar atau memiringkan; cubit untuk zoom. Daftar di bawah tetap tersedia.",
+    "unavailable": "Peta 3D gagal dimuat. Beralih ke 2D. Periksa koneksi dan dukungan WebGL."
 },
   "calendar": {
     "title": "Kalender mahasiswa",

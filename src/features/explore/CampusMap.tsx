@@ -1,17 +1,24 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import CampusMap3D from './CampusMap3D';
 import 'leaflet/dist/leaflet.css';
 import { CAMPUS_CENTER, type CampusPlace } from '@/data/places';
 import type { MyLocation } from '@/hooks/useMyLocation';
 import { t } from '@/i18n/t';
 
+// The entire renderer (including MapLibre and its CSS) is fetched only on 3D entry.
+const CampusMap3D = lazy(() => import('./CampusMap3D').catch(() => ({ default: MapUnavailable })));
+function MapUnavailable({ onUnavailable }: { onUnavailable: () => void }) {
+  useEffect(onUnavailable, [onUnavailable]);
+  return <></>;
+}
+
 /**
  * OpenStreetMap-based campus map. Only shows markers whose coordinates are verified;
  * the campus centre marker comes from Wikipedia. No fabricated building positions.
  */
-export default function CampusMap({ places, selected, me, recenter = 0 }: {
+export default function CampusMap({ places, selected, me, recenter = 0, onSelect }: {
   places: CampusPlace[];
+  onSelect?: (place: CampusPlace) => void;
   selected?: CampusPlace | null;
   /** The viewer's own position (stays on the device). */
   me?: MyLocation | null;
@@ -22,10 +29,17 @@ export default function CampusMap({ places, selected, me, recenter = 0 }: {
     try { return localStorage.getItem('tku.explore.mapMode') === '3d' ? '3d' : '2d'; }
     catch { return '2d'; }
   });
+  const [unavailable, setUnavailable] = useState(false);
   const changeMode = (next: '2d' | '3d') => {
+    setUnavailable(false);
     setMode(next);
     try { localStorage.setItem('tku.explore.mapMode', next); } catch { /* Storage can be disabled. */ }
   };
+  const fallback = useCallback(() => {
+    setUnavailable(true);
+    setMode('2d');
+    try { localStorage.setItem('tku.explore.mapMode', '2d'); } catch { /* Storage can be disabled. */ }
+  }, []);
   useEffect(() => { if (mode === '2d') map.current?.invalidateSize(); }, [mode]);
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
@@ -96,8 +110,11 @@ export default function CampusMap({ places, selected, me, recenter = 0 }: {
       <div className={mode === '2d' ? 'h-full w-full' : 'hidden'}>
         <div className="h-full w-full" ref={el} role="region" aria-label={t('map.label')} />
       </div>
-      {mode === '3d' && <CampusMap3D places={places} selected={selected} />}
+      {mode === '3d' && <Suspense fallback={<p role="status" className="p-3 text-caption text-muted">{t('explore.mapLoading')}</p>}>
+        <CampusMap3D places={places} selected={selected} me={me} recenter={recenter} onSelect={onSelect} onUnavailable={fallback} />
+      </Suspense>}
     </div>
+    {unavailable && <p role="status" className="shrink-0 bg-surface px-2 py-1 text-caption text-muted">{t('map3d.unavailable')}</p>}
     {mode === '3d' && <p className="shrink-0 bg-surface px-2 py-1 text-[10px] text-muted">{t('map3d.notice')}</p>}
   </div>;
 }

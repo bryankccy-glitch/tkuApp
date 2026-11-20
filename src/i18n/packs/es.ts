@@ -3,10 +3,9 @@
 const pack = {
   "map3d": {
     "mode": "Modo de mapa",
-    "scene": "Símbolos de edificios 3D del campus de Tamkang",
-    "rotate": "Girar",
-    "tilt": "Inclinación",
-    "notice": "Altura ilustrativa: 3 plantas × 3 m uniformes; los bloques son símbolos de ubicación, no contornos reales. Posiciones: OSM (ODbL). Busca edificios en la lista inferior."
+    "scene": "Mapa 3D del campus de Tamkang",
+    "notice": "Algunas alturas son ilustrativas (9 m si faltan datos). Datos: OpenStreetMap / OpenMapTiles / OpenFreeMap. Arrastra para girar o inclinar; pellizca para ampliar. También puedes usar la lista inferior.",
+    "unavailable": "No se pudo cargar el mapa 3D. Se ha vuelto a 2D. Comprueba la conexión y la compatibilidad con WebGL."
 },
   "calendar": {
     "title": "Calendario estudiantil",

@@ -1,47 +1,136 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Map, Marker, AttributionControl, NavigationControl } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { CAMPUS_CENTER, type CampusPlace } from '@/data/places';
+import type { MyLocation } from '@/hooks/useMyLocation';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { t } from '@/i18n/t';
 
-/** Point symbols only: the repository has OSM centres, not footprints or measured heights.
- * A uniform 3-storey × 3m symbol is used; sports grounds/gates remain flat.
- * Projection is recomputed only on input, with no animation loop or external requests.
- */
-export default function CampusMap3D({ places, selected }: { places: CampusPlace[]; selected?: CampusPlace | null }) {
-  const [bearing, setBearing] = useState(0);
-  const [tilt, setTilt] = useState(50);
-  const angle = bearing * Math.PI / 180;
-  const pitch = tilt * Math.PI / 180;
-  const project = (x: number, y: number, z: number): [number, number] => {
-    const rx = x * Math.cos(angle) - y * Math.sin(angle);
-    const ry = x * Math.sin(angle) + y * Math.cos(angle);
-    return [200 + rx * 0.34, 125 + ry * 0.34 * Math.cos(pitch) - z * Math.sin(pitch)];
-  };
-  const symbols = places.flatMap((p) => {
-    if (!p.coords) return [];
-    const x = (p.coords.lng - CAMPUS_CENTER.lng) * 100700;
-    const y = -(p.coords.lat - CAMPUS_CENTER.lat) * 111320;
-    return [{ p, x, y, depth: x * Math.sin(angle) + y * Math.cos(angle) }];
-  }).sort((a, b) => a.depth - b.depth);
-  return <div className="flex h-full min-w-0 flex-col bg-sunken">
-    <svg viewBox="0 0 400 240" className="min-h-0 w-full flex-1 text-primary" role="img" aria-label={t('map3d.scene')} data-testid="campus-3d">
-      <title>{t('map3d.scene')}</title>
-      {symbols.map(({ p, x, y }) => {
-        const height = ['sports', 'other', 'gate'].includes(p.category) ? 0 : 18;
-        const corners = [[-7, -7], [7, -7], [7, 7], [-7, 7]] as const;
-        const base = corners.map(([dx, dy]) => project(x + dx, y + dy, 0));
-        const roof = corners.map(([dx, dy]) => project(x + dx, y + dy, height));
-        const points = (v: [number, number][]) => v.map((pt) => pt.join(',')).join(' ');
-        return <g key={p.code} data-building={p.code} opacity={selected && selected.code !== p.code ? 0.5 : 1}>
-          <title>{p.code} · {p.name}</title>
-          {height > 0 && base.map((pt, i) => <polygon key={i} points={points([pt, base[(i + 1) % 4]!, roof[(i + 1) % 4]!, roof[i]!])} fill="currentColor" stroke="currentColor" strokeWidth="0.5" fillOpacity={0.4 + i * 0.12} />)}
-          <polygon points={points(roof)} fill="currentColor" fillOpacity="0.8" />
-          <text x={project(x, y, height)[0]} y={project(x, y, height)[1] - 5} textAnchor="middle" className="fill-ink text-[10px] font-bold">{p.code}</text>
-        </g>;
-      })}
-    </svg>
-    <div className="flex gap-3 px-3 pb-2 text-caption text-ink">
-      <label className="min-w-0 flex-1">{t('map3d.rotate')}<input className="block w-full accent-primary" type="range" min="-180" max="180" value={bearing} onChange={(e) => setBearing(Number(e.target.value))} /></label>
-      <label className="min-w-0 flex-1">{t('map3d.tilt')}<input className="block w-full accent-primary" type="range" min="20" max="70" value={tilt} onChange={(e) => setTilt(Number(e.target.value))} /></label>
-    </div>
-  </div>;
+interface Props {
+  places: CampusPlace[];
+  selected?: CampusPlace | null;
+  me?: MyLocation | null;
+  recenter: number;
+  onSelect?: (place: CampusPlace) => void;
+  onUnavailable: () => void;
+}
+
+/** Liberty supplies OSM footprints via OpenMapTiles; unknown heights are illustrative. */
+export default function CampusMap3D({ places, selected, me, recenter, onSelect, onUnavailable }: Props) {
+  const el = useRef<HTMLDivElement>(null);
+  const map = useRef<Map | null>(null);
+  const [ready, setReady] = useState(false);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    if (!el.current) return;
+    try {
+      const gl = document.createElement('canvas').getContext('webgl2');
+      if (!gl) { onUnavailable(); return; }
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+    } catch { onUnavailable(); return; }
+    let instance: Map | undefined;
+    let loaded = false;
+    let disposed = false;
+    const fail = () => { if (!disposed) onUnavailable(); };
+    const timeout = window.setTimeout(fail, 20_000);
+    try {
+      instance = new Map({
+        container: el.current,
+        style: 'https://tiles.openfreemap.org/styles/liberty',
+        center: [CAMPUS_CENTER.lng, CAMPUS_CENTER.lat],
+        zoom: 16.5, pitch: 55, bearing: -20,
+        attributionControl: false,
+      });
+      map.current = instance;
+      instance.getCanvas().setAttribute('aria-label', t('map3d.scene'));
+      // The OpenFreeMap style already credits OpenFreeMap, OpenMapTiles and OpenStreetMap; keep it visible, once.
+      instance.addControl(new AttributionControl({ compact: false }), 'bottom-right');
+      instance.addControl(new NavigationControl({ visualizePitch: true }), 'top-left');
+      instance.on('webglcontextlost', fail);
+      instance.on('error', () => { if (!loaded) fail(); });
+      instance.on('load', () => {
+        if (disposed || !instance) return;
+        try {
+          const layers = instance.getStyle().layers;
+          const building = layers.find((layer) => 'source-layer' in layer && layer['source-layer'] === 'building');
+          if (!building || !('source' in building)) { fail(); return; }
+          // Avoid a second extrusion if the upstream style already includes one.
+          for (const layer of layers) {
+            if (layer.type === 'fill-extrusion' && layer['source-layer'] === 'building') instance.removeLayer(layer.id);
+          }
+          instance.addLayer({
+            id: 'campus-buildings-3d', type: 'fill-extrusion',
+            source: building.source, 'source-layer': 'building', minzoom: 14,
+            paint: {
+              'fill-extrusion-color': '#b7aaa0',
+              'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 9],
+              'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
+              'fill-extrusion-opacity': 0.9,
+            },
+          }, layers.find((layer) => layer.type === 'symbol')?.id);
+          loaded = true;
+          window.clearTimeout(timeout);
+          setReady(true);
+        } catch { fail(); }
+      });
+    } catch { fail(); }
+    return () => {
+      disposed = true;
+      window.clearTimeout(timeout);
+      instance?.remove();
+      map.current = null;
+    };
+  }, [onUnavailable]);
+
+  useEffect(() => {
+    const instance = map.current;
+    if (!ready || !instance) return;
+    const markers = places.flatMap((place) => {
+      if (!place.coords) return [];
+      const active = selected?.code === place.code;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = place.code;
+      button.dataset.building = place.code;
+      button.setAttribute('aria-label', `${place.code} ${place.name}`);
+      button.setAttribute('aria-pressed', String(active));
+      button.className = active
+        ? 'rounded-sm border-2 border-primary bg-primary px-2 py-1 text-body font-bold text-white shadow-lift'
+        : 'rounded-xs border border-line bg-surface px-1 text-caption font-bold text-ink';
+      button.style.zIndex = active ? '1' : '0';
+      button.addEventListener('click', () => onSelect?.(place));
+      return [new Marker({ element: button }).setLngLat([place.coords.lng, place.coords.lat]).addTo(instance)];
+    });
+    return () => { markers.forEach((marker) => marker.remove()); };
+  }, [ready, places, selected, onSelect]);
+
+  useEffect(() => {
+    const instance = map.current;
+    if (!ready || !instance || !selected?.coords) return;
+    const camera = { center: [selected.coords.lng, selected.coords.lat] as [number, number], zoom: 18 };
+    if (reduced) instance.jumpTo(camera); else instance.flyTo(camera);
+  }, [ready, selected, reduced]);
+
+  useEffect(() => {
+    const instance = map.current;
+    if (!ready || !instance || !me) return;
+    const dot = document.createElement('span');
+    dot.className = 'block h-5 w-5 rounded-full border-2 border-white bg-[#2F6FED] shadow-lift';
+    dot.setAttribute('role', 'img');
+    dot.setAttribute('aria-label', t('map.youPopup', { m: Math.round(me.accuracy) }));
+    const marker = new Marker({ element: dot }).setLngLat([me.lng, me.lat]).addTo(instance);
+    return () => { marker.remove(); };
+  }, [ready, me]);
+
+  const centeredFor = useRef(-1);
+  useEffect(() => {
+    const instance = map.current;
+    if (!ready || !instance || !me || centeredFor.current === recenter) return;
+    centeredFor.current = recenter;
+    const camera = { center: [me.lng, me.lat] as [number, number], zoom: Math.max(instance.getZoom(), 17) };
+    if (reduced) instance.jumpTo(camera); else instance.flyTo(camera);
+  }, [ready, me, recenter, reduced]);
+
+  return <div ref={el} className="h-full w-full" role="region" aria-label={t('map3d.scene')} data-testid="campus-3d" />;
 }

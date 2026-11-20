@@ -2,10 +2,9 @@
 const zh = {
   "map3d": {
     "mode": "地圖模式",
-    "scene": "淡江校園 3D 建築點位示意",
-    "rotate": "旋轉",
-    "tilt": "傾斜",
-    "notice": "示意高度：統一 3 層 × 3 公尺；方塊為點位符號，非實際輪廓。位置：OSM（ODbL）；可用下方列表查找。"
+    "scene": "淡江校園 3D 地圖",
+    "notice": "部分建築為示意高度（缺高度時為 9 公尺）。",
+    "unavailable": "3D 載入失敗，已切回 2D。請檢查網路與 WebGL。"
 },
   "calendar": {
     "title": "學生行事曆",

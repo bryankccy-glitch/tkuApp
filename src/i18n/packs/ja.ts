@@ -3,10 +3,9 @@
 const pack = {
   "map3d": {
     "mode": "地図モード",
-    "scene": "淡江キャンパスの3D建物位置図",
-    "rotate": "回転",
-    "tilt": "傾き",
-    "notice": "高さは模式表示：一律3階 × 3m。立方体は位置記号で実際の輪郭ではありません。位置：OSM（ODbL）。下の一覧でも検索できます。"
+    "scene": "淡江キャンパス3D地図",
+    "notice": "一部の建物は模式的な高さです（高さ不明の場合は9m）。地図：OpenStreetMap / OpenMapTiles / OpenFreeMap。ドラッグで回転・傾斜、2本指で拡大縮小。下の一覧も利用できます。",
+    "unavailable": "3D地図を読み込めないため2Dに戻りました。接続とWebGL対応をご確認ください。"
 },
   "calendar": {
     "title": "学生カレンダー",

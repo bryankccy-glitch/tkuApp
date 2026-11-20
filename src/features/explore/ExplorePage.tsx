@@ -98,7 +98,7 @@ export default function ExplorePage() {
         <div className="order-1 grid content-start gap-4">
           <div className="relative h-64 overflow-hidden rounded-lg border border-line bg-sunken">
             <Suspense fallback={<div className="flex h-full items-center justify-center text-caption text-muted">{t('explore.mapLoading')}</div>}>
-              <CampusMap places={CAMPUS_PLACES} selected={selected} me={geo.location} recenter={recenter} />
+              <CampusMap places={CAMPUS_PLACES} selected={selected} onSelect={select} me={geo.location} recenter={recenter} />
             </Suspense>
             <button
               type="button"

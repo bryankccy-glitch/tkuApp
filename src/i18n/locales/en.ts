@@ -2,10 +2,9 @@
 const en = {
   "map3d": {
     "mode": "Map mode",
-    "scene": "Tamkang campus 3D building point symbols",
-    "rotate": "Rotate",
-    "tilt": "Tilt",
-    "notice": "Illustrative height: uniform 3 floors × 3 m; blocks are point symbols, not actual footprints. Positions: OSM (ODbL). Find buildings in the list below."
+    "scene": "Tamkang campus 3D map",
+    "notice": "Some heights are illustrative (9 m if unknown). Data: OpenStreetMap / OpenMapTiles / OpenFreeMap. Drag to rotate/tilt, pinch to zoom; or use the list.",
+    "unavailable": "3D unavailable; switched to 2D. Check network and WebGL support."
 },
   "calendar": {
     "title": "Student calendar",

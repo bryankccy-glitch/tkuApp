@@ -38,8 +38,9 @@ export default defineConfig({
       workbox: {
         navigateFallbackDenylist: [/^\/api\//],
         importScripts: ['/push-sw.js'],
-        // On-device OCR (~5.5 MB per device) is downloaded only when a screenshot is imported, then kept.
-        globIgnores: ['ocr/**'],
+        // Keep OCR and the optional 3D renderer out of install-time precaching.
+        // Otherwise 2D users would download MapLibre despite the dynamic import.
+        globIgnores: ['ocr/**', '**/CampusMap3D-*.js', '**/CampusMap3D-*.css'],
         runtimeCaching: [{
           urlPattern: ({ url }) => url.pathname.startsWith('/ocr/'),
           handler: 'CacheFirst',
