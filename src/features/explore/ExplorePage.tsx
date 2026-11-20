@@ -98,14 +98,14 @@ export default function ExplorePage() {
         <div className="order-1 grid content-start gap-4">
           <div className="relative h-64 overflow-hidden rounded-lg border border-line bg-sunken">
             <Suspense fallback={<div className="flex h-full items-center justify-center text-caption text-muted">{t('explore.mapLoading')}</div>}>
-              <CampusMap places={CAMPUS_PLACES} selected={selected} me={geo.location} recenter={recenter} />
+              <CampusMap places={CAMPUS_PLACES} selected={selected} onSelect={select} me={geo.location} recenter={recenter} />
             </Suspense>
             <button
               type="button"
               onClick={locate}
               aria-label={t('explore.locateMe')}
               aria-busy={geo.locating}
-              className={cn('absolute bottom-3 right-3 z-[1000] flex h-11 items-center gap-1.5 rounded-full bg-surface px-3.5 text-caption font-semibold shadow-lift', geo.location ? 'text-[#2F6FED]' : 'text-ink')}
+              className={cn('absolute top-1 right-2 z-[1000] flex h-11 items-center gap-1.5 rounded-full bg-surface px-3.5 text-caption font-semibold shadow-lift', geo.location ? 'text-[#2F6FED]' : 'text-ink')}
             >
               <LocateFixed className={cn('h-5 w-5', geo.locating && 'animate-pulse')} aria-hidden />
               {geo.locating ? t('explore.locating') : t('explore.myLocation')}

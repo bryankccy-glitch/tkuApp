@@ -1,6 +1,12 @@
 // th: pre-translated interface strings (from en.ts). Missing keys fall back to English.
 // When English strings change, add/update the same keys here (checked by src/i18n/__tests__/languages.test.ts).
 const pack = {
+  "map3d": {
+    "mode": "โหมดแผนที่",
+    "scene": "แผนที่ 3D วิทยาเขตตั้นเจียง",
+    "notice": "ความสูงบางอาคารเป็นภาพประกอบ (9 เมตรเมื่อไม่มีข้อมูล) ข้อมูล: OpenStreetMap / OpenMapTiles / OpenFreeMap ลากเพื่อหมุนหรือเอียง ใช้สองนิ้วเพื่อซูม หรือใช้รายการด้านล่าง",
+    "unavailable": "โหลดแผนที่ 3D ไม่สำเร็จ จึงกลับไปใช้ 2D โปรดตรวจสอบการเชื่อมต่อและการรองรับ WebGL"
+},
   "calendar": {
     "title": "ปฏิทินนักศึกษา",
     "month": "เดือน",

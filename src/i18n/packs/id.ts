@@ -1,6 +1,12 @@
 // id: pre-translated interface strings (from en.ts). Missing keys fall back to English.
 // When English strings change, add/update the same keys here (checked by src/i18n/__tests__/languages.test.ts).
 const pack = {
+  "map3d": {
+    "mode": "Mode peta",
+    "scene": "Peta 3D kampus Tamkang",
+    "notice": "Sebagian tinggi bangunan hanya ilustrasi (9 m jika tidak tersedia). Data: OpenStreetMap / OpenMapTiles / OpenFreeMap. Seret untuk memutar atau memiringkan; cubit untuk zoom. Daftar di bawah tetap tersedia.",
+    "unavailable": "Peta 3D gagal dimuat. Beralih ke 2D. Periksa koneksi dan dukungan WebGL."
+},
   "calendar": {
     "title": "Kalender mahasiswa",
     "month": "Bulan",

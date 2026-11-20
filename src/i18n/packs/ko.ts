@@ -1,6 +1,12 @@
 // ko: pre-translated interface strings (from en.ts). Missing keys fall back to English.
 // When English strings change, add/update the same keys here (checked by src/i18n/__tests__/languages.test.ts).
 const pack = {
+  "map3d": {
+    "mode": "지도 모드",
+    "scene": "담강 캠퍼스 3D 지도",
+    "notice": "일부 건물 높이는 예시입니다(높이가 없으면 9m). 지도: OpenStreetMap / OpenMapTiles / OpenFreeMap. 드래그하여 회전·기울이기, 두 손가락으로 확대·축소. 아래 목록도 사용할 수 있습니다.",
+    "unavailable": "3D 지도를 불러올 수 없어 2D로 돌아갔습니다. 연결 및 WebGL 지원을 확인하세요."
+},
   "calendar": {
     "title": "학생 캘린더",
     "month": "월",

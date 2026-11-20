@@ -1,6 +1,12 @@
 // vi: pre-translated interface strings (from en.ts). Missing keys fall back to English.
 // When English strings change, add/update the same keys here (checked by src/i18n/__tests__/languages.test.ts).
 const pack = {
+  "map3d": {
+    "mode": "Chế độ bản đồ",
+    "scene": "Bản đồ 3D khuôn viên Đạm Giang",
+    "notice": "Một số chiều cao tòa nhà chỉ để minh họa (9 m khi thiếu dữ liệu). Dữ liệu: OpenStreetMap / OpenMapTiles / OpenFreeMap. Kéo để xoay hoặc nghiêng; chụm hai ngón để thu phóng. Có thể dùng danh sách bên dưới.",
+    "unavailable": "Không tải được bản đồ 3D, đã chuyển về 2D. Hãy kiểm tra kết nối và hỗ trợ WebGL."
+},
   "calendar": {
     "title": "Lịch sinh viên",
     "month": "Tháng",

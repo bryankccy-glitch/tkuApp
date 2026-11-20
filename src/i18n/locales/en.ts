@@ -1,5 +1,11 @@
 // Generated from the translation store; edit keys here directly is fine.
 const en = {
+  "map3d": {
+    "mode": "Map mode",
+    "scene": "Tamkang campus 3D map",
+    "notice": "Some heights are illustrative (9 m if unknown). Data: OpenStreetMap / OpenMapTiles / OpenFreeMap. Drag to rotate/tilt, pinch to zoom; or use the list.",
+    "unavailable": "3D unavailable; switched to 2D. Check network and WebGL support."
+},
   "calendar": {
     "title": "Student calendar",
     "month": "Month",

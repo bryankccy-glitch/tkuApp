@@ -1,6 +1,12 @@
 // es: pre-translated interface strings (from en.ts). Missing keys fall back to English.
 // When English strings change, add/update the same keys here (checked by src/i18n/__tests__/languages.test.ts).
 const pack = {
+  "map3d": {
+    "mode": "Modo de mapa",
+    "scene": "Mapa 3D del campus de Tamkang",
+    "notice": "Algunas alturas son ilustrativas (9 m si faltan datos). Datos: OpenStreetMap / OpenMapTiles / OpenFreeMap. Arrastra para girar o inclinar; pellizca para ampliar. También puedes usar la lista inferior.",
+    "unavailable": "No se pudo cargar el mapa 3D. Se ha vuelto a 2D. Comprueba la conexión y la compatibilidad con WebGL."
+},
   "calendar": {
     "title": "Calendario estudiantil",
     "month": "Mes",
