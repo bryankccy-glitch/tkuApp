@@ -1,12 +1,19 @@
 # TKU Campus OS — Development Handoff
 
 ## Last Updated
-2026-11-12（Asia/Taipei, UTC+8）
+2026-11-26（Asia/Taipei, UTC+8）
 
 ## Updated By
-Claude Code（2026-11-12 活動主辦解析修正上線、原生分支跟上 main）；先前 Claude Code（2026-10-28 首頁個人化鼓勵語）；先前 Claude Code（2026-10-26 上線版：完全不需 API 金鑰）；先前：Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
+Claude Code（2026-11-26 搬到新 Vercel 帳號重新上線）；先前 Claude Code（2026-11-12 活動主辦解析修正上線、原生分支跟上 main）；先前 Claude Code（2026-10-28 首頁個人化鼓勵語）；先前 Claude Code（2026-10-26 上線版：完全不需 API 金鑰）；先前：Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
 
 ## Current Status
+2026-11-26（使用者同意部署）：舊站 `tku-app.vercel.app`（Vercel 帳號 2 campus-hub5，Apple 登入）因 Fluid Active CPU 超量被停用（402，至 2026-12-25）。改部署到 Vercel 帳號 `bryankccy-2499` 的新專案 **`tku-campus-os`** → **https://tku-campus-os.vercel.app**，內容為 main `6e01e9d`（**含 11/19 原本「未部署」的截圖辨識投票與課表全部刪除**；兩者只在手機端執行、不需資料庫變更）。
+- 部署方式：`git archive HEAD` 匯出到暫存資料夾，`npx vercel --global-config ~/.vercel-leverageguard deploy --prod --build-env BUILD_SHA=<sha>`；**新專案沒有連 GitHub，push 不會自動部署**。本機 `.vercel/` 仍連舊專案，不要在 repo 內直接 `vercel deploy`。
+- 環境變數：只設了 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`（公開金鑰）。**伺服器機密（`SUPABASE_SERVICE_ROLE_KEY`、`VAPID_*`、`CRON_SECRET`）在舊帳號裡，無法取出**；因此推播、每日活動同步、小工具目前停用（`/api/push` configured=false、`/api/sync-events` 503，皆安全拒絕）。補設這些變數後重新部署即可恢復。
+- 資料庫（Supabase `gqivwpmflnxlnotirqhe`）：唯讀確認 31 張表皆在且全部啟用 RLS；`store_safety` 已套用。
+- 部署後檢查 PASS：首頁／manifest 200；無頭瀏覽器開登入頁（雲端模式）、訪客模式進首頁（淡水天氣載入）皆無頁面錯誤。
+- 待辦：Supabase → Authentication → URL Configuration 加入新網域（忘記密碼、Email 確認信的導回網址），否則信件連結會指向舊站；`api/push.ts`、`api/push-reminders.ts` 的 VAPID 聯絡網址仍寫舊網域（只是標示，不影響功能）。
+
 2026-11-12：正式站為 main `d81631f`（11/3 上架安全版＋11/12 活動主辦修正），Vercel 自動部署。App 不使用任何 AI／翻譯 API；伺服器只剩推播、活動同步（每日 04:00 台北，已確認每天有新增）、小工具。原生 App（Capacitor）在 `feat/native`（worktree `../tkuApp-native`），已合併最新 main、補齊 `remind.noteNative` 六語翻譯，252 tests／lint／typecheck／build 通過；尚未送審（需 Apple Developer 帳號，使用者決定）。
 
 2026-10-26 上線版：App 不再使用任何 AI／翻譯 API。助理（本機規則引擎）、課表截圖辨識（Tesseract.js）、介面翻譯（預先翻好的語言檔）都在手機上執行；伺服器只剩推播、活動同步、小工具。Vercel 的 `GEMINI_API_KEY`（與誤建的 `AGEMINI_API_KEY`）可以刪除。lint、typecheck、171 單元、132 E2E 通過。
