@@ -1,6 +1,6 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ExternalLink, LocateFixed, Navigation, Search, X, ShieldAlert } from 'lucide-react';
+import { ExternalLink, LocateFixed, Maximize2, Minimize2, Navigation, Search, X, ShieldAlert } from 'lucide-react';
 import { Page } from '@/components/layout/AppShell';
 import { EmptyState, PageHeader } from '@/components/ui/misc';
 import { PLACE_CATEGORY_LABELS } from '@/lib/labels';
@@ -9,8 +9,12 @@ import { cn } from '@/lib/cn';
 import { CampusTabs } from './CampusTabs';
 import { distanceMeters, useMyLocation } from '@/hooks/useMyLocation';
 import { t } from '@/i18n/t';
+import { CATEGORY_COLORS } from './mapStyle';
 
 const CampusMap = lazy(() => import('./CampusMap'));
+
+// Legend only lists categories that actually have a pin on the map.
+const MAPPED_CATS = [...new Set(CAMPUS_PLACES.filter((p) => p.coords).map((p) => p.category))];
 
 const CATS: ('all' | PlaceCategory)[] = ['all', 'academic', 'library', 'admin', 'culture', 'sports', 'service', 'gate', 'other'];
 
@@ -28,6 +32,15 @@ export default function ExplorePage() {
   const [q, setQ] = useState(params.get('q') ?? '');
   const [cat, setCat] = useState<'all' | PlaceCategory>('all');
   const geo = useMyLocation();
+  const [full, setFull] = useState(false);
+  useEffect(() => {
+    if (!full) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setFull(false); };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = prev; };
+  }, [full]);
   const [recenter, setRecenter] = useState(0);
   // Every press re-centres and asks for a fresh fix (some phones stall a long-running watch).
   const locate = () => { setRecenter((n) => n + 1); geo.start(); };
@@ -96,7 +109,12 @@ export default function ExplorePage() {
         </div>
 
         <div className="order-1 grid content-start gap-4">
-          <div className="relative h-64 overflow-hidden rounded-lg border border-line bg-sunken">
+          <div
+            className={cn('overflow-hidden bg-sunken', full ? 'fixed inset-0 z-[1200]' : 'relative h-80 rounded-lg border border-line sm:h-[28rem]')}
+            role={full ? 'dialog' : undefined}
+            aria-modal={full || undefined}
+            aria-label={full ? t('map.label') : undefined}
+          >
             <Suspense fallback={<div className="flex h-full items-center justify-center text-caption text-muted">{t('explore.mapLoading')}</div>}>
               <CampusMap places={CAMPUS_PLACES} selected={selected} onSelect={select} me={geo.location} recenter={recenter} />
             </Suspense>
@@ -110,7 +128,24 @@ export default function ExplorePage() {
               <LocateFixed className={cn('h-5 w-5', geo.locating && 'animate-pulse')} aria-hidden />
               {geo.locating ? t('explore.locating') : t('explore.myLocation')}
             </button>
+            <button
+              type="button"
+              onClick={() => setFull((v) => !v)}
+              aria-label={full ? t('map3d.exitFullscreen') : t('map3d.fullscreen')}
+              aria-pressed={full}
+              className="absolute bottom-10 left-2 z-[1000] flex h-11 w-11 items-center justify-center rounded-full bg-surface text-ink shadow-lift"
+            >
+              {full ? <Minimize2 className="h-5 w-5" aria-hidden /> : <Maximize2 className="h-5 w-5" aria-hidden />}
+            </button>
           </div>
+          <ul className="flex flex-wrap gap-x-3 gap-y-1" aria-label={t('map3d.legend')}>
+            {MAPPED_CATS.map((c) => (
+              <li key={c} className="flex items-center gap-1.5 text-caption text-muted">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: CATEGORY_COLORS[c] }} aria-hidden />
+                {t(`placeCategory.${c}`)}
+              </li>
+            ))}
+          </ul>
           <div aria-live="polite">
             {geo.error ? (
               <p role="alert" className="rounded-sm border border-danger/30 bg-danger/5 px-3 py-2 text-caption text-ink">{t(`explore.locErr.${geo.error}`)}</p>

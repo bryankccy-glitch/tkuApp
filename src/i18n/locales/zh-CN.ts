@@ -4,7 +4,10 @@ const zhCN = {
     "mode": "地图模式",
     "scene": "淡江校园 3D 地图",
     "notice": "部分建筑为示意高度（缺高度时为 9 米）。图资：OpenStreetMap／OpenMapTiles／OpenFreeMap。拖动旋转／倾斜、双指缩放；亦可使用列表。",
-    "unavailable": "3D 地图无法加载，已切回 2D。请确认网络与 WebGL 支持。"
+    "unavailable": "3D 地图无法加载，已切回 2D。请确认网络与 WebGL 支持。",
+    "fullscreen": "全屏地图",
+    "exitFullscreen": "退出全屏",
+    "legend": "地图图例"
 },
   "calendar": {
     "title": "学生行事历",

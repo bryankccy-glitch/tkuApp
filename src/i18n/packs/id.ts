@@ -5,7 +5,10 @@ const pack = {
     "mode": "Mode peta",
     "scene": "Peta 3D kampus Tamkang",
     "notice": "Sebagian tinggi bangunan hanya ilustrasi (9 m jika tidak tersedia). Data: OpenStreetMap / OpenMapTiles / OpenFreeMap. Seret untuk memutar atau memiringkan; cubit untuk zoom. Daftar di bawah tetap tersedia.",
-    "unavailable": "Peta 3D gagal dimuat. Beralih ke 2D. Periksa koneksi dan dukungan WebGL."
+    "unavailable": "Peta 3D gagal dimuat. Beralih ke 2D. Periksa koneksi dan dukungan WebGL.",
+    "fullscreen": "Peta layar penuh",
+    "exitFullscreen": "Keluar layar penuh",
+    "legend": "Legenda peta"
 },
   "calendar": {
     "title": "Kalender mahasiswa",
