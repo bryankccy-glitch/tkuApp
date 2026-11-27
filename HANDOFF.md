@@ -7,6 +7,13 @@
 Claude Code（2026-11-26 搬到新 Vercel 帳號重新上線）；先前 Claude Code（2026-11-12 活動主辦解析修正上線、原生分支跟上 main）；先前 Claude Code（2026-10-28 首頁個人化鼓勵語）；先前 Claude Code（2026-10-26 上線版：完全不需 API 金鑰）；先前：Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
 
 ## Current Status
+2026-11-27（Claude Code，使用者同意）：新站推播與排程恢復。
+- Vercel `tku-campus-os` Production 變數：`VAPID_PUBLIC_KEY`／`VAPID_PRIVATE_KEY`（**新產生**，舊訂閱需使用者在 App 關閉再開啟提醒）、`SUPABASE_URL`、`SUPABASE_ANON_KEY`（Claude 設定）；`SUPABASE_SERVICE_ROLE_KEY`（舊式 service_role JWT）、`CRON_SECRET`（與 Vault `cron_secret` 相同）由使用者本人貼上。
+- Supabase pg_cron `push-reminders`（jobid 1）網址由 tku-app.vercel.app 改為 tku-campus-os.vercel.app（`cron.alter_job`）。
+- 驗證：重新部署（main `99d5f44`）後 `/api/push` configured=true；未帶密碼的 `/api/sync-events`、`/api/push-reminders` 回 401；pg_net 回應 00:48 UTC 起為 200。
+- 另：2D／3D 切換按鈕顯示選取狀態（PR #3）已上線。
+- 待辦：Supabase 舊式金鑰 2027 年初淘汰，屆時改用 `sb_secret_` 並測試 supabase-js 版本相容性；`api/push*.ts` VAPID 聯絡網址仍為舊網域（僅標示）。
+
 2026-11-26（使用者同意部署）：舊站 `tku-app.vercel.app`（Vercel 帳號 2 campus-hub5，Apple 登入）因 Fluid Active CPU 超量被停用（402，至 2026-12-25）。改部署到 Vercel 帳號 `bryankccy-2499` 的新專案 **`tku-campus-os`** → **https://tku-campus-os.vercel.app**，內容為 main `6e01e9d`（**含 11/19 原本「未部署」的截圖辨識投票與課表全部刪除**；兩者只在手機端執行、不需資料庫變更）。
 - 部署方式：`git archive HEAD` 匯出到暫存資料夾，`npx vercel --global-config ~/.vercel-leverageguard deploy --prod --build-env BUILD_SHA=<sha>`；**新專案沒有連 GitHub，push 不會自動部署**。本機 `.vercel/` 仍連舊專案，不要在 repo 內直接 `vercel deploy`。
 - 環境變數：只設了 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`（公開金鑰）。**伺服器機密（`SUPABASE_SERVICE_ROLE_KEY`、`VAPID_*`、`CRON_SECRET`）在舊帳號裡，無法取出**；因此推播、每日活動同步、小工具目前停用（`/api/push` configured=false、`/api/sync-events` 503，皆安全拒絕）。補設這些變數後重新部署即可恢復。
