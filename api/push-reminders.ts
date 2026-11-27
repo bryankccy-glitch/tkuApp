@@ -176,7 +176,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     res.status(503).json({ error: 'push not configured' });
     return;
   }
-  webpush.setVapidDetails('https://tku-app.vercel.app/about', vapidPublic, vapidPrivate);
+  webpush.setVapidDetails('https://tku-campus-os.vercel.app/about', vapidPublic, vapidPrivate);
   const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   try {
     const result = await runPushReminders(db, async (sub, msg) => {

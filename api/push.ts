@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const { error: claim } = await admin.from('push_sent').insert({ user_id: auth.user.id, reminder_id: id });
     if (claim?.code === '23505') { res.status(429).json({ error: '每分鐘最多測試一次，請稍後再試。' }); return; }
     if (claim) throw claim;
-    webpush.setVapidDetails('https://tku-app.vercel.app/about', publicKey, privateKey);
+    webpush.setVapidDetails('https://tku-campus-os.vercel.app/about', publicKey, privateKey);
     await webpush.sendNotification({ endpoint: sub.endpoint as string, keys: { p256dh: sub.p256dh as string, auth: sub.auth as string } },
       JSON.stringify({ title: 'TKU Campus OS 推播測試', body: '這則通知由伺服器傳送，上課提醒也使用這條推播路徑。', tag: id, url: '/me' }), { TTL: 60, urgency: 'high' });
     res.status(200).json({ sent: true });
