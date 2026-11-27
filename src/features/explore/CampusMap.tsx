@@ -1,3 +1,4 @@
+import { cn } from '@/lib/cn';
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -103,7 +104,7 @@ export default function CampusMap({ places, selected, me, recenter = 0, onSelect
 
   return <div className="flex h-full min-w-0 flex-col">
     <div className="flex shrink-0 items-center gap-1 bg-surface px-2" role="group" aria-label={t('map3d.mode')}>
-      {(['2d', '3d'] as const).map((value) => <button key={value} type="button" className="h-11 rounded-sm px-3 text-caption font-semibold text-primary" aria-label={t('map3d.mode') + ' ' + value.toUpperCase()} aria-pressed={mode === value} onClick={() => changeMode(value)}>{value.toUpperCase()}</button>)}
+      {(['2d', '3d'] as const).map((value) => <button key={value} type="button" className={cn('my-1 h-9 min-w-11 rounded-sm px-3 text-caption font-semibold transition-colors', mode === value ? 'bg-primary text-white dark:text-[#1A0506]' : 'text-primary hover:bg-sunken')} aria-label={t('map3d.mode') + ' ' + value.toUpperCase()} aria-pressed={mode === value} onClick={() => changeMode(value)}>{value.toUpperCase()}</button>)}
     </div>
     <div className="relative min-h-0 flex-1">
       {/* Leaflet adds its own classes to the map element: toggle a wrapper so React never overwrites them. */}
