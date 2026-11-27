@@ -5,6 +5,8 @@ import 'leaflet/dist/leaflet.css';
 import { CAMPUS_CENTER, type CampusPlace } from '@/data/places';
 import type { MyLocation } from '@/hooks/useMyLocation';
 import { t } from '@/i18n/t';
+import { useResolvedTheme } from '@/hooks/useResolvedTheme';
+import { pinHtml } from './mapStyle';
 
 // The entire renderer (including MapLibre and its CSS) is fetched only on 3D entry.
 const CampusMap3D = lazy(() => import('./CampusMap3D').catch(() => ({ default: MapUnavailable })));
@@ -31,6 +33,7 @@ export default function CampusMap({ places, selected, me, recenter = 0, onSelect
     catch { return '2d'; }
   });
   const [unavailable, setUnavailable] = useState(false);
+  const theme = useResolvedTheme();
   const changeMode = (next: '2d' | '3d') => {
     setUnavailable(false);
     setMode(next);
@@ -57,26 +60,34 @@ export default function CampusMap({ places, selected, me, recenter = 0, onSelect
     }).addTo(map.current);
     layer.current = L.layerGroup().addTo(map.current);
     meLayer.current = L.layerGroup().addTo(map.current);
-    return () => { map.current?.remove(); map.current = null; };
+    // The container grows in full-screen mode; Leaflet only listens to window resizes by itself.
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => map.current?.invalidateSize());
+    ro?.observe(el.current);
+    return () => { ro?.disconnect(); map.current?.remove(); map.current = null; };
   }, []);
 
   useEffect(() => {
     const g = layer.current;
     if (!g) return;
     g.clearLayers();
-    const icon = (accent: boolean) =>
-      L.divIcon({
-        className: '',
-        html: `<span style="display:block;width:18px;height:18px;border-radius:9px 9px 9px 2px;transform:rotate(-45deg);background:${accent ? '#B3262D' : '#171717'};border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)"></span>`,
-        iconSize: [18, 18],
-        iconAnchor: [9, 18],
-      });
-    L.marker([CAMPUS_CENTER.lat, CAMPUS_CENTER.lng], { icon: icon(true), title: t('map.campus') }).bindPopup(t('map.campusPopup')).addTo(g);
+    const centre = L.divIcon({
+      className: '',
+      html: '<span class="map-centre"></span>',
+      iconSize: [18, 18],
+      iconAnchor: [9, 18],
+    });
+    L.marker([CAMPUS_CENTER.lat, CAMPUS_CENTER.lng], { icon: centre, title: t('map.campus') }).bindPopup(t('map.campusPopup')).addTo(g);
     places.filter((p) => p.coords).forEach((p) => {
-      L.marker([p.coords!.lat, p.coords!.lng], { icon: icon(p.code === selected?.code), title: p.name }).bindPopup(`${p.code}｜${p.name}`).addTo(g);
+      const active = p.code === selected?.code;
+      // Anchor at the tag's centre so the code sits on the building; the selected one floats above the rest.
+      const icon = L.divIcon({ className: '', html: pinHtml(p.code, p.category, active), iconSize: [0, 0], iconAnchor: [0, 0] });
+      L.marker([p.coords!.lat, p.coords!.lng], { icon, title: p.name, zIndexOffset: active ? 500 : 0, riseOnHover: true })
+        .bindPopup(`${p.code}｜${p.name}`)
+        .on('click', () => onSelect?.(p))
+        .addTo(g);
     });
     if (selected?.coords) map.current?.setView([selected.coords.lat, selected.coords.lng], 18);
-  }, [places, selected]);
+  }, [places, selected, onSelect]);
 
   useEffect(() => {
     const g = meLayer.current;
@@ -109,10 +120,10 @@ export default function CampusMap({ places, selected, me, recenter = 0, onSelect
     <div className="relative min-h-0 flex-1">
       {/* Leaflet adds its own classes to the map element: toggle a wrapper so React never overwrites them. */}
       <div className={mode === '2d' ? 'h-full w-full' : 'hidden'}>
-        <div className="h-full w-full" ref={el} role="region" aria-label={t('map.label')} />
+        <div className={cn('campus-map-2d h-full w-full', theme === 'dark' && 'campus-map-2d--dark')} ref={el} role="region" aria-label={t('map.label')} />
       </div>
       {mode === '3d' && <Suspense fallback={<p role="status" className="p-3 text-caption text-muted">{t('explore.mapLoading')}</p>}>
-        <CampusMap3D places={places} selected={selected} me={me} recenter={recenter} onSelect={onSelect} onUnavailable={fallback} />
+        <CampusMap3D key={theme} theme={theme} places={places} selected={selected} me={me} recenter={recenter} onSelect={onSelect} onUnavailable={fallback} />
       </Suspense>}
     </div>
     {unavailable && <p role="status" className="shrink-0 bg-surface px-2 py-1 text-caption text-muted">{t('map3d.unavailable')}</p>}

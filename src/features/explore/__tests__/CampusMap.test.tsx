@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CampusMap from '../CampusMap';
 import L from 'leaflet';
 import { CAMPUS_PLACES } from '@/data/places';
+import { CATEGORY_COLORS } from '../mapStyle';
 
 const mock = vi.hoisted(() => ({
   created: vi.fn(), remove: vi.fn(), flyTo: vi.fn(), jumpTo: vi.fn(), addLayer: vi.fn(),
@@ -81,7 +82,7 @@ describe('campus map mode', () => {
     expect(onSelect).toHaveBeenCalledWith(selected);
     view.rerender(<CampusMap places={CAMPUS_PLACES} selected={selected} onSelect={onSelect} />);
     expect(screen.getByRole('button', { name: 'B 商管大樓' })).toHaveAttribute('aria-pressed', 'true');
-    expect(mock.flyTo).toHaveBeenCalledWith({ center: [selected.coords!.lng, selected.coords!.lat], zoom: 18 });
+    expect(mock.flyTo).toHaveBeenCalledWith({ center: [selected.coords!.lng, selected.coords!.lat], zoom: 17 });
     expect(mock.addLayer).toHaveBeenCalledWith(expect.objectContaining({ type: 'fill-extrusion', paint: expect.objectContaining({ 'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 9] }) }), undefined);
   });
   it('uses jumpTo for selection and location under reduced motion', async () => {
@@ -115,5 +116,27 @@ describe('campus map mode', () => {
     fireEvent.click(screen.getByRole('button', { name: '地圖模式 3D' }));
     await waitFor(() => expect(mock.addLayer).toHaveBeenCalled());
     expect(screen.getByTestId('campus-3d').querySelector('[data-building]')).toBeNull();
+  });
+  it('2D pins show the building code in its category colour and select on click', async () => {
+    const onSelect = vi.fn();
+    const sg = CAMPUS_PLACES.find((p) => p.code === 'SG')!;
+    const { container, rerender } = render(<CampusMap places={CAMPUS_PLACES} onSelect={onSelect} />);
+    await waitFor(() => expect(container.querySelector('.map-pin')).toBeTruthy());
+    const pin = [...container.querySelectorAll<HTMLElement>('.map-pin')].find((el) => el.textContent === 'SG')!;
+    expect(pin.getAttribute('style')).toContain(CATEGORY_COLORS[sg.category]);
+    fireEvent.click(pin);
+    expect(onSelect).toHaveBeenCalledWith(sg);
+    rerender(<CampusMap places={CAMPUS_PLACES} selected={sg} onSelect={onSelect} />);
+    await waitFor(() => expect(container.querySelector('.map-pin--active')?.textContent).toBe('SG'));
+  });
+  it('3D picks the dark basemap for the dark theme', async () => {
+    document.documentElement.dataset.theme = 'dark';
+    try {
+      render(<CampusMap places={CAMPUS_PLACES} />);
+      await enter3D();
+      expect(mock.created).toHaveBeenCalledWith(expect.objectContaining({ style: 'https://tiles.openfreemap.org/styles/dark' }));
+    } finally {
+      delete document.documentElement.dataset.theme;
+    }
   });
 });

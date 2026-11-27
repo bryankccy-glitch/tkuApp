@@ -5,7 +5,10 @@ const pack = {
     "mode": "Modo de mapa",
     "scene": "Mapa 3D del campus de Tamkang",
     "notice": "Algunas alturas son ilustrativas (9 m si faltan datos). Datos: OpenStreetMap / OpenMapTiles / OpenFreeMap. Arrastra para girar o inclinar; pellizca para ampliar. También puedes usar la lista inferior.",
-    "unavailable": "No se pudo cargar el mapa 3D. Se ha vuelto a 2D. Comprueba la conexión y la compatibilidad con WebGL."
+    "unavailable": "No se pudo cargar el mapa 3D. Se ha vuelto a 2D. Comprueba la conexión y la compatibilidad con WebGL.",
+    "fullscreen": "Mapa a pantalla completa",
+    "exitFullscreen": "Salir de pantalla completa",
+    "legend": "Leyenda del mapa"
 },
   "calendar": {
     "title": "Calendario estudiantil",

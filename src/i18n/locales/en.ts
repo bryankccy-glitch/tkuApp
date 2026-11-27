@@ -4,7 +4,10 @@ const en = {
     "mode": "Map mode",
     "scene": "Tamkang campus 3D map",
     "notice": "Some heights are illustrative (9 m if unknown). Data: OpenStreetMap / OpenMapTiles / OpenFreeMap. Drag to rotate/tilt, pinch to zoom; or use the list.",
-    "unavailable": "3D unavailable; switched to 2D. Check network and WebGL support."
+    "unavailable": "3D unavailable; switched to 2D. Check network and WebGL support.",
+    "fullscreen": "Full-screen map",
+    "exitFullscreen": "Exit full screen",
+    "legend": "Map legend"
 },
   "calendar": {
     "title": "Student calendar",

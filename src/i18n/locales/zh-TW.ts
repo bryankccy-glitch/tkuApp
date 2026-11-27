@@ -4,7 +4,10 @@ const zh = {
     "mode": "地圖模式",
     "scene": "淡江校園 3D 地圖",
     "notice": "部分建築為示意高度（缺高度時為 9 公尺）。",
-    "unavailable": "3D 載入失敗，已切回 2D。請檢查網路與 WebGL。"
+    "unavailable": "3D 載入失敗，已切回 2D。請檢查網路與 WebGL。",
+    "fullscreen": "全螢幕地圖",
+    "exitFullscreen": "離開全螢幕",
+    "legend": "地圖圖例"
 },
   "calendar": {
     "title": "學生行事曆",
