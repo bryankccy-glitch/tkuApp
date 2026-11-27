@@ -7,6 +7,14 @@
 Claude Code（2026-11-26 搬到新 Vercel 帳號重新上線）；先前 Claude Code（2026-11-12 活動主辦解析修正上線、原生分支跟上 main）；先前 Claude Code（2026-10-28 首頁個人化鼓勵語）；先前 Claude Code（2026-10-26 上線版：完全不需 API 金鑰）；先前：Codex（`codex/fix-push-reminders`；依使用者最新指示發布已測試的修正；保留 Claude Code 既有紀錄）
 
 ## Current Status
+2026-11-27 下午（Claude Code，使用者同意推送、合併、部署）：兩次正式部署到 `tku-campus-os`。
+- **PR #5（`0baa18f`）**：`api/push.ts`、`api/push-reminders.ts` 的 VAPID 聯絡網址改為新網域。部署後 `/api/push` configured=true。
+- **PR #6（`4ec9b2b`）地圖改版**：新增 `src/features/explore/mapStyle.ts`（類別色 `CATEGORY_COLORS`、`pinHtml`）與 `src/hooks/useResolvedTheme.ts`（監看 `<html data-theme>`）。2D 圖釘改為類別色代號標籤，點擊即選取；深色模式以 CSS 反轉 OSM 圖磚（`.campus-map-2d--dark`，不新增圖資供應商、不改 CSP）。3D 深色改用 OpenFreeMap `dark`，主題切換時以 `key={theme}` 重建；建築依 `render_height` 漸層；選取縮放由 18 改 17。探索頁地圖加高（`h-80`／`sm:h-[28rem]`），新增全螢幕（Esc 離開、鎖住頁面捲動）與類別圖例。9 語系新增 `map3d.fullscreen`／`exitFullscreen`／`legend`。
+- 驗證：typecheck、lint PASS；vitest 309 passed / 1 skipped（新增 `ExplorePage.test.tsx` 與 2 項地圖測試）；正式站以無頭瀏覽器測深淺色 2D／3D，各 29 個圖釘、頁面錯誤 0、CSP 錯誤 0。
+- 部署方式同下方：`git archive` → 暫存資料夾 → 放入連到 `tku-campus-os` 的 `.vercel/` → `vercel deploy --prod --build-env BUILD_SHA=<sha>`。
+- 待確認：每日活動同步最後成功為 2026-11-24 20:16 UTC；下一次 Vercel cron 為 2026-11-27 20:00 UTC（台灣 11/28 04:00），之後查 `campus_events.updated_at` 確認。
+- 已確認：`places.ts` 的「溜冰場」（SS）存在，體育事務處場地收費表有列出。
+
 2026-11-27（Claude Code，使用者同意）：新站推播與排程恢復。
 - Vercel `tku-campus-os` Production 變數：`VAPID_PUBLIC_KEY`／`VAPID_PRIVATE_KEY`（**新產生**，舊訂閱需使用者在 App 關閉再開啟提醒）、`SUPABASE_URL`、`SUPABASE_ANON_KEY`（Claude 設定）；`SUPABASE_SERVICE_ROLE_KEY`（舊式 service_role JWT）、`CRON_SECRET`（與 Vault `cron_secret` 相同）由使用者本人貼上。
 - Supabase pg_cron `push-reminders`（jobid 1）網址由 tku-app.vercel.app 改為 tku-campus-os.vercel.app（`cron.alter_job`）。
